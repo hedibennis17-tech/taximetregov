@@ -1,5 +1,0 @@
-{
-  "buildCommand": "cd apps/government && npm install --legacy-peer-deps && npm run build",
-  "outputDirectory": "apps/government/.next",
-  "installCommand": "echo skip"
-}
