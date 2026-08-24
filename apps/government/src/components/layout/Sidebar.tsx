@@ -9,7 +9,7 @@ import {
   FileBarChart, BookOpen, Scale, Bell, AlertTriangle,
   Search, Shield, BarChart2, Map, PieChart,
   Settings, Key, Webhook, Link2, List, SlidersHorizontal,
-  ChevronDown, ChevronRight
+  ChevronDown, ChevronRight, Activity
 } from 'lucide-react'
 import { useState } from 'react'
 import { kpiData } from '@/data/mock'
@@ -112,6 +112,7 @@ export function Sidebar() {
       title: t.nav.platforms,
       items: [
         { label: t.nav.platformConnections, href: '/platforms', icon: Plug },
+        { label: 'Opérations Gateway', href: '/platforms/operations', icon: Activity },
         { label: 'Uber', href: '/platforms/uber', icon: Car },
         { label: 'Lyft', href: '/platforms/lyft', icon: Car },
         { label: 'DoorDash', href: '/platforms/doordash', icon: Car },
@@ -124,6 +125,7 @@ export function Sidebar() {
       title: t.nav.revenue,
       items: [
         { label: t.nav.transactions, href: '/transactions', icon: Receipt },
+        { label: 'Ledger Gateway', href: '/transactions/gateway', icon: Receipt },
         { label: t.nav.trips, href: '/trips', icon: Map },
         { label: t.nav.deliveries, href: '/deliveries', icon: Briefcase },
         { label: t.nav.tips, href: '/tips', icon: DollarSign },
@@ -166,6 +168,8 @@ export function Sidebar() {
         { label: t.nav.usersRoles, href: '/system/users', icon: Key },
         { label: t.nav.permissions, href: '/system/permissions', icon: Shield },
         { label: t.nav.webhooks, href: '/webhooks', icon: Webhook },
+        { label: 'Webhook Engine', href: '/webhooks/engine', icon: Webhook },
+        { label: 'Simulateur', href: '/simulator', icon: Activity },
         { label: t.nav.integrations, href: '/integrations', icon: Link2 },
         { label: t.nav.systemLogs, href: '/system/logs', icon: List },
         { label: t.nav.settings, href: '/settings', icon: Settings },
