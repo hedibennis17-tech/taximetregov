@@ -2,7 +2,7 @@
   "name": "taximetregov",
   "version": "0.1.0",
   "private": true,
-  "description": "TAXIMÈTRE.GOV — Plateforme gouvernementale pilote Québec",
+  "description": "TAXIM\u00c8TRE.GOV \u2014 Plateforme gouvernementale pilote Qu\u00e9bec",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -23,5 +23,5 @@
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@9.0.0"
+  "packageManager": "npm@10.9.0"
 }
