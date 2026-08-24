@@ -87,6 +87,7 @@ export function Sidebar() {
     {
       title: t.nav.overview,
       items: [
+        { label: 'Control Center', href: '/control-center', icon: LayoutDashboard },
         { label: t.nav.dashboard, href: '/', icon: LayoutDashboard },
         { label: t.nav.liveOps, href: '/live', icon: Radio, badge: kpiData.drivers.online },
       ]
@@ -134,29 +135,31 @@ export function Sidebar() {
       ]
     },
     {
-      title: t.nav.tax,
-      items: [
-        { label: t.nav.tps, href: '/tax/tps', icon: Percent },
-        { label: t.nav.tvq, href: '/tax/tvq', icon: Percent },
-        { label: t.nav.taxReports, href: '/tax/reports', icon: FileBarChart },
-        { label: t.nav.declarations, href: '/tax/declarations', icon: BookOpen },
-        { label: t.nav.reconciliation, href: '/tax/reconciliation', icon: Scale },
-      ]
-    },
-    {
       title: t.nav.compliance,
       items: [
         { label: t.nav.alerts, href: '/alerts', icon: Bell, badge: alerts.anomalies + alerts.expiredDocs + alerts.apiIssues },
-        { label: t.nav.anomalies, href: '/anomalies', icon: AlertTriangle, badge: alerts.anomalies },
-        { label: t.nav.investigations, href: '/investigations', icon: Search },
+        { label: 'Dossiers conformité', href: '/compliance/cases', icon: AlertTriangle, badge: alerts.anomalies },
+        { label: t.nav.anomalies, href: '/anomalies', icon: AlertTriangle },
         { label: t.nav.auditTrail, href: '/audit', icon: Shield },
         { label: t.nav.documents, href: '/documents', icon: FileText },
+      ]
+    },
+    {
+      title: 'Finances',
+      items: [
+        { label: 'Tax Center', href: '/tax/center', icon: Percent },
+        { label: t.nav.tps, href: '/tax/tps', icon: Percent },
+        { label: t.nav.tvq, href: '/tax/tvq', icon: Percent },
+        { label: 'Déclarations', href: '/tax/declarations', icon: BookOpen },
+        { label: 'Réconciliation', href: '/reconciliation', icon: Scale },
+        { label: t.nav.taxReports, href: '/tax/reports', icon: FileBarChart },
       ]
     },
     {
       title: t.nav.analytics,
       items: [
         { label: 'Revenus', href: '/analytics/revenue', icon: BarChart2 },
+        { label: 'Rapports', href: '/reports', icon: FileBarChart },
         { label: 'Plateformes', href: '/analytics/platforms', icon: PieChart },
         { label: 'Chauffeurs', href: '/analytics/drivers', icon: Users },
         { label: 'Géographique', href: '/analytics/geo', icon: Map },
@@ -166,7 +169,7 @@ export function Sidebar() {
       title: t.nav.system,
       items: [
         { label: t.nav.usersRoles, href: '/system/users', icon: Key },
-        { label: t.nav.permissions, href: '/system/permissions', icon: Shield },
+        { label: 'Confidentialité', href: '/privacy', icon: Shield },
         { label: t.nav.webhooks, href: '/webhooks', icon: Webhook },
         { label: 'Webhook Engine', href: '/webhooks/engine', icon: Webhook },
         { label: 'Simulateur', href: '/simulator', icon: Activity },
