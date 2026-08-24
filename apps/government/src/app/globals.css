@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --qc-blue: #003DA5;
+  --qc-blue-dark: #002D7A;
+  --qc-blue-light: #E8F0FE;
+  --qc-blue-mid: #1A56C4;
+  --qc-white: #FFFFFF;
+  --qc-gray-50: #F8FAFC;
+  --qc-gray-100: #F1F5F9;
+  --qc-gray-200: #E2E8F0;
+  --qc-gray-400: #94A3B8;
+  --qc-gray-600: #475569;
+  --qc-gray-800: #1E293B;
+  --qc-gray-900: #0F172A;
+  --sidebar-w: 260px;
+}
+
+.dark {
+  --qc-white: #0A0F1E;
+  --qc-gray-50: #111827;
+  --qc-gray-100: #1F2937;
+  --qc-gray-200: #374151;
+  --qc-gray-400: #6B7280;
+  --qc-gray-600: #9CA3AF;
+  --qc-gray-800: #E5E7EB;
+  --qc-gray-900: #F9FAFB;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--qc-gray-50);
+  color: var(--qc-gray-900);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fleur-de-lis watermark SVG background */
+.fleur-watermark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90' opacity='0.03'%3E⚜%3C/text%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--qc-gray-200); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--qc-gray-400); }
+
+/* Demo banner pulse */
+@keyframes pulse-demo {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.demo-pulse { animation: pulse-demo 2s infinite; }
+
+/* Status dot */
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+}
+
+/* Table hover */
+.gov-table tr:hover td { background: var(--qc-blue-light) !important; }
