@@ -8,7 +8,7 @@ import {
   Bell, AlertTriangle, Shield, BarChart2, Settings, Webhook,
   ChevronDown, ChevronRight, Activity, Server, CalendarDays,
   CheckSquare, Workflow, Database, Building, UserCog, Gauge,
-  Brain, Clock, Truck, Lock, Eye, Flag
+  Brain, Clock, Truck, Lock, Eye, Flag, Code, TestTube, ClipboardCheck
 } from 'lucide-react'
 import { useState } from 'react'
 import { kpiData } from '@/data/mock'
@@ -63,6 +63,7 @@ export function Sidebar() {
       { label:'Chauffeurs', href:'/drivers', icon:Users },
       { label:'Véhicules', href:'/vehicles', icon:Car },
       { label:'Licences', href:'/licenses', icon:ScrollText },
+      { label:'Documents', href:'/documents', icon:FileText },
     ]},
     { title:'Plateformes', items:[
       { label:'Connexions', href:'/platforms', icon:Plug },
@@ -85,18 +86,22 @@ export function Sidebar() {
       { label:'💰 Revenus', href:'/analytics/revenue', icon:TrendingUp },
       { label:'📋 Taxes', href:'/analytics/taxes', icon:Percent },
       { label:'🚕 Taxi', href:'/analytics/taxi', icon:Car },
+      { label:'📦 Livraisons', href:'/analytics/delivery', icon:Truck },
       { label:'⚖️ Conformité', href:'/analytics/compliance', icon:Shield },
       { label:'🧠 Intelligence', href:'/analytics/intelligence', icon:Brain },
       { label:'🚗 Chauffeurs', href:'/analytics/drivers', icon:Users },
     ]},
     { title:'Rapports', items:[
       { label:'Générateur', href:'/reports/builder', icon:FileBarChart },
+      { label:'Programmés', href:'/reports/scheduled', icon:Clock },
+      { label:'Fiscal', href:'/reports/tax', icon:Percent },
+      { label:'Plateformes', href:'/reports/platform', icon:Plug },
+      { label:'Conformité', href:'/reports/compliance', icon:Shield },
     ]},
     { title:'Conformité', items:[
       { label:'Alertes', href:'/alerts', icon:Bell, badge:alerts.anomalies+alerts.expiredDocs+alerts.apiIssues },
       { label:'Dossiers', href:'/compliance/cases', icon:AlertTriangle, badge:alerts.anomalies },
       { label:'Audit', href:'/audit', icon:Eye },
-      { label:'Documents', href:'/documents', icon:FileText },
     ]},
     { title:'Opérations', items:[
       { label:'Tâches', href:'/tasks', icon:CheckSquare },
@@ -104,14 +109,17 @@ export function Sidebar() {
       { label:'Calendrier', href:'/operations/calendar', icon:CalendarDays },
       { label:'Qualité données', href:'/operations/data-quality', icon:Database },
     ]},
-    { title:'🔐 Sécurité', items:[
+    { title:'🔐 Sécurité & Gouvernance', items:[
       { label:'Security Center', href:'/security/center', icon:Shield },
       { label:'Monitoring', href:'/security/monitoring', icon:Activity },
       { label:'Sessions', href:'/security/sessions', icon:Lock },
-    ]},
-    { title:'🏛️ Gouvernance', items:[
       { label:'Governance Center', href:'/governance/center', icon:Flag },
       { label:'Confidentialité', href:'/privacy/center', icon:Shield },
+    ]},
+    { title:'🚀 Étape 9 — Final QA', items:[
+      { label:'Production Readiness', href:'/production-readiness', icon:ClipboardCheck },
+      { label:'E2E Test Suite', href:'/e2e-tests', icon:TestTube },
+      { label:'API Contract', href:'/api-contract', icon:Code },
     ]},
     { title:'Administration', items:[
       { label:'Utilisateurs gov.', href:'/admin/users', icon:UserCog },
@@ -135,7 +143,7 @@ export function Sidebar() {
         {sections.map(s=><NavSection key={s.title} title={s.title} items={s.items}/>)}
       </nav>
       <div className="px-3 py-2 mx-2 mb-3 rounded-lg bg-amber-50 border border-amber-200">
-        <div className="text-[9px] font-bold text-amber-700 tracking-widest text-center">⚠ DONNÉES DE DÉMONSTRATION</div>
+        <div className="text-[9px] font-bold text-amber-700 tracking-widest text-center">⚠ DONNÉES DE DÉMONSTRATION — PILOT</div>
       </div>
     </aside>
   )
