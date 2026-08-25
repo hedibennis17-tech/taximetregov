@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --qc-blue: #003DA5;
+  --qc-blue-dark: #002D7A;
+  --qc-blue-light: #1A56C4;
+  --driver-green: #00C851;
+  --driver-red: #FF4444;
+  --driver-amber: #FFB300;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+body { 
+  @apply bg-slate-950 text-white;
+  font-family: 'Inter', system-ui, sans-serif;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Quebec government fleur-de-lis watermark (subtle) */
+.qc-watermark::before {
+  content: '⚜';
+  position: fixed; bottom: 80px; right: 16px;
+  font-size: 120px; opacity: 0.03; pointer-events: none;
+  color: #fff; z-index: 0;
+}
+
+/* Taximeter display font - big readable numbers */
+.taxi-display {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+}
+
+/* Status pulse animations */
+@keyframes pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(0,200,81,0.4); } 70% { box-shadow: 0 0 0 8px rgba(0,200,81,0); } }
+@keyframes pulse-red { 0%,100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.4); } 70% { box-shadow: 0 0 0 8px rgba(255,68,68,0); } }
+.pulse-green { animation: pulse-green 2s infinite; }
+.pulse-red { animation: pulse-red 1.5s infinite; }
+
+/* Bottom nav safe area */
+.bottom-nav { padding-bottom: calc(0.75rem + var(--safe-bottom)); }
+
+/* Glass card style */
+.glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+.glass-blue { background: rgba(0,61,165,0.3); backdrop-filter: blur(12px); border: 1px solid rgba(0,93,255,0.3); }
+
+/* Driver card */
+.driver-card { @apply bg-slate-900 border border-slate-800 rounded-2xl; }
+
+/* Amount display */
+.amount-display { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
