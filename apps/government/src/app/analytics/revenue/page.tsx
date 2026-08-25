@@ -1,127 +1,149 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
 import { PageHeader, Card, KpiCard } from '@/components/ui'
-import { revenueByDay, revenueByPlatform, kpiData, PLATFORM_COLORS } from '@/data/mock'
+import { monthlyRevenue, dailyRevenue, hourlyData, paymentAnalytics, formatCAD, formatNum, PLATFORM_COLORS_7, platformAnalytics } from '@/data/analytics.mock'
+import { useState } from 'react'
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
-import { DollarSign, TrendingUp, Percent } from 'lucide-react'
+import { TrendingUp, DollarSign, RefreshCw } from 'lucide-react'
 
-const fmt = (n: number) => new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n)
+type Period = '7d' | 'month' | 'quarter' | 'year'
 
 export default function RevenueAnalyticsPage() {
-  const { revenue, taxes } = kpiData
+  const [period, setPeriod] = useState<Period>('month')
+  const data = period === '7d' ? dailyRevenue.slice(-7) : period === 'month' ? dailyRevenue : monthlyRevenue
+  const xKey = period === 'year' || period === 'quarter' ? 'month' : 'day'
 
-  const breakdownData = revenueByDay.map(d => ({
-    ...d,
-    tips: Math.round(d.gross * 0.05),
-    fees: Math.round(d.gross * 0.25),
-    tax: Math.round(d.gross * 0.14975),
-  }))
+  const totalGross = data.reduce((s: number, d: any) => s + (d.gross || 0), 0)
+  const totalNet = data.reduce((s: number, d: any) => s + (d.net || 0), 0)
+  const totalTips = data.reduce((s: number, d: any) => s + (d.tips || 0), 0)
+  const totalFees = data.reduce((s: number, d: any) => s + (d.fees || 0), 0)
 
   return (
     <AppShell>
-      <PageHeader title="Analytique des revenus" subtitle="Tableau de bord fiscal — Août 2026 · Pilote Québec" />
+      <PageHeader title="Revenue Analytics" subtitle="Source: Universal Ledger · SIMULATION · Toutes plateformes" />
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <KpiCard label="Revenus bruts" value={fmt(revenue.grossMonthly)} icon={<DollarSign size={16} />} color="blue" large trend="up" trendValue="+6.2%" />
-        <KpiCard label="Revenus nets" value={fmt(revenue.netMonthly)} icon={<TrendingUp size={16} />} color="green" large />
-        <KpiCard label="TPS perçue" value={fmt(taxes.tpsCollected)} icon={<Percent size={16} />} color="blue" sub="5.0%" />
-        <KpiCard label="TVQ perçue" value={fmt(taxes.tvqCollected)} icon={<Percent size={16} />} color="purple" sub="9.975%" />
+      <div className="flex gap-1 mb-5 flex-wrap">
+        {([['7d','7 jours'],['month','Août 2026'],['quarter','Q3 2026'],['year','2026']] as const).map(([k,l]) => (
+          <button key={k} onClick={() => setPeriod(k)}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${period === k ? 'bg-qc-blue text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200'}`}>
+            {l}
+          </button>
+        ))}
+        <div className="flex items-center gap-1.5 ml-auto text-[10px] text-slate-400">
+          <RefreshCw size={11} /> {new Date().toLocaleTimeString('fr-CA')}
+        </div>
       </div>
 
-      {/* Area chart */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <KpiCard label="Revenus bruts" value={formatCAD(totalGross, 0)} large icon={<DollarSign size={16} />} color="blue" trend="up" trendValue="+4.9%" />
+        <KpiCard label="Revenus nets" value={formatCAD(totalNet, 0)} large icon={<TrendingUp size={16} />} color="green" />
+        <KpiCard label="Pourboires" value={formatCAD(totalTips, 0)} icon={<DollarSign size={16} />} color="purple" />
+        <KpiCard label="Frais plateformes" value={formatCAD(totalFees, 0)} color="orange" sub={`${Math.round(totalFees/totalGross*100)}% du brut`} />
+      </div>
+
       <Card className="p-4 mb-4">
-        <div className="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-1">Revenus quotidiens — Août 2026</div>
-        <div className="text-xs text-slate-400 mb-4">Bruts · Nets · Pourboires · Frais plateformes</div>
-        <ResponsiveContainer width="100%" height={240}>
-          <AreaChart data={breakdownData}>
+        <div className="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-1">Évolution des revenus</div>
+        <div className="text-[10px] text-slate-400 mb-3">Bruts · Nets · Pourboires · Source: Universal Ledger</div>
+        <ResponsiveContainer width="100%" height={220}>
+          <AreaChart data={data}>
             <defs>
-              {[['gGross','#003DA5'],['gNet','#22C55E'],['gTip','#A855F7'],['gFee','#F97316']].map(([id, c]) => (
-                <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={c} stopOpacity={0.12} />
-                  <stop offset="95%" stopColor={c} stopOpacity={0} />
-                </linearGradient>
-              ))}
+              <linearGradient id="gG" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#003DA5" stopOpacity={0.15}/><stop offset="95%" stopColor="#003DA5" stopOpacity={0}/></linearGradient>
+              <linearGradient id="gN" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#22C55E" stopOpacity={0.12}/><stop offset="95%" stopColor="#22C55E" stopOpacity={0}/></linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={v => v.split(' ')[1]} />
-            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={v => `${(v/1000).toFixed(0)}k$`} />
-            <Tooltip formatter={(v: number) => fmt(v)} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Area type="monotone" dataKey="gross" name="Bruts" stroke="#003DA5" fill="url(#gGross)" strokeWidth={2} />
-            <Area type="monotone" dataKey="net" name="Nets" stroke="#22C55E" fill="url(#gNet)" strokeWidth={2} />
-            <Area type="monotone" dataKey="tips" name="Pourboires" stroke="#A855F7" fill="url(#gTip)" strokeWidth={1.5} />
-            <Area type="monotone" dataKey="fees" name="Frais" stroke="#F97316" fill="url(#gFee)" strokeWidth={1.5} />
+            <XAxis dataKey={xKey} tick={{ fontSize:10, fill:'#94a3b8' }} tickFormatter={(v:string)=>v.length>5?v.substring(0,5):v} />
+            <YAxis tick={{ fontSize:10, fill:'#94a3b8' }} tickFormatter={(v:number)=>`${(v/1000).toFixed(0)}k$`} />
+            <Tooltip formatter={(v:number)=>formatCAD(v)} />
+            <Legend wrapperStyle={{ fontSize:11 }} />
+            <Area type="monotone" dataKey="gross" name="Bruts" stroke="#003DA5" fill="url(#gG)" strokeWidth={2} />
+            <Area type="monotone" dataKey="net" name="Nets" stroke="#22C55E" fill="url(#gN)" strokeWidth={1.5} />
+            <Area type="monotone" dataKey="tips" name="Pourboires" stroke="#A855F7" fill="transparent" strokeWidth={1} strokeDasharray="4 2" />
           </AreaChart>
         </ResponsiveContainer>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-        {/* By Platform */}
         <Card className="p-4">
-          <div className="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-4">Revenus par plateforme</div>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={revenueByPlatform} layout="vertical">
+          <div className="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-3">Distribution horaire</div>
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart data={hourlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis type="number" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={v => `${(v/1000).toFixed(0)}k$`} />
-              <YAxis type="category" dataKey="platform" tick={{ fontSize: 11, fill: '#64748b' }} width={70} />
-              <Tooltip formatter={(v: number) => fmt(v)} />
-              <Bar dataKey="gross" radius={[0,4,4,0]}>
-                {revenueByPlatform.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Bar>
+              <XAxis dataKey="hour" tick={{ fontSize:9, fill:'#94a3b8' }} interval={3} />
+              <YAxis tick={{ fontSize:9, fill:'#94a3b8' }} tickFormatter={(v:number)=>`${(v/1000).toFixed(1)}k$`} />
+              <Tooltip formatter={(v:number)=>formatCAD(v)} />
+              <Bar dataKey="revenue" fill="#003DA5" radius={[2,2,0,0]} name="Revenus" opacity={0.85} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
-
-        {/* Tax breakdown */}
         <Card className="p-4">
-          <div className="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-4">Réconciliation fiscale</div>
-          <div className="space-y-4">
-            {[
-              { label: 'Revenus enregistrés', value: revenue.grossMonthly, color: 'bg-qc-blue', pct: 100 },
-              { label: 'TPS (5%)', value: taxes.tpsCollected, color: 'bg-blue-400', pct: 5 },
-              { label: 'TVQ (9.975%)', value: taxes.tvqCollected, color: 'bg-purple-500', pct: 9.975 },
-              { label: 'Revenus déclarés', value: taxes.declared, color: 'bg-green-500', pct: Math.round(taxes.declared/revenue.grossMonthly*100) },
-              { label: 'Écart fiscal', value: taxes.gap, color: 'bg-orange-400', pct: Math.round(taxes.gap/revenue.grossMonthly*100) },
-            ].map(row => (
-              <div key={row.label}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-slate-600 dark:text-slate-400">{row.label}</span>
-                  <span className="font-mono font-semibold text-slate-700 dark:text-slate-200">{fmt(row.value)}</span>
+          <div className="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-3">Méthodes de paiement</div>
+          <ResponsiveContainer width="100%" height={120}>
+            <PieChart>
+              <Pie data={paymentAnalytics} dataKey="gross" nameKey="method" cx="50%" cy="50%" outerRadius={50}>
+                {paymentAnalytics.map((_,i)=><Cell key={i} fill={['#003DA5','#1A56C4','#3B82F6','#93C5FD'][i]} />)}
+              </Pie>
+              <Tooltip formatter={(v:number)=>formatCAD(v)} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="space-y-1 mt-2">
+            {paymentAnalytics.map((p,i)=>(
+              <div key={p.method} className="flex justify-between text-xs">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full" style={{background:['#003DA5','#1A56C4','#3B82F6','#93C5FD'][i]}} />
+                  <span className="text-slate-500">{p.method} ({p.pct}%)</span>
                 </div>
-                <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full">
-                  <div className={`h-full rounded-full ${row.color}`} style={{ width: `${Math.min(row.pct, 100)}%` }} />
-                </div>
+                <span className="font-mono font-semibold text-slate-700 dark:text-slate-200">{formatCAD(p.gross, 0)}</span>
               </div>
             ))}
-          </div>
-
-          <div className={`mt-4 p-3 rounded-lg text-center text-xs font-semibold
-            ${taxes.gap < 5000 ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'}`}>
-            {taxes.gap < 5000 ? '✅ ÉCART DANS LES LIMITES ACCEPTABLES' : '⚠ RÉVISION REQUISE — Écart > 5 000 $'}
           </div>
         </Card>
       </div>
 
-      {/* Tax line chart */}
-      <Card className="p-4">
-        <div className="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-1">Taxes collectées — Évolution mensuelle</div>
-        <ResponsiveContainer width="100%" height={160}>
-          <LineChart data={revenueByDay}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={v => v.split(' ')[1]} />
-            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={v => `${v}$`} />
-            <Tooltip formatter={(v: number) => fmt(v)} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Line type="monotone" dataKey="tax" name="Taxes" stroke="#003DA5" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
+      <Card>
+        <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="font-semibold text-sm text-slate-700 dark:text-slate-200">Comparatif par plateforme — Août 2026</div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-slate-800">
+                {['Plateforme','Chauffeurs','Activités','Brut','Frais','Pourboires','Net','TPS+TVQ'].map(h=>(
+                  <th key={h} className="px-3 py-2 text-left text-[9px] font-bold uppercase tracking-widest text-slate-400">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {platformAnalytics.map(p=>(
+                <tr key={p.provider} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800">
+                  <td className="px-3 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{background:PLATFORM_COLORS_7[p.provider]}} />
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{p.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400">{p.drivers}</td>
+                  <td className="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400">{formatNum(p.activities)}</td>
+                  <td className="px-3 py-2.5 font-mono text-xs font-semibold text-slate-700 dark:text-slate-200">{formatCAD(p.gross, 0)}</td>
+                  <td className="px-3 py-2.5 font-mono text-xs text-red-500">-{formatCAD(p.fees, 0)}</td>
+                  <td className="px-3 py-2.5 font-mono text-xs text-green-600">+{formatCAD(p.tips, 0)}</td>
+                  <td className="px-3 py-2.5 font-mono text-xs font-bold text-green-600">{formatCAD(p.net, 0)}</td>
+                  <td className="px-3 py-2.5 font-mono text-xs text-blue-600">{formatCAD(p.tps + p.tvq, 0)}</td>
+                </tr>
+              ))}
+              <tr className="bg-slate-50 dark:bg-slate-800 font-bold border-t-2 border-slate-200 dark:border-slate-700">
+                <td className="px-3 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200" colSpan={3}>TOTAL</td>
+                <td className="px-3 py-2.5 font-mono text-xs font-bold text-qc-blue">{formatCAD(platformAnalytics.reduce((s,p)=>s+p.gross,0), 0)}</td>
+                <td className="px-3 py-2.5 font-mono text-xs font-bold text-red-600">-{formatCAD(platformAnalytics.reduce((s,p)=>s+p.fees,0), 0)}</td>
+                <td className="px-3 py-2.5 font-mono text-xs font-bold text-green-600">+{formatCAD(platformAnalytics.reduce((s,p)=>s+p.tips,0), 0)}</td>
+                <td className="px-3 py-2.5 font-mono text-xs font-bold text-green-600">{formatCAD(platformAnalytics.reduce((s,p)=>s+p.net,0), 0)}</td>
+                <td className="px-3 py-2.5 font-mono text-xs font-bold text-blue-600">{formatCAD(platformAnalytics.reduce((s,p)=>s+p.tps+p.tvq,0), 0)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </Card>
     </AppShell>
   )
