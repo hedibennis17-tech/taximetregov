@@ -1,12 +1,12 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Gauge, MapPin, DollarSign, User } from 'lucide-react'
+import { Home, Gauge, Activity, DollarSign, User } from 'lucide-react'
 
 const navItems = [
   { href:'/home', icon:Home, label:'Accueil' },
   { href:'/taximeter', icon:Gauge, label:'Taximètre' },
-  { href:'/activities', icon:MapPin, label:'Activités' },
+  { href:'/activity-switcher', icon:Activity, label:'Activités' },
   { href:'/revenue', icon:DollarSign, label:'Revenus' },
   { href:'/profile', icon:User, label:'Profil' },
 ]
@@ -17,7 +17,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 bottom-nav">
       <div className="flex items-center justify-around px-2 pt-2">
         {navItems.map(item => {
-          const active = pathname === item.href || pathname.startsWith(item.href + '/')
+          const active = pathname === item.href || (item.href !== '/home' && pathname.startsWith(item.href + '/'))
           const Icon = item.icon
           return (
             <Link key={item.href} href={item.href}

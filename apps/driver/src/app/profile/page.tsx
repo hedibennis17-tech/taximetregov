@@ -1,45 +1,48 @@
 'use client'
 import { AppShell, PageHeader } from '@/components/layout/AppShell'
 import { Card, DocBadge } from '@/components/ui'
-import { mockDriver, mockLicense, mockVehicle, driverDocuments } from '@/data/driver.mock'
-import { ChevronRight, Shield, FileText, Car, CreditCard, Bell, Globe, HelpCircle, LogOut } from 'lucide-react'
+import { mockDriver, mockLicense, mockVehicle, driverActivities, complianceStatus, driverPermissions, TAXIMETER_ENABLED_BY_ACTIVITY } from '@/data/driver.mock'
+import { ChevronRight, Shield, FileText, Car, Gauge, Lock, Bell, Globe, HelpCircle, LogOut, Smartphone, Eye } from 'lucide-react'
 import Link from 'next/link'
+
+const docIcon: Record<string,string> = { VALID:'✅', EXPIRING:'⚠️', EXPIRED:'❌', PENDING:'⏳', REJECTED:'🚫', UNDER_REVIEW:'🔍' }
 
 export default function ProfilePage() {
   const menuItems = [
-    { icon:FileText, label:'Mes documents', href:'/documents', badge:'1 ⚠' },
-    { icon:Car, label:'Mon véhicule', href:'/vehicle' },
-    { icon:CreditCard, label:'Centre fiscal', href:'/tax' },
-    { icon:Shield, label:'Sécurité & MFA', href:'/security' },
-    { icon:Bell, label:'Notifications', href:'/notifications' },
-    { icon:Globe, label:'Langue & Accessibilité', href:'#' },
-    { icon:HelpCircle, label:'Support', href:'/support' },
+    { icon: FileText, label: 'Documents', href: '/documents', badge: '1 ⚠' },
+    { icon: Car, label: 'Mon véhicule', href: '/vehicle' },
+    { icon: Gauge, label: 'Mes activités', href: '/activity-switcher' },
+    { icon: Eye, label: 'Confidentialité', href: '/profile/privacy' },
+    { icon: Smartphone, label: 'Mes appareils', href: '/profile/devices' },
+    { icon: Shield, label: 'Sécurité & MFA', href: '/security' },
+    { icon: Bell, label: 'Notifications', href: '/notifications' },
+    { icon: Globe, label: 'Langue & Accessibilité', href: '#' },
+    { icon: HelpCircle, label: 'Support', href: '/support' },
   ]
-
   return (
     <AppShell>
-      <PageHeader title="Mon profil" subtitle="Chauffeur autorisé — SIMULATION" />
+      <PageHeader title="Mon profil" subtitle={`${mockDriver.driverId} · ${mockDriver.accountStatus}`} />
       <div className="px-4">
-        {/* Driver card */}
-        <Card className="mb-5 bg-gradient-to-br from-qc-blue/30 to-qc-blue-dark/10 border-qc-blue/30">
+        {/* Identity card */}
+        <Card className="mb-5 bg-gradient-to-br from-qc-blue/30 to-slate-900 border-qc-blue/30">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-qc-blue flex items-center justify-center text-2xl font-bold text-white">
+            <div className="w-16 h-16 rounded-2xl bg-qc-blue flex items-center justify-center text-3xl font-bold text-white shadow-lg">
               {mockDriver.firstName[0]}{mockDriver.lastName[0]}
             </div>
             <div>
-              <div className="font-bold text-white text-lg">{mockDriver.firstName} {mockDriver.lastName}</div>
+              <div className="font-bold text-white text-xl">{mockDriver.firstName} {mockDriver.lastName}</div>
               <div className="text-xs text-slate-400">{mockDriver.email}</div>
               <div className="font-mono text-[10px] text-qc-blue-light mt-0.5">{mockDriver.driverId}</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { label:'Statut compte', val:'✅ Approuvé' },
-              { label:'MFA', val:mockDriver.mfaEnabled ? '🔐 Activé' : '⚠ Désactivé' },
-              { label:'Province', val:mockDriver.province },
-              { label:'Membre depuis', val:new Date(mockDriver.createdAt).getFullYear().toString() },
-            ].map(s=>(
-              <div key={s.label} className="bg-slate-900/50 rounded-xl p-2.5">
+              { label: 'Statut', val: '✅ Compte actif' },
+              { label: 'MFA', val: mockDriver.mfaEnabled ? '🔐 Activé' : '⚠ Désactivé' },
+              { label: 'Province', val: mockDriver.province },
+              { label: 'Membre depuis', val: new Date(mockDriver.createdAt).getFullYear().toString() },
+            ].map(s => (
+              <div key={s.label} className="bg-slate-900/60 rounded-xl p-2.5">
                 <div className="text-[10px] text-slate-500 mb-0.5">{s.label}</div>
                 <div className="text-xs font-semibold text-white">{s.val}</div>
               </div>
@@ -47,45 +50,43 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        {/* License & Permit */}
+        {/* Compliance summary */}
         <Card className="mb-4">
-          <div className="font-semibold text-sm text-white mb-3">📋 Permis & Licences</div>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xs font-bold text-slate-300">Permis conduire</div>
-                <div className="text-[10px] text-slate-500">{mockLicense.number} · {mockLicense.class}</div>
-                <div className="text-[10px] text-slate-500">Expire: {mockLicense.expiryDate}</div>
+          <div className="font-semibold text-white text-sm mb-3">📋 Conformité</div>
+          <div className="space-y-2">
+            {complianceStatus.items.map(item => (
+              <div key={item.key} className="flex items-center gap-3">
+                <span className="text-lg w-7 shrink-0">{item.icon}</span>
+                <span className="flex-1 text-xs text-slate-300">{item.label}</span>
+                <span className="text-xs">{docIcon[item.status]}</span>
+                {item.expiry && <span className="text-[10px] text-slate-500 font-mono">{item.expiry}</span>}
               </div>
-              <DocBadge status={mockLicense.status} />
-            </div>
-            <div className="border-t border-slate-800 pt-3 flex items-center justify-between">
-              <div>
-                <div className="text-xs font-bold text-slate-300">Permis taxi</div>
-                <div className="text-[10px] text-slate-500">{mockLicense.taxiPermitNumber}</div>
-                <div className="text-[10px] text-slate-500">Expire: {mockLicense.taxiPermitExpiry}</div>
-              </div>
-              <DocBadge status={mockLicense.taxiPermitStatus} />
-            </div>
-          </div>
-        </Card>
-
-        {/* Authorized activities */}
-        <Card className="mb-5">
-          <div className="font-semibold text-sm text-white mb-3">⚙️ Activités autorisées</div>
-          <div className="flex flex-wrap gap-2">
-            {mockDriver.authorizedActivities.map(act => (
-              <span key={act} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-xs font-semibold text-green-400">
-                ✅ {act === 'TAXI' ? '🚕 Taxi' : act === 'RIDESHARE' ? '🚗 Rideshare' : '📦 Livraison'}
-              </span>
             ))}
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-500">
-              ⚪ Épicerie (non autorisé)
-            </span>
           </div>
         </Card>
 
-        {/* Menu items */}
+        {/* Authorized activities with taximeter rule */}
+        <Card className="mb-5">
+          <div className="font-semibold text-white text-sm mb-3">⚙️ Activités autorisées</div>
+          <div className="space-y-2">
+            {driverActivities.filter(a => a.authorizationStatus === 'AUTHORIZED').map(act => (
+              <div key={act.activityType} className="flex items-center gap-3 py-1.5">
+                <span className="text-xl">{act.icon}</span>
+                <span className="flex-1 text-sm text-slate-200 font-medium">{act.label}</span>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border
+                  ${act.taximeterEnabled ? 'bg-qc-blue/20 border-qc-blue/40 text-blue-300' : 'bg-slate-700 border-slate-600 text-slate-500'}`}>
+                  <Gauge size={9}/> {act.taximeterEnabled ? 'Taximètre: ON' : 'Taximètre: OFF'}
+                </span>
+              </div>
+            ))}
+          </div>
+          <Link href="/activity-switcher" className="flex items-center justify-between mt-3 pt-3 border-t border-slate-800 text-xs text-qc-blue-light hover:text-blue-300 transition-colors">
+            <span>Changer d'activité</span>
+            <ChevronRight size={14} />
+          </Link>
+        </Card>
+
+        {/* Menu */}
         <div className="driver-card divide-y divide-slate-800 mb-5">
           {menuItems.map(item => {
             const Icon = item.icon
@@ -108,8 +109,7 @@ export default function ProfilePage() {
         </button>
 
         <div className="text-center text-[10px] text-slate-700 pb-4">
-          TAXIMÈTRE.GOV Driver v0.1.0 — Pilote Québec 2026<br/>
-          ⚠ SIMULATION — Données de démonstration
+          TAXIMÈTRE.GOV Driver v0.1.0 · Pilote Québec 2026<br/>⚠ SIMULATION
         </div>
       </div>
     </AppShell>

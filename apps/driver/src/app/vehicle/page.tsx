@@ -27,8 +27,8 @@ export default function VehiclePage() {
           <div className="space-y-3">
             {[
               ['VIN',mockVehicle.vin],
-              ['ID Véhicule',mockVehicle.id],
-              ['Type',mockVehicle.type],
+              ['ID Véhicule',mockVehicle.vehicleId],
+              ['Type',mockVehicle.vehicleType],
             ].map(([l,v])=>(
               <div key={l} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0">
                 <span className="text-xs text-slate-500">{l}</span>
@@ -56,10 +56,10 @@ export default function VehiclePage() {
           <div className="font-semibold text-white text-sm mb-3">🔢 Taximètre numérique</div>
           <div className="space-y-2">
             {[
-              ['ID Instance',mockVehicle.meterInstanceId],
-              ['Version',mockVehicle.meterVersion],
-              ['Certifié',mockVehicle.meterCertified ? '✅ Oui' : '❌ Non'],
-              ['Certification expire',mockVehicle.meterCertExpiry],
+              ['ID Instance',mockVehicle.meter.instanceId],
+              ['Version',mockVehicle.meter.version],
+              ['Certifié',mockVehicle.meter.certified ? '✅ Oui' : '❌ Non'],
+              ['Certification expire',mockVehicle.meter.certExpiry],
             ].map(([l,v])=>(
               <div key={l} className="flex justify-between text-xs">
                 <span className="text-slate-500">{l}</span>

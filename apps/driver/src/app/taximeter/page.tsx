@@ -1,7 +1,7 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
 import { useState, useEffect, useRef } from 'react'
-import { fareConfig, taxiMeterSession, mockVehicle, mockDriver } from '@/data/driver.mock'
+import { fareConfig, mockVehicle, mockDriver } from '@/data/driver.mock'
 import { MapPin, Wifi, WifiOff, AlertCircle, CheckCircle } from 'lucide-react'
 
 type TripStatus = 'AVAILABLE' | 'PASSENGER_ENTERING' | 'ACTIVE' | 'COMPLETING' | 'COMPLETED'
@@ -64,7 +64,7 @@ export default function TaximeterPage() {
       {/* Status bar */}
       <div className="px-4 pt-4 pb-2 flex items-center justify-between">
         <div>
-          <div className="text-xs text-slate-500 font-mono">{mockVehicle.meterInstanceId}</div>
+          <div className="text-xs text-slate-500 font-mono">{mockVehicle.meter.instanceId}</div>
           <div className="text-xs font-bold text-qc-blue-light">TAXIMÈTRE CERTIFIÉ</div>
         </div>
         <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export default function TaximeterPage() {
               PASSAGER MONTE
             </button>
             <div className="mt-3 text-[10px] text-slate-600 text-center">
-              Taximètre v{mockVehicle.meterVersion} · Certifié {mockVehicle.meterCertExpiry}
+              Taximètre v{mockVehicle.meter.version} · Certifié {mockVehicle.meter.certExpiry}
             </div>
           </div>
         )}

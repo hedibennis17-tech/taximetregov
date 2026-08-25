@@ -28,10 +28,10 @@ export default function PlatformsPage() {
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="font-bold text-white">{p.name}</span>
                     <PlatformStatusBadge status={p.status} />
-                    {!p.taximeter && <span className="text-[9px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded-full">Taximètre: DÉSACTIVÉ</span>}
-                    {p.taximeter && <span className="text-[9px] bg-qc-blue/20 text-blue-300 px-1.5 py-0.5 rounded-full">🔢 Taximètre actif</span>}
+                    {!p.taximeterEnabled && <span className="text-[9px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded-full">Taximètre: DÉSACTIVÉ</span>}
+                    {p.taximeterEnabled && <span className="text-[9px] bg-qc-blue/20 text-blue-300 px-1.5 py-0.5 rounded-full">🔢 Taximètre actif</span>}
                   </div>
-                  <div className="text-[10px] font-mono text-slate-500">{p.accountId}</div>
+                  <div className="text-[10px] font-mono text-slate-500">{p.externalAccountId}</div>
                 </div>
                 <button className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors">
                   <RefreshCw size={14} className="text-slate-400" />
@@ -71,7 +71,7 @@ export default function PlatformsPage() {
                 </div>
                 <div className="text-[10px] text-slate-500">{p.activityType.replace('_',' ')}</div>
               </div>
-              {p.status === 'NOT_CONFIGURED' && (
+              {p.status === 'NOT_CONNECTED' && (
                 <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-qc-blue/20 border border-qc-blue/30 text-blue-400 text-xs font-semibold hover:bg-qc-blue/30 transition-all">
                   <ExternalLink size={11} /> Connecter
                 </button>
