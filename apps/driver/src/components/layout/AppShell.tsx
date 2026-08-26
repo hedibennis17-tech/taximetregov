@@ -15,16 +15,17 @@ export function AppShell({ children, showNav = true, className = '' }: { childre
   )
 }
 
-// Page header for driver app
-export function PageHeader({ title, subtitle, back, action }: { title:string; subtitle?:string; back?:string; action?: ReactNode }) {
+export function PageHeader({ title, subtitle, back, action }: {
+  title: string; subtitle?: string; back?: string; action?: ReactNode
+}) {
   return (
     <div className="px-4 pt-4 pb-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-white">{title}</h1>
-          {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl font-bold text-white leading-tight">{title}</h1>
+          {subtitle && <p className="text-xs text-slate-400 mt-0.5 leading-snug">{subtitle}</p>}
         </div>
-        {action}
+        {action && <div className="shrink-0">{action}</div>}
       </div>
     </div>
   )
