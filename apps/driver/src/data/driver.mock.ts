@@ -382,3 +382,41 @@ export const auditLog = [
   { eventId: 'AUD-004', action: 'ACTIVITY_ENABLED', resource: 'FOOD_DELIVERY', timestamp: '2024-10-01T00:00:00Z', result: 'SUCCESS' },
   { eventId: 'AUD-005', action: 'ACCOUNT_LOGIN', resource: 'session', timestamp: '2026-08-24T08:30:00Z', result: 'SUCCESS' },
 ]
+
+// ─── GPS SESSION MOCK DATA ─────────────────────────────────────
+export const mockGpsSession = {
+  sessionId: 'LSESS-2026-08-24-001',
+  status: 'ACTIVE' as const,
+  startedAt: '2026-08-24T07:30:00Z',
+  gpsStatus: 'ACTIVE' as const,
+  accuracyM: 4,
+  speedKmh: 32,
+  heading: 270, // West
+  latitude: 45.5017,
+  longitude: -73.5673,
+  totalDistanceKm: 148.2,
+  validPoints: 5328,
+  invalidPoints: 12,
+  syncStatus: 'SERVER_CONFIRMED' as const,
+  jurisdictionId: 'QC-CA',
+  batteryMode: 'HIGH_ACCURACY' as const,
+  permission: 'GRANTED_BACKGROUND' as const,
+}
+
+export const gpsEventLog = [
+  { time:'07:30', event:'GPS démarré', status:'ACTIVE', accuracy:4, activity:'TAXI', quality:'NORMAL' },
+  { time:'08:15', event:'Précision dégradée', status:'LOW_ACCURACY', accuracy:28, activity:'TAXI', quality:'ACCEPTABLE' },
+  { time:'08:17', event:'Précision restaurée', status:'ACTIVE', accuracy:5, activity:'TAXI', quality:'NORMAL' },
+  { time:'10:02', event:'Signal perdu (tunnel)', status:'SIGNAL_LOST', accuracy:999, activity:'TAXI', quality:'REVIEW_REQUIRED' },
+  { time:'10:03', event:'Signal récupéré', status:'RECOVERING', accuracy:8, activity:'TAXI', quality:'NORMAL' },
+  { time:'12:45', event:'Changement activité: TAXI → FOOD_DELIVERY', status:'ACTIVE', accuracy:5, activity:'FOOD_DELIVERY', quality:'NORMAL' },
+  { time:'13:10', event:'Point GPS rejeté: vitesse impossible (312 km/h)', status:'ACTIVE', accuracy:4, activity:'FOOD_DELIVERY', quality:'SUSPICIOUS' },
+  { time:'15:02', event:'Session synchronisée', status:'ACTIVE', accuracy:4, activity:'FOOD_DELIVERY', quality:'NORMAL' },
+]
+
+export const locationPolicySummary = [
+  { activity:'TAXI', icon:'🚕', interval:'1s', accuracy:'≤10m', battery:'HIGH_ACCURACY', taximeter:true, background:true },
+  { activity:'RIDESHARE', icon:'🚗', interval:'3s', accuracy:'≤30m', battery:'BALANCED', taximeter:false, background:true },
+  { activity:'FOOD_DELIVERY', icon:'📦', interval:'5s', accuracy:'≤50m', battery:'BALANCED', taximeter:false, background:true },
+  { activity:'GROCERY', icon:'🛒', interval:'5s', accuracy:'≤50m', battery:'BALANCED', taximeter:false, background:false },
+]

@@ -1,12 +1,12 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Gauge, Activity, DollarSign, User } from 'lucide-react'
+import { Home, Gauge, MapPin, DollarSign, User } from 'lucide-react'
 
 const navItems = [
   { href:'/home', icon:Home, label:'Accueil' },
   { href:'/taximeter', icon:Gauge, label:'Taximètre' },
-  { href:'/activity-switcher', icon:Activity, label:'Activités' },
+  { href:'/gps', icon:MapPin, label:'GPS' },
   { href:'/revenue', icon:DollarSign, label:'Revenus' },
   { href:'/profile', icon:User, label:'Profil' },
 ]
