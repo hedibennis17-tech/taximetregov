@@ -1,7 +1,7 @@
 'use client'
 import { AppShell, PageHeader } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui'
-import { mockTaxPeriods, mockTaxSummary } from '@/lib/engines/tax.engine'
+import { mockTaxPeriods, mockAnnualSummary } from '@/lib/engines/tax.engine'
 import { CheckCircle, Clock, AlertCircle } from 'lucide-react'
 
 const periodStatusConf: Record<string, { color: string; icon: React.ReactNode; bg: string }> = {
@@ -24,9 +24,9 @@ export default function TaxPeriodsPage() {
         {/* Summary */}
         <div className="grid grid-cols-3 gap-2 mb-5">
           {[
-            { label:'Revenu taxable', val:fmt(mockTaxSummary.taxableRevenue) },
-            { label:'TPS collectée', val:fmt(mockTaxSummary.tpsCollected) },
-            { label:'TVQ collectée', val:fmt(mockTaxSummary.tvqCollected) },
+            { label:'Revenu taxable', val:fmt(mockAnnualSummary.totalTaxableRevenue) },
+            { label:'TPS collectée', val:fmt(mockAnnualSummary.tpsCollected) },
+            { label:'TVQ collectée', val:fmt(mockAnnualSummary.tvqCollected) },
           ].map(s => (
             <div key={s.label} className="driver-card p-3 text-center">
               <div className="font-black text-white text-sm tabular-nums">{s.val}</div>
@@ -43,7 +43,7 @@ export default function TaxPeriodsPage() {
 
         {/* Periods by tax type */}
         {taxTypes.map(taxType => {
-          const periods = mockTaxPeriods.filter(p => p.taxType === taxType)
+          const periods = mockTaxPeriods.filter(p => p.taxTypes.includes(taxType))
           return (
             <div key={taxType} className="mb-6">
               <div className="flex items-center gap-2 mb-3">
@@ -60,16 +60,16 @@ export default function TaxPeriodsPage() {
                         <div className="mt-0.5">{conf.icon}</div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-white text-sm">{period.periodLabel}</span>
+                            <span className="font-bold text-white text-sm">{period.periodId}</span>
                             <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-800 ${conf.color}`}>{period.status}</span>
                           </div>
                           <div className="text-[10px] text-slate-500">{period.periodStart} → {period.periodEnd} · {period.periodType}</div>
-                          {period.taxCollected > 0 && (
+                          {false && (
                             <div className="grid grid-cols-3 gap-2 mt-2">
                               {[
-                                { label:'Taxable', val:fmt(period.taxableRevenue) },
-                                { label:'Collecté', val:fmt(period.taxCollected) },
-                                { label:'Remb.', val:fmt(period.adjustments) },
+                                { label:'Taxable', val:fmt(0) },
+                                { label:'Collecté', val:fmt(0) },
+                                { label:'Remb.', val:fmt(0) },
                               ].map(s => (
                                 <div key={s.label} className="bg-slate-800/50 rounded-lg p-1.5 text-center">
                                   <div className="text-[10px] font-bold text-white tabular-nums">{s.val}</div>
@@ -79,7 +79,7 @@ export default function TaxPeriodsPage() {
                             </div>
                           )}
                         </div>
-                        {period.status === 'READY' && (
+                        {period.status === 'FINALIZED' && (
                           <button className="px-3 py-1.5 rounded-xl bg-qc-blue/20 border border-qc-blue/40 text-qc-blue-light text-[10px] font-bold shrink-0 hover:bg-qc-blue/30 transition-all">
                             Voir
                           </button>

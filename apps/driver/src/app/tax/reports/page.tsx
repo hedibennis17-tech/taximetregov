@@ -1,7 +1,7 @@
 'use client'
 import { AppShell, PageHeader } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui'
-import { mockTaxReports, mockTaxSummary } from '@/lib/engines/tax.engine'
+import { mockTaxReports, mockAnnualSummary } from '@/lib/engines/tax.engine'
 import { Download, FileText, AlertCircle } from 'lucide-react'
 
 const fmt = (v: number) => new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD'}).format(v)
@@ -32,14 +32,14 @@ export default function TaxReportsPage() {
           <div className="font-semibold text-white text-sm mb-3">📊 Résumé fiscal — ESTIMATION</div>
           <div className="space-y-2">
             {[
-              { label:'Revenus bruts', val:fmt(mockTaxSummary.taxableRevenue), color:'text-white' },
-              { label:'Revenus taxables', val:fmt(mockTaxSummary.taxableRevenue), color:'text-white' },
-              { label:'TPS collectée (5%)', val:fmt(mockTaxSummary.tpsCollected), color:'text-blue-400' },
-              { label:'TVQ collectée (9.975%)', val:fmt(mockTaxSummary.tvqCollected), color:'text-purple-400' },
-              { label:'Total taxes', val:fmt(mockTaxSummary.totalTaxCollected), color:'text-orange-400' },
-              { label:'Ajustements', val:fmt(mockTaxSummary.adjustments), color:'text-amber-400' },
-              { label:'Remboursements', val:`-${fmt(mockTaxSummary.refunds)}`, color:'text-red-400' },
-              { label:'Net estimé payable', val:fmt(mockTaxSummary.estimatedPayable), color:'text-green-400', bold:true },
+              { label:'Revenus bruts', val:fmt(mockAnnualSummary.totalTaxableRevenue), color:'text-white' },
+              { label:'Revenus taxables', val:fmt(mockAnnualSummary.totalTaxableRevenue), color:'text-white' },
+              { label:'TPS collectée (5%)', val:fmt(mockAnnualSummary.tpsCollected), color:'text-blue-400' },
+              { label:'TVQ collectée (9.975%)', val:fmt(mockAnnualSummary.tvqCollected), color:'text-purple-400' },
+              { label:'Total taxes', val:fmt(mockAnnualSummary.totalTax), color:'text-orange-400' },
+              { label:'Ajustements', val:fmt(mockAnnualSummary.totalAdjustments), color:'text-amber-400' },
+              { label:'Remboursements', val:`-${fmt(mockAnnualSummary.totalRefunds)}`, color:'text-red-400' },
+              { label:'Net estimé payable', val:fmt(mockAnnualSummary.totalTax), color:'text-green-400', bold:true },
             ].map(s => (
               <div key={s.label} className={`flex justify-between py-1.5 ${s.bold ? 'border-t border-slate-700 pt-2.5 mt-1' : 'border-b border-slate-800 last:border-0'}`}>
                 <span className="text-xs text-slate-400">{s.label}</span>
@@ -64,9 +64,9 @@ export default function TaxReportsPage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <span className="font-bold text-white text-sm">{report.taxType}</span>
+                      <span className="font-bold text-white text-sm">{(report.tpsCollected > 0 ? "TPS" : "TVQ")}</span>
                       <span className="text-xs text-slate-400">·</span>
-                      <span className="text-xs text-slate-300">{report.period}</span>
+                      <span className="text-xs text-slate-300">{report.periodStart.slice(0,7)+" → "+report.periodEnd.slice(0,7)}</span>
                       <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-800 ${conf.color}`}>{report.status}</span>
                     </div>
                     <div className="text-[10px] text-slate-500 mb-2">{report.jurisdiction} · Généré: {new Date(report.generatedAt).toLocaleDateString('fr-CA')}</div>
@@ -74,7 +74,7 @@ export default function TaxReportsPage() {
                       {[
                         { label:'Brut', val:fmt(report.grossRevenue) },
                         { label:'Taxable', val:fmt(report.taxableRevenue) },
-                        { label:'Collecté', val:fmt(report.taxCollected) },
+                        { label:'Collecté', val:fmt(report.tpsCollected + report.tvqCollected) },
                       ].map(s => (
                         <div key={s.label} className="bg-slate-800/50 rounded-lg p-1.5">
                           <div className="text-slate-500">{s.label}</div>

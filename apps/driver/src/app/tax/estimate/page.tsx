@@ -1,102 +1,135 @@
 'use client'
 import { AppShell, PageHeader } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui'
-import { mockTaxSummary, ACTIVE_TAX_RULES, calculateTax } from '@/lib/engines/tax.engine'
-import { AlertCircle, Calculator } from 'lucide-react'
-
-const fmt = (v: number) => new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD'}).format(v)
+import {
+  ACTIVE_TAX_RULE_VERSIONS, calculateTaxFromRules,
+  applyRounding, mockProviderTaxSummaries,
+  fmt,
+} from '@/lib/engines/tax.engine'
+import { useState } from 'react'
+import { AlertCircle } from 'lucide-react'
 
 export default function TaxEstimatePage() {
-  const calc = calculateTax({
-    grossAmount: mockTaxSummary.taxableRevenue,
-    taxableAmount: mockTaxSummary.taxableRevenue,
-    jurisdiction: 'CA-QC',
-    taxTypes: ['TPS', 'TVQ'],
-    transactionDate: '2026-08-24',
-    taxIncluded: false,
-  })
+  const [grossRevenue, setGrossRevenue] = useState(500)
+  const [fees, setFees] = useState(80)
+  const [adjustments, setAdjustments] = useState(10)
+  const [tips, setTips] = useState(40)
+  const [source, setSource] = useState<'TAXIMETER'|'UBER'|'DOORDASH'>('TAXIMETER')
+
+  const tpsRuleVersion = ACTIVE_TAX_RULE_VERSIONS[0]
+  const tvqRuleVersion = ACTIVE_TAX_RULE_VERSIONS[1]
+  const taxableBase = applyRounding(grossRevenue - fees + adjustments, 'ROUND_HALF_UP')
+  const tpsCalc = tpsRuleVersion ? calculateTaxFromRules(taxableBase, tpsRuleVersion) : null
+  const tvqCalc = tvqRuleVersion ? calculateTaxFromRules(taxableBase, tvqRuleVersion) : null
+
+  const tps = tpsCalc?.taxAmount ?? 0
+  const tvq = tvqCalc?.taxAmount ?? 0
+  const totalTax = tps + tvq
+  const netAfterTax = applyRounding(taxableBase - totalTax, 'ROUND_HALF_UP')
 
   return (
     <AppShell>
-      <PageHeader title="Estimation fiscale" subtitle="Préparation préliminaire · Non officielle" />
+      <PageHeader title="Estimation fiscale" subtitle="TaxCalculationEngine · Taux depuis config" />
       <div className="px-4">
-        <div className="p-4 rounded-3xl bg-amber-500/10 border-2 border-amber-500/30 mb-5">
-          <div className="flex items-start gap-3">
-            <AlertCircle size={20} className="text-amber-400 shrink-0 mt-0.5" />
-            <div>
-              <div className="font-bold text-amber-300 mb-1">⚠ ESTIMATION PRÉLIMINAIRE</div>
-              <p className="text-xs text-amber-200 leading-relaxed">
-                Ces calculs sont des estimations basées sur les données disponibles et les règles fiscales versionnées. Ils ne remplacent pas <strong>Revenu Québec</strong>, <strong>l'ARC</strong> ou un comptable agréé.
-              </p>
-            </div>
-          </div>
+        {/* Disclaimer */}
+        <div className="flex items-start gap-2 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-5">
+          <AlertCircle size={13} className="text-amber-400 mt-0.5 shrink-0"/>
+          <p className="text-xs text-amber-200">
+            ESTIMATION — pas une déclaration officielle · Taux chargés depuis configuration · jamais hardcodés · Règle {tpsRuleVersion?.version ?? '—'}
+          </p>
         </div>
 
-        <Card className="mb-4">
-          <div className="font-semibold text-white text-sm mb-3">⚙️ Règles fiscales actives</div>
-          <div className="space-y-2">
-            {ACTIVE_TAX_RULES.map(rule => (
-              <div key={rule.ruleId} className="flex items-center justify-between py-1.5 border-b border-slate-800 last:border-0">
-                <div>
-                  <div className="text-xs font-semibold text-white">{rule.taxType} — {rule.jurisdiction}</div>
-                  <div className="text-[10px] text-slate-500">v{rule.version} · {rule.effectiveFrom} · {rule.sourceReference}</div>
+        {/* Source selector */}
+        <div className="flex gap-2 mb-5">
+          {[['TAXIMETER','🚕 Taxi'],['UBER','⬛ Uber'],['DOORDASH','🔴 DoorDash']].map(([val, label]) => (
+            <button key={val} onClick={() => setSource(val as any)}
+              className={`flex-1 py-2.5 rounded-2xl text-xs font-bold transition-all border ${source === val ? 'bg-qc-blue border-qc-blue text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {source !== 'TAXIMETER' && (
+          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-800 border border-slate-700 mb-4 text-[10px] text-slate-400">
+            <span>🔌</span> Source {source}: Prix fournisseur conservé · Taximètre jamais utilisé pour remplacer le montant final
+          </div>
+        )}
+
+        {/* Inputs */}
+        <Card className="mb-5">
+          <div className="font-semibold text-white text-sm mb-4">Paramètres</div>
+          <div className="space-y-4">
+            {[
+              { label:'Revenus bruts ($)', val:grossRevenue, set:setGrossRevenue, min:0 },
+              { label:'Frais fournisseur ($)', val:fees, set:setFees, min:0 },
+              { label:'Ajustements ($)', val:adjustments, set:setAdjustments, min:0 },
+              { label:'Pourboires ($)', val:tips, set:setTips, min:0 },
+            ].map(({ label, val, set, min }) => (
+              <div key={label}>
+                <div className="flex justify-between mb-1.5">
+                  <span className="text-xs text-slate-400">{label}</span>
+                  <span className="font-mono font-bold text-white">{fmt(val)}</span>
                 </div>
-                <div className="text-right">
-                  <div className="font-mono font-bold text-white">{(rule.rate * 100).toFixed(3)}%</div>
-                  <div className="text-[9px] text-slate-500">Seuil: {fmt(rule.threshold ?? 30000)}</div>
-                </div>
+                <input type="range" min={min} max={2000} step={5} value={val}
+                  onChange={e => set(Number(e.target.value))}
+                  className="w-full accent-qc-blue" />
               </div>
             ))}
           </div>
-          <div className="text-[9px] text-amber-400 mt-2">⚠ Jamais hardcodé — chargé depuis TaxRuleEngine</div>
         </Card>
 
-        <Card className="mb-4 border-qc-blue/30">
-          <div className="flex items-center gap-2 mb-3">
-            <Calculator size={16} className="text-qc-blue-light" />
-            <span className="font-semibold text-white text-sm">Calcul TaxRuleEngine — {calc.ruleVersion}</span>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between py-1.5 border-b border-slate-800">
-              <span className="text-xs text-slate-400">Base taxable</span>
-              <span className="font-mono font-bold text-white">{fmt(calc.taxableBase)}</span>
-            </div>
-            {calc.breakdown.map(b => (
-              <div key={b.taxType} className="flex justify-between py-1.5 border-b border-slate-800">
-                <span className="text-xs text-slate-400">{b.taxType} ({(b.rate * 100).toFixed(3)}%)</span>
-                <span className={`font-mono font-bold ${b.taxType === 'TPS' ? 'text-blue-400' : 'text-purple-400'}`}>{fmt(b.amount)}</span>
+        {/* Tax rules applied */}
+        <Card className="mb-5">
+          <div className="font-semibold text-white text-sm mb-3">Règles appliquées — {tpsRuleVersion?.version}</div>
+          {tpsRuleVersion && (
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between py-1 border-b border-slate-800">
+                <span className="text-slate-400">TPS (CA-FED)</span>
+                <span className="font-mono font-bold text-orange-400">{(tpsRuleVersion.rules[0]?.rate * 100).toFixed(3)}%</span>
               </div>
-            ))}
-            <div className="flex justify-between py-1.5 border-b border-slate-800">
-              <span className="text-xs text-slate-400">Total taxes estimées</span>
-              <span className="font-mono font-bold text-orange-400">{fmt(calc.totalTax)}</span>
+              <div className="flex justify-between py-1 border-b border-slate-800">
+                <span className="text-slate-400">TVQ (CA-QC)</span>
+                <span className="font-mono font-bold text-orange-400">{((tvqRuleVersion?.rules[0]?.rate ?? 0) * 100).toFixed(3)}%</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-slate-400">Arrondissement</span>
+                <span className="text-white">ROUND_HALF_UP</span>
+              </div>
             </div>
-            <div className="flex justify-between py-2 border-t border-slate-700 mt-1">
-              <span className="text-sm font-bold text-white">Net estimé</span>
-              <span className="font-mono font-black text-xl text-green-400">{fmt(calc.netAmount)}</span>
-            </div>
-          </div>
-          <div className="text-[10px] text-slate-500 mt-2 italic">{calc.note}</div>
+          )}
+          <div className="text-[9px] text-amber-400 mt-2">Taux depuis {tpsRuleVersion?.sourceRef ?? '—'} · jamais hardcodés</div>
         </Card>
 
-        <Card className="mb-6">
-          <div className="font-semibold text-white text-sm mb-3">📅 Estimations trimestrielles — {new Date().getFullYear()}</div>
+        {/* Calculation result */}
+        <Card className="mb-5">
+          <div className="font-semibold text-white text-sm mb-3">Résultat du calcul</div>
           <div className="space-y-2">
             {[
-              { q:'T1 (Jan-Mar)', taxable:8200, tps:410, tvq:817.95 },
-              { q:'T2 (Avr-Jun)', taxable:10910, tps:545.50, tvq:1088.28 },
-              { q:'T3 (Jul-Sep)', taxable:6840, tps:342, tvq:682.23 },
-              { q:'T4 (Oct-Déc)', taxable:0, tps:0, tvq:0 },
-            ].map(p => (
-              <div key={p.q} className={`flex items-center gap-2 py-2 border-b border-slate-800 last:border-0 text-[10px] ${p.taxable === 0 ? 'opacity-40' : ''}`}>
-                <span className="text-slate-400 w-28 shrink-0">{p.q}</span>
-                <span className="text-slate-300 flex-1">{fmt(p.taxable)}</span>
-                <span className="text-blue-400">TPS {fmt(p.tps)}</span>
-                <span className="text-purple-400">TVQ {fmt(p.tvq)}</span>
+              { label:'Revenus bruts', val:grossRevenue, color:'text-white' },
+              { label:'− Frais fournisseur', val:-fees, color:'text-red-400' },
+              { label:'+ Ajustements', val:adjustments, color:'text-green-400' },
+              { label:'= Base taxable', val:taxableBase, color:'text-blue-400', bold:true },
+            ].map(s => (
+              <div key={s.label} className={`flex justify-between py-1 border-b border-slate-800 last:border-0 text-xs ${s.bold ? 'font-bold' : ''}`}>
+                <span className={s.bold ? 'text-white' : 'text-slate-400'}>{s.label}</span>
+                <span className={`font-mono tabular-nums ${s.color}`}>{fmt(Math.abs(s.val))}</span>
               </div>
             ))}
           </div>
-          <div className="text-[9px] text-amber-400 mt-2">ESTIMATION — pas une déclaration officielle</div>
+          <div className="border-t border-slate-700 mt-3 pt-3 space-y-2">
+            {[
+              { label:`TPS (${tpsRuleVersion ? (tpsRuleVersion.rules[0]?.rate * 100).toFixed(3) : '—'}%)`, val:tps, color:'text-orange-400' },
+              { label:`TVQ (${tvqRuleVersion ? (tvqRuleVersion.rules[0]?.rate * 100).toFixed(3) : '—'}%)`, val:tvq, color:'text-orange-400' },
+              { label:'Total taxes estimées', val:totalTax, color:'text-orange-400', bold:true },
+              { label:'Pourboires', val:tips, color:'text-green-400' },
+              { label:'Net estimé (après taxes)', val:netAfterTax + tips, color:'text-green-400', bold:true },
+            ].map(s => (
+              <div key={s.label} className={`flex justify-between py-1 border-b border-slate-800 last:border-0 text-xs ${s.bold ? 'font-bold' : ''}`}>
+                <span className={s.bold ? 'text-white' : 'text-slate-400'}>{s.label}</span>
+                <span className={`font-mono tabular-nums ${s.color}`}>{fmt(Math.abs(s.val))}</span>
+              </div>
+            ))}
+          </div>
+          <div className="text-[8px] text-amber-400 mt-3">⚠ ESTIMATION — pas une déclaration fiscale officielle. Consultez un comptable ou les directives de Revenu Québec / ARC.</div>
         </Card>
       </div>
     </AppShell>

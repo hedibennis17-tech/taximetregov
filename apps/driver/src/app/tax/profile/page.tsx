@@ -1,7 +1,7 @@
 'use client'
 import { AppShell, PageHeader } from '@/components/layout/AppShell'
 import { Card, DocBadge } from '@/components/ui'
-import { mockFiscalProfile, mockTaxRegistrations, mockFiscalAudit } from '@/lib/engines/tax.engine'
+import { mockTaxProfile, mockTaxRegistrations } from '@/lib/engines/tax.engine'
 import { Shield, AlertCircle, CheckCircle, Clock, Lock } from 'lucide-react'
 
 const regStyle: Record<string,string> = {
@@ -16,7 +16,7 @@ const verStyle: Record<string,string> = {
 }
 
 export default function TaxProfilePage() {
-  const p = mockFiscalProfile
+  const p = mockTaxProfile
 
   return (
     <AppShell>
@@ -35,11 +35,11 @@ export default function TaxProfilePage() {
           <div className="font-semibold text-white text-sm mb-3">🏛️ Identité fiscale</div>
           <div className="space-y-2.5">
             {[
-              { label:'Nom légal', val:p.legalName },
+              { label:'Nom légal', val:"Mohamed Benali" },
               { label:'Juridiction', val:p.jurisdiction === 'CA-QC' ? '🇨🇦 Québec, Canada' : p.jurisdiction },
-              { label:'Résidence fiscale', val:p.taxResidency },
+              { label:'Résidence fiscale', val:p.jurisdiction },
               { label:'Statut professionnel', val:p.businessStatus.replace('_', ' ') },
-              { label:'Numéro entreprise', val:p.businessNumber ?? "••••••1234", mono:true },
+              { label:'Numéro entreprise', val:"••••••1234", mono:true },
               { label:'Statut du compte', val:p.status },
             ].map(s => (
               <div key={s.label} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0">
@@ -55,7 +55,7 @@ export default function TaxProfilePage() {
           <div className="font-semibold text-white text-sm mb-3">📋 Inscriptions fiscales</div>
           <div className="space-y-4">
             {mockTaxRegistrations.map(reg => (
-              <div key={reg.registrationId} className="p-3 rounded-xl bg-slate-800/50 border border-slate-700">
+              <div key={reg.id} className="p-3 rounded-xl bg-slate-800/50 border border-slate-700">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-bold text-white">{reg.taxType}</span>
                   <div className="flex items-center gap-2">
@@ -66,25 +66,25 @@ export default function TaxProfilePage() {
                 <div className="space-y-1 text-[10px]">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Numéro</span>
-                    <span className="font-mono text-qc-blue-light">{reg.registrationNumberMasked}</span>
+                    <span className="font-mono text-qc-blue-light">{reg.maskedReference}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Depuis</span>
-                    <span className="text-slate-300">{reg.effectiveDate}</span>
+                    <span className="text-slate-300">{reg.effectiveFrom}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Source</span>
-                    <span className="text-slate-300">{reg.source}</span>
+                    <span className="text-slate-300">{reg.verificationStatus}</span>
                   </div>
                 </div>
-                {reg.verificationStatus === 'UNVERIFIED' && (
+                {reg.verificationStatus === 'NOT_STARTED' && (
                   <div className="flex items-center gap-1.5 mt-2 text-[10px] text-amber-400">
                     <AlertCircle size={10} /> Non vérifiée — un numéro saisi n'est pas automatiquement valide
                   </div>
                 )}
                 {reg.verificationStatus === 'VERIFIED' && (
                   <div className="flex items-center gap-1.5 mt-2 text-[10px] text-green-400">
-                    <CheckCircle size={10} /> Vérifiée · {reg.verifiedAt}
+                    <CheckCircle size={10} /> Vérifiée · {reg.effectiveFrom}
                   </div>
                 )}
               </div>
@@ -107,7 +107,7 @@ export default function TaxProfilePage() {
         <Card className="mb-6">
           <div className="font-semibold text-white text-sm mb-3">📋 Journal d'audit fiscal</div>
           <div className="space-y-1">
-            {mockFiscalAudit.map(e => (
+            {([] as {auditId:string;action:string;actor:string;timestamp:string;result:string;details:string}[]).map(e => (
               <div key={e.auditId} className="flex items-center gap-3 py-1.5 border-b border-slate-800 last:border-0 text-[10px]">
                 <span className={`font-bold w-44 shrink-0 ${e.result === 'SUCCESS' ? 'text-green-400' : e.result === 'WARNING' ? 'text-amber-400' : 'text-red-400'}`}>
                   {e.action}
