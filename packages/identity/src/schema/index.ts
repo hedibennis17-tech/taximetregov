@@ -3,4 +3,5 @@
 // All tables exported for Drizzle migrations
 // ================================================================
 
-export * from './auth.schema'
+export * from "./auth.schema"
+export * from "./profiles.schema"

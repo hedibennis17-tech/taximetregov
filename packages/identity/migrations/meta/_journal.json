@@ -8,6 +8,13 @@
       "when": 1787887098382,
       "tag": "0000_legal_stone_men",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787887582548,
+      "tag": "0001_thin_santa_claus",
+      "breakpoints": true
     }
   ]
 }
