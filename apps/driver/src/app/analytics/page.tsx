@@ -1,145 +1,361 @@
 'use client'
 import { AppShell, PageHeader } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui'
-import { todayStats, recentActivities, mockPlatformAccounts, monthlyRevenue } from '@/data/driver.mock'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
+import {
+  mockLiveDrivers, mockSystemEvents, mockAlerts, mockIncidents,
+  mockServiceHealth, mockWebhookFailures, mockJobs,
+  mockOpsNotifications, mockPilot, mockSyncConflicts, mockAnnouncements,
+  FEATURE_FLAGS, RETENTION_POLICIES,
+  DRIVER_STATUS_CONF, SERVICE_STATUS_CONF, ALERT_SEVERITY_CONF, PRIORITY_CONF,
+  type DriverLiveStatus, type AlertSeverity, type ServiceStatus,
+} from '@/lib/engines/operations.engine'
 import { useState } from 'react'
-import { TrendingUp, Gauge } from 'lucide-react'
-
-const fmt = (v: number) => new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD'}).format(v)
-
-const hourlyData = Array.from({length:12}, (_,i) => ({
-  hour:`${7+i}h`, trips: Math.round(0.5 + Math.random()*2.5), revenue: Math.round(20+Math.random()*60)
-}))
-
-const weekData = [
-  { day:'Lun', trips:14, revenue:298 }, { day:'Mar', trips:18, revenue:412 },
-  { day:'Mer', trips:12, revenue:256 }, { day:'Jeu', trips:20, revenue:485 },
-  { day:'Ven', trips:22, revenue:524 }, { day:'Sam', trips:28, revenue:640 },
-  { day:'Dim', trips:16, revenue:342 },
-]
+import { AlertCircle, CheckCircle, Zap, Shield } from 'lucide-react'
 
 export default function AnalyticsPage() {
-  const [period, setPeriod] = useState<'day'|'week'|'month'>('day')
+  const [tab, setTab] = useState<'live' | 'events' | 'alerts' | 'health' | 'ops'>('live')
 
-  const taxiTrips = recentActivities.filter(a => a.type === 'TAXI').length
-  const deliveries = recentActivities.filter(a => a.type === 'FOOD_DELIVERY').length
-  const rideshares = recentActivities.filter(a => a.type === 'RIDESHARE').length
-
-  const avgFare = todayStats.totalRevenue / Math.max(todayStats.totalTrips, 1)
-  const earningsPerHour = todayStats.netRevenue / Math.max(todayStats.hoursOnline, 1)
+  const onlineDrivers   = mockLiveDrivers.filter(d => d.status !== 'OFFLINE').length
+  const activeTrips     = mockLiveDrivers.filter(d => d.status === 'ON_TRIP').length
+  const deliveries      = mockLiveDrivers.filter(d => d.status === 'ON_DELIVERY').length
+  const openAlerts      = mockAlerts.filter(a => a.status !== 'CLOSED' && a.status !== 'RESOLVED').length
+  const criticalAlerts  = mockAlerts.filter(a => a.severity === 'CRITICAL' && a.status !== 'RESOLVED').length
+  const degradedServices = mockServiceHealth.filter(s => s.status === 'DEGRADED' || s.status === 'DOWN').length
 
   return (
     <AppShell>
-      <PageHeader title="Analytics chauffeur" subtitle="Performance · Revenus · Activités · SIMULATION" />
+      <PageHeader title="Centre opérationnel" subtitle="Live · Events · Alertes · Santé système · Ops" />
       <div className="px-4">
-        <div className="flex gap-2 mb-5">
-          {([['day',"Aujourd'hui"],['week','Semaine'],['month','Mois']] as const).map(([k,l]) => (
-            <button key={k} onClick={() => setPeriod(k)}
-              className={`flex-1 py-2.5 rounded-full text-xs font-bold transition-all ${period===k?'bg-qc-blue text-white':'bg-slate-900 text-slate-400 border border-slate-800'}`}>
+        {/* Pilot banner */}
+        {mockAnnouncements.map(ann => (
+          <div key={ann.id} className={`flex items-start gap-2 p-3 rounded-2xl border mb-4 ${ann.severity === 'WARNING' ? 'bg-amber-500/10 border-amber-500/30' : 'bg-blue-500/10 border-blue-500/20'}`}>
+            <AlertCircle size={13} className={ann.severity === 'WARNING' ? 'text-amber-400' : 'text-blue-400'} />
+            <div>
+              <div className="font-bold text-white text-xs">{ann.title}</div>
+              <div className="text-[10px] text-slate-300">{ann.message}</div>
+            </div>
+          </div>
+        ))}
+
+        {/* Live KPIs */}
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {[
+            { label:'Chauffeurs en ligne', val:onlineDrivers, total:mockLiveDrivers.length, color:'text-green-400' },
+            { label:'Courses actives', val:activeTrips, color:'text-qc-blue-light' },
+            { label:'Livraisons', val:deliveries, color:'text-orange-400' },
+            { label:'Alertes ouvertes', val:openAlerts, color:openAlerts>0?'text-amber-400':'text-slate-500' },
+            { label:'Services dégradés', val:degradedServices, color:degradedServices>0?'text-red-400':'text-slate-500' },
+            { label:'Pilote actif', val:mockPilot.status === 'ACTIVE' ? '✓' : '✗', color:mockPilot.status === 'ACTIVE'?'text-green-400':'text-slate-500', str:true },
+          ].map(s => (
+            <div key={s.label} className="driver-card p-3 text-center">
+              <div className={`font-black text-xl ${s.color}`}>{s.val}</div>
+              <div className="text-[8px] text-slate-500">{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+          {[['live','🔴 Live'],['events','📡 Events'],['alerts','⚠️ Alertes'],['health','💚 Santé'],['ops','⚙️ Ops']].map(([k,l]) => (
+            <button key={k} onClick={() => setTab(k as any)}
+              className={`px-3 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${tab===k?'bg-qc-blue text-white':'bg-slate-800 text-slate-400'}`}>
               {l}
             </button>
           ))}
         </div>
 
-        {/* KPI grid */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          {[
-            { icon:'🛣️', label:'Courses totales', val:todayStats.totalTrips },
-            { icon:'💰', label:'Revenus bruts', val:fmt(todayStats.totalRevenue) },
-            { icon:'⏱️', label:'Heures en ligne', val:`${todayStats.hoursOnline}h` },
-            { icon:'📍', label:'km parcourus', val:`${todayStats.kmDriven} km` },
-            { icon:'💵', label:'Course moyenne', val:fmt(avgFare) },
-            { icon:'⚡', label:'$/heure net', val:fmt(earningsPerHour) },
-          ].map(s => (
-            <div key={s.label} className="driver-card p-4">
-              <div className="text-xl mb-1">{s.icon}</div>
-              <div className="font-black text-white text-lg tabular-nums">{s.val}</div>
-              <div className="text-[10px] text-slate-500">{s.label}</div>
+        {/* ─── LIVE ──────────────────────────────────── */}
+        {tab === 'live' && (
+          <div className="space-y-3 mb-6">
+            <div className="text-[10px] text-slate-500 mb-2">Taximètre = DISABLED pour DELIVERY toujours · GPS anomaly ≠ fraude automatique</div>
+            {mockLiveDrivers.map(driver => {
+              const conf = DRIVER_STATUS_CONF[driver.status]
+              return (
+                <div key={driver.driverId} className={`driver-card p-4 border ${driver.status === 'ON_TRIP' ? 'border-qc-blue/30' : driver.status === 'EMERGENCY' ? 'border-red-500/50' : driver.status === 'SUSPENDED' ? 'border-red-500/20' : ''}`}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`w-3 h-3 rounded-full shrink-0 ${conf.dot}`}/>
+                    <span className="text-xl">{conf.icon}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-white">{driver.driverNumber}</span>
+                        <span className={`text-[9px] font-bold ${conf.color}`}>{driver.status}</span>
+                        {driver.serviceMode && (
+                          <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">{driver.serviceMode}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-[9px] mt-0.5">
+                        <span className={`${driver.taximeterStatus === 'ACTIVE' ? 'text-qc-blue-light' : driver.taximeterStatus === 'DISABLED' ? 'text-slate-600' : 'text-amber-400'}`}>
+                          Txm: {driver.taximeterStatus}
+                        </span>
+                        <span className={`${driver.gpsHealth === 'GOOD' ? 'text-green-400' : driver.gpsHealth === 'LOST' ? 'text-red-400' : 'text-amber-400'}`}>
+                          GPS: {driver.gpsHealth}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {driver.currentTripId && <div className="font-mono text-[9px] text-qc-blue-light">{driver.currentTripId}</div>}
+                      <div className="text-[9px] text-slate-600">{new Date(driver.lastUpdate).toLocaleTimeString('fr-CA')}</div>
+                    </div>
+                  </div>
+                  {driver.serviceMode === 'DELIVERY' && (
+                    <div className="flex items-center gap-1.5 text-[9px] text-slate-600">
+                      <Shield size={9}/> DELIVERY → Taximeter: DISABLED (non contournable)
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ─── EVENTS ───────────────────────────────── */}
+        {tab === 'events' && (
+          <div className="mb-6">
+            <div className="text-[10px] text-slate-500 mb-3">event_id UNIQUE · Jamais traité deux fois · DUPLICATE = ignoré silencieusement</div>
+            <div className="driver-card divide-y divide-slate-800">
+              {mockSystemEvents.map(evt => {
+                const pConf = PRIORITY_CONF[evt.priority]
+                return (
+                  <div key={evt.id} className={`p-3.5 flex items-start gap-3 ${evt.status === 'DUPLICATE' ? 'opacity-50' : ''}`}>
+                    <div className="shrink-0 mt-0.5">
+                      <div className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${pConf.color} bg-slate-800`}>{pConf.label}</div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <span className="font-bold text-white text-xs">{evt.eventType}</span>
+                        {evt.status === 'DUPLICATE' && <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold">DUPLICATE IGNORED</span>}
+                        {evt.status === 'PROCESSED' && <span className="text-[9px] text-green-400">✅ TRAITÉ</span>}
+                      </div>
+                      <div className="text-[10px] text-slate-400">{evt.sourceService} · {evt.resourceType}{evt.resourceId ? ` · ${evt.resourceId}` : ''}</div>
+                      <div className="text-[9px] text-slate-600 font-mono">corr:{evt.correlationId}</div>
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {Object.entries(evt.metadata).slice(0,3).map(([k,v]) => (
+                          <span key={k} className="text-[8px] bg-slate-800 text-slate-500 px-1 py-0.5 rounded font-mono">{k}:{String(v)}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-[9px] text-slate-600 shrink-0">{new Date(evt.timestamp).toLocaleTimeString('fr-CA')}</div>
+                  </div>
+                )
+              })}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
-        {/* Activity breakdown */}
-        <Card className="mb-5">
-          <div className="font-semibold text-white text-sm mb-3">Répartition par activité</div>
-          <div className="space-y-3">
-            {[
-              { icon:'🚕', label:'Taxi', count:taxiTrips, rev:todayStats.byPlatform[0]?.revenue??0, color:'bg-qc-blue' },
-              { icon:'🚗', label:'Rideshare', count:rideshares, rev:todayStats.byPlatform[1]?.revenue??0, color:'bg-slate-500' },
-              { icon:'📦', label:'Livraison', count:deliveries, rev:todayStats.byPlatform[2]?.revenue??0, color:'bg-red-500' },
-            ].map(a => (
-              <div key={a.label} className="flex items-center gap-3">
-                <span className="text-xl w-8 shrink-0">{a.icon}</span>
-                <div className="flex-1">
-                  <div className="flex justify-between mb-1 text-xs">
-                    <span className="text-slate-300 font-medium">{a.label}</span>
-                    <span className="font-bold text-white">{fmt(a.rev)}</span>
+        {/* ─── ALERTS ───────────────────────────────── */}
+        {tab === 'alerts' && (
+          <div className="space-y-3 mb-6">
+            {mockAlerts.map(alert => {
+              const conf = ALERT_SEVERITY_CONF[alert.severity]
+              return (
+                <div key={alert.id} className={`driver-card p-4 border ${alert.severity === 'CRITICAL' ? 'border-red-500/30' : alert.severity === 'HIGH' ? 'border-orange-500/20' : alert.severity === 'WARNING' ? 'border-amber-500/20' : 'border-slate-800'}`}>
+                  <div className="flex items-start gap-3 mb-2">
+                    <span className="text-xl shrink-0">{conf.icon}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <span className={`font-bold text-xs ${conf.color}`}>{alert.severity}</span>
+                        <span className="font-semibold text-white text-xs">{alert.type}</span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full ml-auto ${alert.status === 'RESOLVED' || alert.status === 'CLOSED' ? 'bg-green-500/20 text-green-400' : alert.status === 'INVESTIGATING' ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                          {alert.status}
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-300 mb-1">{alert.message}</div>
+                      <div className="text-[9px] text-slate-600">
+                        {new Date(alert.createdAt).toLocaleString('fr-CA')}
+                        {alert.assignedTo && ` · ${alert.assignedTo}`}
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-                    <div className={`h-full ${a.color} rounded-full`}
-                      style={{width:`${Math.round((a.count / Math.max(todayStats.totalTrips,1)) * 100)}%`}} />
+                  {alert.status === 'CREATED' && (
+                    <button className="w-full py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold hover:bg-slate-700 transition-all">
+                      Prendre en charge
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+
+            {/* Incidents */}
+            {mockIncidents.map(inc => (
+              <div key={inc.id} className="driver-card p-4 border border-amber-500/20">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xl">🔥</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-white text-sm">INCIDENT</span>
+                      <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold">{inc.status}</span>
+                    </div>
+                    <div className="text-xs text-slate-400">{inc.description}</div>
                   </div>
-                  <div className="text-[9px] text-slate-500 mt-0.5">{a.count} course(s)</div>
+                </div>
+                <div className="space-y-1.5">
+                  {inc.timeline.map((t, i) => (
+                    <div key={i} className="flex items-start gap-2 text-[9px]">
+                      <span className="text-slate-600 shrink-0 tabular-nums">{new Date(t.timestamp).toLocaleTimeString('fr-CA')}</span>
+                      <span className="text-qc-blue-light shrink-0 font-bold">{t.action}</span>
+                      <span className="text-slate-400">{t.comment}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
           </div>
-        </Card>
+        )}
 
-        {/* Hourly/weekly chart */}
-        <Card className="mb-5">
-          <div className="font-semibold text-white text-sm mb-3">
-            {period === 'day' ? 'Revenus par heure' : period === 'week' ? 'Revenus par jour' : 'Revenus mensuels'}
-          </div>
-          <ResponsiveContainer width="100%" height={150}>
-            {period === 'day' ? (
-              <BarChart data={hourlyData}>
-                <XAxis dataKey="hour" tick={{fontSize:9, fill:'#64748b'}} />
-                <YAxis tick={{fontSize:9, fill:'#64748b'}} tickFormatter={v=>`${v}$`} />
-                <Tooltip formatter={(v:number)=>fmt(v)} contentStyle={{background:'#1e293b',border:'1px solid #334155',borderRadius:'12px',color:'#fff',fontSize:11}} />
-                <Bar dataKey="revenue" fill="#003DA5" radius={[4,4,0,0]} name="Revenus" />
-              </BarChart>
-            ) : period === 'week' ? (
-              <BarChart data={weekData}>
-                <XAxis dataKey="day" tick={{fontSize:9, fill:'#64748b'}} />
-                <YAxis tick={{fontSize:9, fill:'#64748b'}} tickFormatter={v=>`${v}$`} />
-                <Tooltip formatter={(v:number)=>fmt(v)} contentStyle={{background:'#1e293b',border:'1px solid #334155',borderRadius:'12px',color:'#fff',fontSize:11}} />
-                <Bar dataKey="revenue" fill="#003DA5" radius={[4,4,0,0]} name="Revenus" />
-              </BarChart>
-            ) : (
-              <LineChart data={monthlyRevenue}>
-                <XAxis dataKey="month" tick={{fontSize:9, fill:'#64748b'}} />
-                <YAxis tick={{fontSize:9, fill:'#64748b'}} tickFormatter={v=>`${(v/1000).toFixed(1)}k`} />
-                <Tooltip formatter={(v:number)=>fmt(v)} contentStyle={{background:'#1e293b',border:'1px solid #334155',borderRadius:'12px',color:'#fff',fontSize:11}} />
-                <Line dataKey="gross" stroke="#003DA5" strokeWidth={2} dot={false} name="Brut" />
-              </LineChart>
+        {/* ─── HEALTH ───────────────────────────────── */}
+        {tab === 'health' && (
+          <div className="space-y-4 mb-6">
+            {/* Services */}
+            <Card>
+              <div className="font-semibold text-white text-sm mb-3">Santé des services</div>
+              <div className="space-y-1.5">
+                {mockServiceHealth.map(svc => {
+                  const conf = SERVICE_STATUS_CONF[svc.status]
+                  return (
+                    <div key={svc.service} className="flex items-center gap-2 py-1.5 border-b border-slate-800 last:border-0">
+                      <span className="text-sm">{conf.icon}</span>
+                      <span className="text-xs text-slate-300 flex-1">{svc.service}</span>
+                      {svc.latencyMs && <span className="text-[10px] text-slate-500 tabular-nums">{svc.latencyMs}ms</span>}
+                      {svc.errorRate !== null && svc.errorRate > 0 && (
+                        <span className={`text-[9px] ${svc.errorRate > 0.05 ? 'text-red-400' : 'text-amber-400'}`}>
+                          {(svc.errorRate*100).toFixed(1)}% err
+                        </span>
+                      )}
+                      <span className={`text-[9px] font-bold ${conf.color}`}>{svc.status}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </Card>
+
+            {/* Webhook failures */}
+            <Card className="border-amber-500/20">
+              <div className="font-semibold text-white text-sm mb-2">File d'attente webhook</div>
+              {mockWebhookFailures.map(wf => (
+                <div key={wf.id} className={`flex items-start gap-2 p-2.5 rounded-xl mb-2 border ${wf.status === 'DEAD_LETTER' ? 'border-red-500/20 bg-red-500/5' : 'border-amber-500/20 bg-amber-500/5'}`}>
+                  <span className="text-lg">{wf.status === 'DEAD_LETTER' ? '💀' : '🔁'}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-white text-xs">{wf.provider}</span>
+                      <span className={`text-[9px] font-bold ${wf.status === 'DEAD_LETTER' ? 'text-red-400' : 'text-amber-400'}`}>{wf.status}</span>
+                    </div>
+                    <div className="font-mono text-[9px] text-slate-500">{wf.eventId}</div>
+                    <div className="text-[9px] text-slate-500">{wf.errorCode} · {wf.attempts} tentatives</div>
+                    {wf.nextRetryAt && <div className="text-[9px] text-blue-400">Prochaine tentative: {new Date(wf.nextRetryAt).toLocaleTimeString('fr-CA')}</div>}
+                  </div>
+                </div>
+              ))}
+            </Card>
+
+            {/* Sync conflicts */}
+            {mockSyncConflicts.length > 0 && (
+              <Card>
+                <div className="font-semibold text-white text-sm mb-2">Conflits de synchronisation</div>
+                {mockSyncConflicts.map(sc => (
+                  <div key={sc.id} className="text-xs">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-amber-400">⚡ {sc.conflictType}</span>
+                      <span className={`text-[9px] ${sc.resolution === 'PENDING' ? 'text-amber-400' : 'text-green-400'}`}>{sc.resolution}</span>
+                    </div>
+                    <div className="text-[9px] text-slate-500">Données financières: validation serveur requise avant finalisation</div>
+                  </div>
+                ))}
+              </Card>
             )}
-          </ResponsiveContainer>
-        </Card>
 
-        {/* Platform performance */}
-        <Card className="mb-6">
-          <div className="font-semibold text-white text-sm mb-3">Performance par plateforme</div>
-          <div className="space-y-2.5">
-            {todayStats.byPlatform.map(p => (
-              <div key={p.provider} className="flex items-center gap-3">
-                <span className="text-xl shrink-0">{p.icon}</span>
-                <div className="flex-1">
-                  <div className="flex justify-between mb-0.5 text-xs">
-                    <span className="text-slate-300">{p.name}</span>
-                    <span className="font-bold text-white">{fmt(p.revenue)}</span>
-                  </div>
-                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-qc-blue rounded-full"
-                      style={{width:`${Math.round((p.revenue/Math.max(todayStats.totalRevenue,1))*100)}%`}} />
-                  </div>
-                  <div className="text-[9px] text-slate-500 mt-0.5">{p.trips} course(s)</div>
+            {/* Jobs */}
+            <Card>
+              <div className="font-semibold text-white text-sm mb-2">Jobs en cours</div>
+              {mockJobs.map(job => (
+                <div key={job.id} className="flex items-center gap-2 py-1.5 border-b border-slate-800 last:border-0 text-xs">
+                  <span>{job.status === 'COMPLETED' ? '✅' : job.status === 'RUNNING' ? '🔄' : '⏳'}</span>
+                  <span className="text-slate-300 flex-1">{job.jobType}</span>
+                  <span className={`text-[9px] font-bold ${job.status === 'COMPLETED' ? 'text-green-400' : job.status === 'RUNNING' ? 'text-blue-400' : 'text-amber-400'}`}>{job.status}</span>
                 </div>
-              </div>
-            ))}
+              ))}
+            </Card>
           </div>
-        </Card>
+        )}
+
+        {/* ─── OPS ──────────────────────────────────── */}
+        {tab === 'ops' && (
+          <div className="space-y-4 mb-6">
+            {/* Feature flags */}
+            <Card>
+              <div className="font-semibold text-white text-sm mb-3">Feature flags</div>
+              <div className="space-y-2">
+                {FEATURE_FLAGS.map(ff => (
+                  <div key={ff.key} className="flex items-start gap-3 py-1.5 border-b border-slate-800 last:border-0">
+                    <div className={`w-8 h-4 rounded-full shrink-0 mt-0.5 transition-all ${ff.enabled ? 'bg-green-500' : 'bg-slate-700'} flex items-center ${ff.enabled ? 'justify-end' : 'justify-start'} px-0.5`}>
+                      <div className="w-3 h-3 bg-white rounded-full"/>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-white text-xs">{ff.label}</div>
+                      <div className="text-[9px] text-slate-500">{ff.description}</div>
+                    </div>
+                    <span className={`text-[8px] font-bold ${ff.enabled ? 'text-green-400' : 'text-slate-600'}`}>{ff.enabled ? 'ON' : 'OFF'}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Pilot config */}
+            <Card>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">🇨🇦</span>
+                <span className="font-semibold text-white text-sm">{mockPilot.name}</span>
+                <span className={`ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded-full ${mockPilot.status === 'ACTIVE' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>{mockPilot.status}</span>
+              </div>
+              {[
+                { label:'Juridiction', val:mockPilot.jurisdiction },
+                { label:'Villes', val:mockPilot.activeCities.join(', ') },
+                { label:'Services', val:mockPilot.activeServices.join(' · ') },
+                { label:'Chauffeurs', val:`${mockPilot.currentDriverCount} / ${mockPilot.maxDrivers}` },
+                { label:'Période', val:`${mockPilot.startDate} → ${mockPilot.endDate ?? 'En cours'}` },
+              ].map(s => (
+                <div key={s.label} className="flex justify-between py-1 border-b border-slate-800 last:border-0 text-xs">
+                  <span className="text-slate-400">{s.label}</span>
+                  <span className="text-white">{s.val}</span>
+                </div>
+              ))}
+              <div className="text-[9px] text-amber-400 mt-2">{mockPilot.notes}</div>
+            </Card>
+
+            {/* Retention policies */}
+            <Card>
+              <div className="font-semibold text-white text-sm mb-2">Politiques de rétention</div>
+              <div className="text-[9px] text-amber-400 mb-2">Durées configurables selon juridiction · Obligations légales applicables</div>
+              <div className="space-y-1.5">
+                {RETENTION_POLICIES.slice(0,5).map(rp => (
+                  <div key={rp.dataCategory} className="flex items-start gap-2 text-[10px] py-1 border-b border-slate-800 last:border-0">
+                    <span className={`shrink-0 font-bold ${rp.canDelete ? 'text-slate-500' : 'text-blue-400'}`}>{rp.canDelete ? '🗑' : '🔒'}</span>
+                    <div className="flex-1">
+                      <span className="font-semibold text-white">{rp.dataCategory}</span>
+                      <div className="text-slate-500">{rp.note}</div>
+                    </div>
+                    <span className="text-slate-600 shrink-0">{rp.retentionDays ? `${rp.retentionDays}j` : 'configurable'}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Notifications log */}
+            <Card>
+              <div className="font-semibold text-white text-sm mb-2">Notifications récentes</div>
+              {mockOpsNotifications.map(n => (
+                <div key={n.id} className={`flex items-start gap-2 py-2 border-b border-slate-800 last:border-0 ${n.readAt ? 'opacity-60' : ''}`}>
+                  <span className="text-base shrink-0">{n.notifType === 'SECURITY' ? '🚨' : n.notifType === 'PAYMENT' ? '💳' : n.notifType === 'DOCUMENT' ? '📄' : '🔔'}</span>
+                  <div className="flex-1">
+                    <div className="font-semibold text-white text-xs">{n.title}</div>
+                    <div className="text-[10px] text-slate-400 truncate">{n.body}</div>
+                    <div className="text-[9px] text-slate-600">{n.channel} · {new Date(n.createdAt).toLocaleString('fr-CA')}</div>
+                  </div>
+                  <span className={`text-[8px] font-bold shrink-0 ${n.status === 'READ' ? 'text-slate-600' : n.status === 'DELIVERED' ? 'text-green-400' : 'text-blue-400'}`}>{n.status}</span>
+                </div>
+              ))}
+            </Card>
+          </div>
+        )}
       </div>
     </AppShell>
   )
