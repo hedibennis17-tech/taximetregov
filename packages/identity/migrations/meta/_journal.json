@@ -50,6 +50,20 @@
       "when": 1787918244111,
       "tag": "0006_wandering_sunspot",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787947915663,
+      "tag": "0007_tired_stingray",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787948047907,
+      "tag": "0008_needy_vector",
+      "breakpoints": true
     }
   ]
 }
