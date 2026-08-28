@@ -43,6 +43,13 @@
       "when": 1787917889770,
       "tag": "0005_fast_rockslide",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787918244111,
+      "tag": "0006_wandering_sunspot",
+      "breakpoints": true
     }
   ]
 }
