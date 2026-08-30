@@ -476,3 +476,4 @@ export default function ProductionReadinessPage() {
 // DB Phase 14 sync — 2026-08-30T17:17:05Z
 // DB Phase 15 sync — 2026-08-30T18:19:28Z
 // DB Phase 16 sync — 2026-08-30T22:05:50Z
+// DB Phase 16-17 sync — 2026-08-30T22:09:56Z
