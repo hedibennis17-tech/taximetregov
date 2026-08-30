@@ -64,6 +64,13 @@
       "when": 1787948047907,
       "tag": "0008_needy_vector",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788091534297,
+      "tag": "0009_gifted_tarantula",
+      "breakpoints": true
     }
   ]
 }
