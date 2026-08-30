@@ -71,6 +71,13 @@
       "when": 1788091534297,
       "tag": "0009_gifted_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788092789179,
+      "tag": "0010_sleepy_maria_hill",
+      "breakpoints": true
     }
   ]
 }
