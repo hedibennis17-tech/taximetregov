@@ -134,6 +134,13 @@
       "when": 1788128380458,
       "tag": "0018_gifted_pretty_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1788177676338,
+      "tag": "0019_reflective_scarlet_spider",
+      "breakpoints": true
     }
   ]
 }
