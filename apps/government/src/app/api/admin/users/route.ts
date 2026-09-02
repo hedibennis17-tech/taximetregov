@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const admin = getSupabaseAdminClient()
     const { data, error } = await admin
       .from('users')
-      .select('id, public_id, email, status, mfa_required, mfa_enabled_at, last_login_at, created_at, user_roles(revoked_at, expires_at, roles(name, label, requires_mfa))')
+      .select('id, public_id, email, status, mfa_required, mfa_enabled_at, last_login_at, created_at, user_roles!user_roles_user_id_users_id_fk(revoked_at, expires_at, roles(name, label, requires_mfa))')
       .eq('user_type', 'GOVERNMENT')
       .is('deleted_at', null)
       .order('created_at', { ascending: false })

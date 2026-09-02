@@ -38,7 +38,7 @@ export async function requireGovernmentAdministrator(request: NextRequest): Prom
 
   const { data: identity, error: identityError } = await admin
     .from('users')
-    .select('id, public_id, email, user_type, status, mfa_required, deleted_at, user_roles(revoked_at, expires_at, roles(name, requires_mfa))')
+      .select('id, public_id, email, user_type, status, mfa_required, deleted_at, user_roles!user_roles_user_id_users_id_fk(revoked_at, expires_at, roles(name, requires_mfa))')
     .eq('id', authData.user.id)
     .maybeSingle()
 

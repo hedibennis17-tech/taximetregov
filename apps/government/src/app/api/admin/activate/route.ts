@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     const { data: identity, error: identityError } = await admin
       .from('users')
-      .select('id, user_type, status, user_roles(revoked_at, roles(name, requires_mfa))')
+      .select('id, user_type, status, user_roles!user_roles_user_id_users_id_fk(revoked_at, roles(name, requires_mfa))')
       .eq('id', authData.user.id)
       .maybeSingle()
     if (identityError || !identity || identity.user_type !== 'GOVERNMENT') return NextResponse.json({ error: 'Compte gouvernemental introuvable.' }, { status: 403 })
