@@ -69,7 +69,17 @@ export default function GovernmentLoginPage() {
     try {
       const { data, error: signInError } = await getSupabaseBrowserClient().auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
       if (signInError || !data.session) throw signInError ?? new Error('Session administrative non créée.')
-      await prepareMfa()
+      const identity = await fetch('/api/admin/me', { headers: { Authorization: `Bearer ${data.session.access_token}` } })
+      if (identity.ok) {
+        router.replace('/')
+        return
+      }
+      const identityBody = await identity.json().catch(() => ({})) as { code?: string; error?: string }
+      if (identityBody.code === 'MFA_REQUIRED') {
+        await prepareMfa()
+        return
+      }
+      throw new Error(identityBody.error ?? 'Accès administratif refusé.')
     } catch (caught) {
       setError(authMessage(caught instanceof Error ? caught.message : 'Connexion administrative impossible.'))
     } finally {

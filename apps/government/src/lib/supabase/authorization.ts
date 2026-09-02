@@ -49,7 +49,9 @@ export async function requireGovernmentAdministrator(request: NextRequest): Prom
 
   if (roles.length === 0) throw new Error('FORBIDDEN')
 
-  const requiresMfa = Boolean(identity.mfa_required) || roles.some((role) => Boolean(role.requires_mfa))
+  // Government invitations set mfa_required=true. The initial bootstrap SUPER_ADMIN
+  // may be explicitly marked false by a controlled operator to regain direct access.
+  const requiresMfa = Boolean(identity.mfa_required)
   if (requiresMfa && tokenAal(token) !== 'aal2') throw new Error('MFA_REQUIRED')
 
   return {
