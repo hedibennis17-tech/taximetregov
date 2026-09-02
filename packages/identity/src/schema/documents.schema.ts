@@ -23,7 +23,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
 import { users }                  from './auth.schema'
-import { driverProfiles }         from './profiles.schema'
+import { driverProfiles, verificationMethodEnum } from './profiles.schema'
 import { vehicles }               from './vehicles.schema'
 
 // ─── ENUMS ───────────────────────────────────────────────────
@@ -49,14 +49,6 @@ export const verificationStatusEnum = pgEnum('doc_verification_status', [
   'VERIFIED',
   'REJECTED',
   'UNABLE_TO_VERIFY',
-])
-
-export const verificationMethodEnum = pgEnum('verification_method', [
-  'MANUAL',            // Révision humaine
-  'AUTOMATED',         // Validation automatique (format, checksum)
-  'GOVERNMENT_SOURCE', // API gouvernementale officielle (futur)
-  'THIRD_PARTY',       // Fournisseur de vérification autorisé
-  'HYBRID',            // Combinaison auto + manuel
 ])
 
 export const rejectionReasonEnum = pgEnum('rejection_reason', [
@@ -297,7 +289,7 @@ export const documentVerifications = pgTable('document_verifications', {
     .references(() => documentVersions.id, { onDelete: 'set null' }),
 
   verificationStatus: verificationStatusEnum('verification_status').notNull().default('NOT_STARTED'),
-  verificationMethod: verificationMethodEnum('verification_method').notNull().default('MANUAL'),
+  verificationMethod: verificationMethodEnum('verification_method').notNull().default('DOCUMENT_REVIEW'),
 
   verifiedBy: uuid('verified_by').references(() => users.id),
   verifiedAt: timestamp('verified_at', { withTimezone: true }),

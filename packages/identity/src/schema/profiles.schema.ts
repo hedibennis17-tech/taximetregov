@@ -313,7 +313,7 @@ export const driverOnboardingSteps = pgTable('driver_onboarding_steps', {
 export const profileAuditEvents = pgTable('profile_audit_events', {
   id:     uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull()
-    .references(() => users.id, { onDelete: 'set null' }),
+    .references(() => users.id, { onDelete: 'restrict' }),
 
   actorId:   uuid('actor_id').references(() => users.id),
   actorRole: varchar('actor_role', { length: 50 }),

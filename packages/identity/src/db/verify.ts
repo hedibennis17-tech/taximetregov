@@ -17,8 +17,8 @@ import { drizzle }   from 'drizzle-orm/postgres-js'
 import postgres      from 'postgres'
 import { sql }       from 'drizzle-orm'
 
-// Expected table count after all 19 migrations
-const EXPECTED_TABLE_COUNT = 140
+// Expected table count after all 20 migrations (0000 through 0019).
+const EXPECTED_TABLE_COUNT = 148
 
 // Expected seed counts
 const EXPECTED_SEEDS = {
@@ -152,7 +152,7 @@ async function verify(): Promise<void> {
       SELECT u.id FROM users u
       JOIN user_roles ur ON ur.user_id = u.id
       JOIN roles r ON r.id = ur.role_id
-      WHERE r.code = 'SUPER_ADMIN'
+      WHERE r.name = 'SUPER_ADMIN'
       LIMIT 1
     `)
     return result.length > 0
@@ -195,9 +195,10 @@ async function verify(): Promise<void> {
 
   await check('Gateway mode: SIMULATION (jamais OFFICIAL_API en dev)', async () => {
     const result = await db.execute(sql`
-      SELECT value FROM system_configs WHERE key = 'gateway.mode'
+      SELECT value_string FROM system_configs
+      WHERE key = 'gateway.mode' AND jurisdiction = 'GLOBAL'
     `)
-    const val = (result[0] as { value: string } | undefined)?.value
+    const val = (result[0] as { value_string: string | null } | undefined)?.value_string
     return val === 'SIMULATION'
   })
 
@@ -220,9 +221,10 @@ async function verify(): Promise<void> {
 
   await check('MFA obligatoire pour gouvernement (system_config)', async () => {
     const result = await db.execute(sql`
-      SELECT value FROM system_configs WHERE key = 'mfa.required.gov'
+      SELECT value_bool FROM system_configs
+      WHERE key = 'mfa.required.gov' AND jurisdiction = 'GLOBAL'
     `)
-    return (result[0] as { value: string } | undefined)?.value === 'true'
+    return (result[0] as { value_bool: boolean | null } | undefined)?.value_bool === true
   })
 
   // ─── 5. Unique constraints ─────────────────────────────────

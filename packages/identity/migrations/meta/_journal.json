@@ -141,6 +141,34 @@
       "when": 1788177676338,
       "tag": "0019_reflective_scarlet_spider",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1788386267838,
+      "tag": "0020_organic_black_crow",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1788386624774,
+      "tag": "0021_mushy_luminals",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1788386650433,
+      "tag": "0022_enable_public_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1788386854111,
+      "tag": "0023_static_bootstrap_seeds",
+      "breakpoints": true
     }
   ]
 }

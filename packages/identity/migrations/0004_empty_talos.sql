@@ -1,4 +1,5 @@
 CREATE TYPE "public"."compliance_status" AS ENUM('COMPLIANT', 'NON_COMPLIANT', 'REVIEW_REQUIRED', 'PENDING', 'UNKNOWN');--> statement-breakpoint
+CREATE TYPE "public"."doc_verification_status" AS ENUM('NOT_STARTED', 'PENDING', 'IN_REVIEW', 'VERIFIED', 'REJECTED', 'UNABLE_TO_VERIFY');--> statement-breakpoint
 CREATE TYPE "public"."document_status" AS ENUM('DRAFT', 'UPLOADED', 'PENDING_REVIEW', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'EXPIRED', 'SUSPENDED', 'REPLACED', 'REVOKED', 'ARCHIVED');--> statement-breakpoint
 CREATE TYPE "public"."inspection_result" AS ENUM('SCHEDULED', 'PENDING', 'PASSED', 'FAILED', 'EXPIRED', 'CANCELLED');--> statement-breakpoint
 CREATE TYPE "public"."inspection_type_v2" AS ENUM('SAFETY', 'MECHANICAL', 'REGULATORY', 'ANNUAL', 'COMMERCIAL', 'TAXIMETER', 'OTHER');--> statement-breakpoint
@@ -69,7 +70,7 @@ CREATE TABLE "document_verifications" (
 	"document_id" uuid NOT NULL,
 	"document_version_id" uuid,
 	"verification_status" "doc_verification_status" DEFAULT 'NOT_STARTED' NOT NULL,
-	"verification_method" "verification_method" DEFAULT 'MANUAL' NOT NULL,
+	"verification_method" "verification_method" DEFAULT 'DOCUMENT_REVIEW' NOT NULL,
 	"verified_by" uuid,
 	"verified_at" timestamp with time zone,
 	"rejection_reason" "rejection_reason",

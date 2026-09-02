@@ -1,0 +1,1 @@
+ALTER TABLE "document_verifications" ALTER COLUMN "verification_method" SET DEFAULT 'DOCUMENT_REVIEW';

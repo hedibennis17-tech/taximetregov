@@ -20,7 +20,7 @@ import {
 // ─── DEPLOYMENT READINESS ─────────────────────────────────────
 
 describe('DB-20 Deployment Readiness — Tests 1–5', () => {
-  it('[TEST 1] 19 migrations SQL existent', async () => {
+  it('[TEST 1] 24 migrations SQL existent', async () => {
     const { readdirSync } = await import('fs')
     const { resolve, dirname } = await import('path')
     const { fileURLToPath } = await import('url')
@@ -29,8 +29,8 @@ describe('DB-20 Deployment Readiness — Tests 1–5', () => {
       '../migrations'
     )
     const migrations = readdirSync(dir).filter(f => f.endsWith('.sql'))
-    expect(migrations.length).toBe(19)
-    // 0000 through 0018 = 19 migrations
+    expect(migrations.length).toBe(24)
+    // 0000 through 0023 = 24 migrations, including DB20 compatibility, RLS, and static bootstrap seeds.
   })
 
   it('[TEST 2] Seed execution order: 16 étapes · juridictions en premier', () => {
@@ -132,9 +132,9 @@ describe('Règles absolues DB-20 — Tests 6–15', () => {
 // ─── VERIFY SCRIPT LOGIC ──────────────────────────────────────
 
 describe('Verify Script Logic — Tests 16–20', () => {
-  it('[TEST 16] 140 tables attendues (vérification par comptage)', () => {
-    // Verify script checks for exactly 140 tables
-    const EXPECTED = 140
+  it('[TEST 16] 148 tables attendues (vérification par comptage)', () => {
+    // Verify script checks for exactly 148 tables created by migrations 0000–0019.
+    const EXPECTED = 148
     expect(EXPECTED).toBeGreaterThan(100)
     expect(EXPECTED).toBeLessThan(200)
   })
@@ -179,11 +179,11 @@ describe('Verify Script Logic — Tests 16–20', () => {
 // ─── TOTAL SCHEMA SUMMARY ─────────────────────────────────────
 
 describe('Résumé Architecture Finale', () => {
-  it('[PASS] 19 phases DB complètes', () => {
-    const phases = Array.from({ length: 19 }, (_, i) => i + 1)
-    expect(phases).toHaveLength(19)
+  it('[PASS] 20 phases DB complètes', () => {
+    const phases = Array.from({ length: 20 }, (_, i) => i + 1)
+    expect(phases).toHaveLength(20)
     expect(phases[0]).toBe(1)
-    expect(phases[phases.length - 1]).toBe(19)
+    expect(phases[phases.length - 1]).toBe(20)
   })
 
   it('[PASS] 3 chemins activité strictement séparés', () => {

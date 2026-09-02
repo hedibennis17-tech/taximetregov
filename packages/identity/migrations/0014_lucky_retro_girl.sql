@@ -1,6 +1,8 @@
 CREATE TYPE "public"."activity_adjustment_type" AS ENUM('FARE_CORRECTION', 'TIP_ADJUSTMENT', 'FEE_ADJUSTMENT', 'CANCELLATION_FEE', 'GOVERNMENT_CORRECTION', 'PROVIDER_CORRECTION', 'OTHER');--> statement-breakpoint
 CREATE TYPE "public"."activity_source_type" AS ENUM('TAXIMETER', 'PROVIDER_WEBHOOK', 'PROVIDER_API', 'BATCH_IMPORT', 'GOVERNMENT_FEED', 'MANUAL_AUTHORIZED', 'OTHER');--> statement-breakpoint
 CREATE TYPE "public"."canonical_activity_type" AS ENUM('TAXI_TRIP', 'RIDESHARE_TRIP', 'FOOD_DELIVERY', 'GROCERY_DELIVERY', 'PARCEL_DELIVERY', 'COURIER', 'SHOPPING', 'OTHER');--> statement-breakpoint
+CREATE TYPE "public"."canonical_activity_status" AS ENUM('PENDING', 'STARTED', 'COMPLETED', 'CANCELLED', 'FINALIZED', 'REJECTED', 'DISPUTED', 'VOIDED');--> statement-breakpoint
+CREATE TYPE "public"."activity_reconciliation_status" AS ENUM('NOT_RECONCILED', 'MATCHED', 'PARTIAL_MATCH', 'MISMATCH', 'UNDER_REVIEW', 'RESOLVED');--> statement-breakpoint
 CREATE TYPE "public"."data_quality_status" AS ENUM('VALIDATED', 'PARTIAL', 'INCONSISTENT', 'PENDING_REVIEW', 'REJECTED');--> statement-breakpoint
 CREATE TABLE "activity_adjustments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
