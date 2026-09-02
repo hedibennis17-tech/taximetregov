@@ -22,6 +22,11 @@ function tokenAal(token: string): string | null {
   }
 }
 
+function relatedRoles(value: unknown): Array<Record<string, unknown>> {
+  if (Array.isArray(value)) return value.filter((role): role is Record<string, unknown> => Boolean(role && typeof role === 'object'))
+  return value && typeof value === 'object' ? [value as Record<string, unknown>] : []
+}
+
 export async function requireGovernmentAdministrator(request: NextRequest): Promise<GovernmentAdministrator> {
   const authorization = request.headers.get('authorization')
   const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null
@@ -44,8 +49,8 @@ export async function requireGovernmentAdministrator(request: NextRequest): Prom
   const now = Date.now()
   const roles = ((identity.user_roles ?? []) as Array<Record<string, unknown>>)
     .filter((assignment) => !assignment.revoked_at && (!assignment.expires_at || new Date(String(assignment.expires_at)).getTime() > now))
-    .map((assignment) => assignment.roles as Record<string, unknown> | null)
-    .filter((role): role is Record<string, unknown> => Boolean(role?.name && ADMIN_ROLES.has(String(role.name))))
+    .flatMap((assignment) => relatedRoles(assignment.roles))
+    .filter((role) => Boolean(role.name && ADMIN_ROLES.has(String(role.name))))
 
   if (roles.length === 0) throw new Error('FORBIDDEN')
 
