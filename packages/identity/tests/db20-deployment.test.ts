@@ -20,7 +20,7 @@ import {
 // ─── DEPLOYMENT READINESS ─────────────────────────────────────
 
 describe('DB-20 Deployment Readiness — Tests 1–5', () => {
-  it('[TEST 1] 24 migrations SQL existent', async () => {
+  it('[TEST 1] 28 migrations SQL existent', async () => {
     const { readdirSync } = await import('fs')
     const { resolve, dirname } = await import('path')
     const { fileURLToPath } = await import('url')
@@ -29,8 +29,8 @@ describe('DB-20 Deployment Readiness — Tests 1–5', () => {
       '../migrations'
     )
     const migrations = readdirSync(dir).filter(f => f.endsWith('.sql'))
-    expect(migrations.length).toBe(24)
-    // 0000 through 0023 = 24 migrations, including DB20 compatibility, RLS, and static bootstrap seeds.
+    expect(migrations.length).toBe(28)
+    // 0000 through 0027 = 28 migrations, including driver presence, Supabase Auth, and RLS.
   })
 
   it('[TEST 2] Seed execution order: 16 étapes · juridictions en premier', () => {
@@ -132,9 +132,9 @@ describe('Règles absolues DB-20 — Tests 6–15', () => {
 // ─── VERIFY SCRIPT LOGIC ──────────────────────────────────────
 
 describe('Verify Script Logic — Tests 16–20', () => {
-  it('[TEST 16] 148 tables attendues (vérification par comptage)', () => {
-    // Verify script checks for exactly 148 tables created by migrations 0000–0019.
-    const EXPECTED = 148
+  it('[TEST 16] 149 tables attendues (vérification par comptage)', () => {
+    // Verify script checks for 149 application tables after the driver-presence migration.
+    const EXPECTED = 149
     expect(EXPECTED).toBeGreaterThan(100)
     expect(EXPECTED).toBeLessThan(200)
   })

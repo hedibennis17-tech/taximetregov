@@ -1,17 +1,18 @@
 'use client'
 import { BottomNav } from './BottomNav'
-import { PilotBanner } from '@/components/ui'
+import { RequireDriverSession } from '@/components/auth/RequireDriverSession'
 import { ReactNode } from 'react'
 
 export function AppShell({ children, showNav = true, className = '' }: { children: ReactNode; showNav?: boolean; className?: string }) {
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
-      <PilotBanner />
-      <main className={`flex-1 ${showNav ? 'pb-24' : ''} ${className}`}>
-        {children}
-      </main>
-      {showNav && <BottomNav />}
-    </div>
+    <RequireDriverSession>
+      <div className="min-h-screen bg-slate-950 flex flex-col">
+        <main className={`flex-1 ${showNav ? 'pb-24' : ''} ${className}`}>
+          {children}
+        </main>
+        {showNav && <BottomNav />}
+      </div>
+    </RequireDriverSession>
   )
 }
 

@@ -17,8 +17,8 @@ import { drizzle }   from 'drizzle-orm/postgres-js'
 import postgres      from 'postgres'
 import { sql }       from 'drizzle-orm'
 
-// Expected table count after all 20 migrations (0000 through 0019).
-const EXPECTED_TABLE_COUNT = 148
+// Expected application table count after the driver-auth integration migrations.
+const EXPECTED_TABLE_COUNT = 149
 
 // Expected seed counts
 const EXPECTED_SEEDS = {
@@ -92,7 +92,7 @@ async function verify(): Promise<void> {
     'revenue_ledger', 'tax_accounts', 'tax_rule_sets', 'tax_components',
     'payments', 'wallet_accounts', 'wallet_entries', 'payouts',
     'audit_logs', 'retention_policies', 'privacy_requests',
-    'platform_connectors', 'pipeline_runs', 'driver_activities',
+    'platform_connectors', 'pipeline_runs', 'driver_activities', 'driver_presences',
     'transaction_tax_calculations', 'driver_ledger_summaries',
     'regulatory_actions', 'driver_regulatory_profiles',
     'service_health_checks', 'feature_flags', 'system_configs',
