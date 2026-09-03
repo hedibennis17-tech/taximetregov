@@ -1,75 +1,318 @@
 'use client'
 
-import { AppShell, PageHeader } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
-import { CheckCircle, Clock, Lock, RefreshCw, ShieldAlert } from 'lucide-react'
-import { useDriverDashboard } from '@/lib/supabase/useDriverDashboard'
+// ================================================================
+// TAXIMÈTRE.GOV — PAGE PLATEFORMES
+// Phase 6 — Providers réels · OAuth Architecture · MOCK_ONLY dev
+// ================================================================
 
-function accountStatus(status: string) {
-  const values: Record<string, { label: string; className: string }> = {
-    ACTIVE: { label: 'Connectée', className: 'text-green-400 bg-green-500/10 border-green-500/20' },
-    PENDING: { label: 'En attente', className: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-    REAUTH_REQUIRED: { label: 'Reconnexion requise', className: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-    EXPIRED: { label: 'Expirée', className: 'text-red-400 bg-red-500/10 border-red-500/20' },
-    ERROR: { label: 'Erreur technique', className: 'text-red-400 bg-red-500/10 border-red-500/20' },
-    DISCONNECTED: { label: 'Déconnectée', className: 'text-slate-400 bg-slate-800 border-slate-700' },
-    SUSPENDED: { label: 'Suspendue', className: 'text-red-400 bg-red-500/10 border-red-500/20' },
-  }
-  return values[status] ?? { label: status, className: 'text-slate-400 bg-slate-800 border-slate-700' }
+import { AppShell } from '@/components/layout/AppShell'
+import { Card, SectionHeader } from '@/components/ui'
+import { useState, useEffect, useCallback } from 'react'
+import { CheckCircle, Clock, Lock, RefreshCw, AlertCircle, Unplug } from 'lucide-react'
+import { getToken } from '@/lib/api'
+
+// ─── Types ───────────────────────────────────────────────────
+
+interface Provider {
+  id:                        string
+  provider_code:             string
+  display_name:              string
+  provider_type:             string
+  provider_status:           string
+  connector_status:          string
+  account_id:                string | null
+  connection_status:         string | null
+  provider_driver_id_masked: string | null
+  connected_at:              string | null
+  last_sync_at:              string | null
+  sync_error_count:          number
+  partner_approval_reference: string | null
+  isMockOnly:                boolean
+  revenue: {
+    gross: string; tips: string; count: string; last_activity: string
+  } | null
 }
 
-function iconForProvider(code: string) {
-  const icons: Record<string, string> = { UBER: '⬛', LYFT: '🔵', DOORDASH: '🔴', UBER_EATS: '🟢', INSTACART: '🛒', SKIP: '🟠' }
-  return icons[code] ?? '🚗'
+// ─── Helpers ─────────────────────────────────────────────────
+
+const PROVIDER_ICON: Record<string, string> = {
+  UBER: '⬛', LYFT: '🟣', DOORDASH: '🔴',
+  UBER_EATS: '🟡', INSTACART: '🟢', SKIP: '🟠',
 }
+
+const PROVIDER_TYPE_LABEL: Record<string, string> = {
+  RIDESHARE: 'Covoiturage', MULTI_SERVICE: 'Multi-service',
+  FOOD_DELIVERY: 'Livraison repas', GROCERY_DELIVERY: 'Livraison épicerie',
+}
+
+function money(v: string | number) {
+  return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' })
+    .format(typeof v === 'string' ? parseFloat(v) || 0 : v)
+}
+
+function connectionStatusConf(status: string | null, isMockOnly: boolean) {
+  if (status === 'CONNECTED' && isMockOnly)
+    return { label: 'Connectée (DEV)', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' }
+  if (status === 'CONNECTED')
+    return { label: 'Connectée', color: 'text-green-400 bg-green-500/10 border-green-500/20' }
+  if (status === 'PENDING')
+    return { label: 'En attente', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' }
+  if (status === 'ERROR')
+    return { label: 'Erreur', color: 'text-red-400 bg-red-500/10 border-red-500/20' }
+  if (status === 'DISCONNECTED')
+    return { label: 'Déconnectée', color: 'text-slate-400 bg-slate-800 border-slate-700' }
+  return { label: 'Non connectée', color: 'text-slate-500 bg-slate-900 border-slate-800' }
+}
+
+async function apiFetch(path: string, body?: unknown) {
+  const token = getToken()
+  const res = await fetch(path, {
+    method: body ? 'POST' : 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const json = await res.json() as { success: boolean; data: unknown; error?: string }
+  if (!res.ok || !json.success) throw new Error(json.error ?? `Erreur ${res.status}`)
+  return json.data
+}
+
+// ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 
 export default function PlatformsPage() {
-  const { dashboard, loading, error, refresh } = useDriverDashboard()
-  const activeCount = dashboard?.platforms.filter((platform) => platform.status === 'ACTIVE').length ?? 0
+  const [providers, setProviders]   = useState<Provider[]>([])
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState<string | null>(null)
+  const [connecting, setConnecting] = useState<string | null>(null)
+  const [connected, setConnected]   = useState<string | null>(null)
+
+  const loadProviders = useCallback(async () => {
+    try {
+      setLoading(true); setError(null)
+      const data = await apiFetch('/api/providers/list') as {
+        providers: Provider[]; connectedCount: number
+      }
+      setProviders(data.providers)
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { void loadProviders() }, [loadProviders])
+
+  async function handleConnect(providerCode: string) {
+    setConnecting(providerCode)
+    setError(null)
+    try {
+      await apiFetch('/api/providers/connect', { providerCode })
+      setConnected(providerCode)
+      await loadProviders()
+      setTimeout(() => setConnected(null), 3000)
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setConnecting(null)
+    }
+  }
+
+  async function handleDisconnect(providerCode: string) {
+    if (!confirm(`Déconnecter ${providerCode} ?`)) return
+    try {
+      await apiFetch('/api/providers/disconnect', { providerCode })
+      await loadProviders()
+    } catch (e) {
+      setError((e as Error).message)
+    }
+  }
+
+  const connectedProviders    = providers.filter(p => p.connection_status === 'CONNECTED')
+  const notConnectedProviders = providers.filter(p => p.connection_status !== 'CONNECTED')
 
   return (
     <AppShell>
-      <PageHeader title="Mes plateformes" subtitle={dashboard ? `${activeCount}/${dashboard.platforms.length} compte(s) actif(s) · Données réelles` : 'Chargement sécurisé'} />
-      <div className="px-4">
-        <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-qc-blue/10 border border-qc-blue/30 mb-5">
-          <Lock size={14} className="text-qc-blue-light mt-0.5 shrink-0" />
-          <p className="text-xs text-blue-100"><span className="font-bold text-white">Vos identifiants de plateforme ne sont jamais affichés.</span> Seul l’état des comptes approuvés est disponible dans votre dossier chauffeur.</p>
+      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">Mes plateformes</h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {connectedProviders.length} connectée(s) · {providers.length} disponibles
+          </p>
+        </div>
+        <button onClick={() => void loadProviders()}
+          className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center">
+          <RefreshCw size={15} className={loading ? 'animate-spin text-qc-blue' : 'text-slate-400'} />
+        </button>
+      </div>
+
+      <div className="px-4 space-y-4 pb-8">
+
+        {/* MOCK_ONLY banner */}
+        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <div className="flex items-start gap-2">
+            <AlertCircle size={14} className="text-amber-400 mt-0.5 shrink-0" />
+            <div>
+              <div className="text-xs font-semibold text-amber-400">Mode développement</div>
+              <div className="text-[10px] text-amber-300/70 mt-0.5">
+                Toutes les connexions sont simulées. L'intégration réelle nécessite l'approbation officielle du programme partenaire de chaque plateforme.
+              </div>
+            </div>
+          </div>
         </div>
 
-        {loading ? <div className="py-12 text-center text-sm text-slate-500">Chargement des comptes connectés…</div> : error ? (
-          <div className="py-12 text-center"><p className="text-sm text-red-300 mb-4">{error}</p><button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">Réessayer</button></div>
-        ) : dashboard && (
-          <>
-            <div className="space-y-3 mb-6">
-              {dashboard.platforms.map((platform) => {
-                const status = accountStatus(platform.status)
+        {/* Error */}
+        {error && (
+          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+            <div className="flex items-center gap-2 text-red-400 text-xs">
+              <AlertCircle size={14} /> {error}
+            </div>
+          </div>
+        )}
+
+        {/* Plateformes connectées */}
+        {connectedProviders.length > 0 && (
+          <div>
+            <SectionHeader title="Connectées" />
+            <div className="space-y-3">
+              {connectedProviders.map(p => {
+                const stConf = connectionStatusConf(p.connection_status, p.isMockOnly)
                 return (
-                  <Card key={platform.id} className="border-slate-800">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-2xl shrink-0">{iconForProvider(platform.code)}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-bold text-white">{platform.name}</span>
-                          <span className={`text-[9px] font-bold border px-1.5 py-0.5 rounded-full ${status.className}`}>{status.label}</span>
+                  <Card key={p.id} className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-3xl">{PROVIDER_ICON[p.provider_code] ?? '🚗'}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white">{p.display_name}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${stConf.color}`}>
+                            {stConf.label}
+                          </span>
                         </div>
-                        <div className="text-[10px] text-slate-500">{platform.lastSyncAt ? `Dernière synchronisation : ${new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(platform.lastSyncAt))}` : 'Aucune synchronisation enregistrée'}</div>
+                        <div className="text-[10px] text-slate-400">
+                          {PROVIDER_TYPE_LABEL[p.provider_type] ?? p.provider_type}
+                          {p.provider_driver_id_masked && ` · ID: ${p.provider_driver_id_masked}`}
+                        </div>
                       </div>
-                      {platform.status === 'ACTIVE' && <CheckCircle size={18} className="text-green-400 shrink-0" />}
+                    </div>
+
+                    {/* Revenus */}
+                    {p.revenue && (
+                      <div className="grid grid-cols-3 gap-2 mb-3">
+                        <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                          <div className="font-bold text-green-400 text-xs">{money(p.revenue.gross)}</div>
+                          <div className="text-[9px] text-slate-500">Brut 30j</div>
+                        </div>
+                        <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                          <div className="font-bold text-blue-400 text-xs">{money(p.revenue.tips)}</div>
+                          <div className="text-[9px] text-slate-500">Pourboires</div>
+                        </div>
+                        <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                          <div className="font-bold text-white text-xs">{p.revenue.count}</div>
+                          <div className="text-[9px] text-slate-500">Activités</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sync info */}
+                    <div className="flex items-center justify-between text-[10px] text-slate-500">
+                      <span>
+                        {p.last_sync_at
+                          ? `Sync: ${new Date(p.last_sync_at).toLocaleDateString('fr-CA')}`
+                          : 'Jamais synchronisé'}
+                      </span>
+                      <button
+                        onClick={() => void handleDisconnect(p.provider_code)}
+                        className="flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        <Unplug size={11} /> Déconnecter
+                      </button>
                     </div>
                   </Card>
                 )
               })}
-              {dashboard.platforms.length === 0 && <Card><div className="text-center py-5"><ShieldAlert className="mx-auto mb-2 text-slate-600" size={24} /><p className="text-sm text-slate-400">Aucun compte de plateforme n’est relié à votre dossier.</p></div></Card>}
             </div>
-
-            <Card className="mb-6">
-              <div className="flex items-start gap-3">
-                <Clock size={18} className="text-amber-400 mt-0.5" />
-                <div><h2 className="text-sm font-semibold text-white">Ajout de plateforme contrôlé</h2><p className="mt-1 text-xs text-slate-400">Les nouvelles connexions nécessitent l’approbation officielle du partenaire et de l’administration. Aucun connecteur OAuth de démonstration n’est activé.</p></div>
-              </div>
-            </Card>
-          </>
+          </div>
         )}
+
+        {/* Plateformes disponibles */}
+        {notConnectedProviders.length > 0 && (
+          <div>
+            <SectionHeader title="Disponibles" />
+            <div className="space-y-3">
+              {notConnectedProviders.map(p => (
+                <Card key={p.id} className="p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{PROVIDER_ICON[p.provider_code] ?? '🚗'}</span>
+                    <div className="flex-1">
+                      <div className="font-bold text-white">{p.display_name}</div>
+                      <div className="text-[10px] text-slate-400">
+                        {PROVIDER_TYPE_LABEL[p.provider_type] ?? p.provider_type}
+                      </div>
+                    </div>
+
+                    {/* Connect button */}
+                    {connected === p.provider_code ? (
+                      <div className="flex items-center gap-1 text-green-400 text-xs">
+                        <CheckCircle size={14} /> Connecté!
+                      </div>
+                    ) : connecting === p.provider_code ? (
+                      <div className="flex items-center gap-1 text-amber-400 text-xs">
+                        <RefreshCw size={12} className="animate-spin" /> Connexion…
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => void handleConnect(p.provider_code)}
+                        className="px-3 py-1.5 rounded-xl bg-qc-blue text-white text-xs font-semibold hover:bg-qc-blue/90 transition-colors"
+                      >
+                        Connecter
+                      </button>
+                    )}
+                  </div>
+
+                  {/* MOCK badge */}
+                  {p.isMockOnly && (
+                    <div className="mt-2 flex items-center gap-1.5 text-[10px] text-amber-400/70">
+                      <Lock size={9} />
+                      Connexion simulée · Approbation partenaire requise pour production
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div className="py-16 text-center">
+            <RefreshCw className="mx-auto animate-spin text-qc-blue" size={24} />
+            <p className="text-sm text-slate-400 mt-3">Chargement des plateformes…</p>
+          </div>
+        )}
+
+        {/* Architecture info */}
+        <Card className="p-4">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+            Architecture de connexion
+          </div>
+          <div className="space-y-2 text-[10px] text-slate-400">
+            {[
+              { step: '1', label: 'Tu cliques "Connecter"' },
+              { step: '2', label: 'Taximètre.gov → OAuth provider' },
+              { step: '3', label: 'Tu autorises sur la plateforme' },
+              { step: '4', label: 'Token sécurisé — jamais ton mot de passe' },
+              { step: '5', label: 'Activités synchronisées automatiquement' },
+            ].map(item => (
+              <div key={item.step} className="flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold text-white shrink-0">
+                  {item.step}
+                </span>
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
     </AppShell>
   )
