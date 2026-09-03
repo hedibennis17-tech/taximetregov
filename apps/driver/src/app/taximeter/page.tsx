@@ -278,6 +278,8 @@ export default function TaxiMeterPage() {
   useEffect(() => {
     void (async () => {
       try {
+        const token = getToken()
+        if (!token) return  // Pas de session — ne pas appeler l'API
         const data = await apiFetch('/api/taximeter/status') as {
           hasActiveMeter: boolean
           taximeter: { active_trip: { id: string; tripReference: string; status: string; distanceMeters: number; elapsedSeconds: number } | null; fare_version: string } | null
@@ -307,7 +309,7 @@ export default function TaxiMeterPage() {
         fareSnapshot: FareSnapshot; isPilot: boolean
         taximeter: { id: string } | null
       }
-      const resolvedId = (data as { taximeterId?: string }).taximeterId ?? 'unknown'
+      const resolvedId = (data as unknown as { taximeterId?: string }).taximeterId ?? data.tripReference ?? 'unknown'
       setTripReference(data.tripReference)
       setFareVersion(data.fareVersion)
       setFareSnapshot(data.fareSnapshot)
@@ -581,7 +583,7 @@ export default function TaxiMeterPage() {
   // ─── TOP BAR ────────────────────────────────────────────────
 
   const TopBar = () => (
-    <div className={`flex items-center justify-between px-4 py-3 border-b ${tk.statusBar} ${tk.panelBorder}`}>
+    <div className={`flex items-center justify-between px-3 py-2 border-b ${tk.statusBar} ${tk.panelBorder} gap-2 min-h-[48px]`}>
       {/* Left: back + logo */}
       <div className="flex items-center gap-3">
         <button onClick={handleBack} className={`flex items-center gap-1.5 text-xs ${tk.label} hover:${tk.value} transition-colors`}>
@@ -595,15 +597,17 @@ export default function TaxiMeterPage() {
       </div>
 
       {/* Center: status */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 shrink-0">
         <div className={`w-2 h-2 rounded-full ${st.dot}`} />
         <span className={`text-[10px] font-bold tracking-widest ${st.color}`}>{st.label}</span>
       </div>
 
       {/* Right: time + controls */}
       <div className="flex items-center gap-3">
-        <span className={`space-mono text-xs font-bold ${tk.value}`}>{currentTime}</span>
-        <GpsSignal />
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={`space-mono text-[11px] font-bold tabular-nums ${tk.value} whitespace-nowrap`}>{currentTime}</span>
+          <GpsSignal />
+        </div>
         {/* Orientation toggle */}
         <button onClick={() => setOrientation(o => o === 'portrait' ? 'landscape' : 'portrait')}
           className={`p-1.5 rounded-lg border ${tk.panelBorder} ${tk.label} transition-colors`} title="Rotation">
