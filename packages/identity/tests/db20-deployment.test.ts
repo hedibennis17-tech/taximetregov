@@ -20,7 +20,7 @@ import {
 // ─── DEPLOYMENT READINESS ─────────────────────────────────────
 
 describe('DB-20 Deployment Readiness — Tests 1–5', () => {
-  it('[TEST 1] 31 migrations SQL existent', async () => {
+  it('[TEST 1] 32 migrations SQL existent', async () => {
     const { readdirSync } = await import('fs')
     const { resolve, dirname } = await import('path')
     const { fileURLToPath } = await import('url')
@@ -29,8 +29,8 @@ describe('DB-20 Deployment Readiness — Tests 1–5', () => {
       '../migrations'
     )
     const migrations = readdirSync(dir).filter(f => f.endsWith('.sql'))
-    expect(migrations.length).toBe(31)
-    // 0000 through 0030 = 31 migrations, including Module 31 provider revenue transparency.
+    expect(migrations.length).toBe(32)
+    // 0000 through 0031 = 32 migrations, including Module 31 and demo pilot data.
   })
 
   it('[TEST 2] Seed execution order: 16 étapes · juridictions en premier', () => {
