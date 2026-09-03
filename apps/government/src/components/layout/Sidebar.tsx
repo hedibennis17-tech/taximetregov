@@ -8,7 +8,7 @@ import {
   Bell, AlertTriangle, Shield, BarChart2, Settings, Webhook,
   ChevronDown, ChevronRight, Activity, Server, CalendarDays,
   CheckSquare, Workflow, Database, Building, UserCog, Gauge,
-  Brain, Clock, Truck, Lock, Eye, Flag, Code, TestTube, ClipboardCheck
+  Brain, Clock, Truck, Lock, Eye, Flag, Code, TestTube, ClipboardCheck, Layers,
 } from 'lucide-react'
 import { useState } from 'react'
 import { kpiData } from '@/data/mock'
@@ -72,6 +72,7 @@ export function Sidebar() {
       { label:'Simulateur', href:'/simulator', icon:Activity },
     ]},
     { title:'Revenus & Transactions', items:[
+      { label:'🏛️ Transparence transactionnelle', href:'/provider-transparency', icon:Layers },
       { label:'Transactions', href:'/transactions', icon:Receipt },
       { label:'Ledger Gateway', href:'/transactions/gateway', icon:Receipt },
       { label:'Réconciliation', href:'/reconciliation', icon:Scale },
