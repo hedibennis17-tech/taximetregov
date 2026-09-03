@@ -20,7 +20,7 @@ import {
 // ─── DEPLOYMENT READINESS ─────────────────────────────────────
 
 describe('DB-20 Deployment Readiness — Tests 1–5', () => {
-  it('[TEST 1] 30 migrations SQL existent', async () => {
+  it('[TEST 1] 31 migrations SQL existent', async () => {
     const { readdirSync } = await import('fs')
     const { resolve, dirname } = await import('path')
     const { fileURLToPath } = await import('url')
@@ -29,8 +29,8 @@ describe('DB-20 Deployment Readiness — Tests 1–5', () => {
       '../migrations'
     )
     const migrations = readdirSync(dir).filter(f => f.endsWith('.sql'))
-    expect(migrations.length).toBe(30)
-    // 0000 through 0029 = 30 migrations, including driver presence, Supabase Auth, RLS, and government MFA activation.
+    expect(migrations.length).toBe(31)
+    // 0000 through 0030 = 31 migrations, including Module 31 provider revenue transparency.
   })
 
   it('[TEST 2] Seed execution order: 16 étapes · juridictions en premier', () => {
@@ -132,9 +132,9 @@ describe('Règles absolues DB-20 — Tests 6–15', () => {
 // ─── VERIFY SCRIPT LOGIC ──────────────────────────────────────
 
 describe('Verify Script Logic — Tests 16–20', () => {
-  it('[TEST 16] 149 tables attendues (vérification par comptage)', () => {
-    // Verify script checks for 149 application tables after the driver-presence migration.
-    const EXPECTED = 149
+  it('[TEST 16] 155 tables attendues (vérification par comptage)', () => {
+    // Verify script checks for 155 application tables after Module 31 adds six financial transparency tables.
+    const EXPECTED = 155
     expect(EXPECTED).toBeGreaterThan(100)
     expect(EXPECTED).toBeLessThan(200)
   })

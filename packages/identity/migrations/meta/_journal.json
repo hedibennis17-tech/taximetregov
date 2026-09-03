@@ -211,6 +211,13 @@
       "when": 1788391382619,
       "tag": "0029_government_mfa_activation",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1788473761370,
+      "tag": "0030_provider_revenue_transparency",
+      "breakpoints": true
     }
   ]
 }
