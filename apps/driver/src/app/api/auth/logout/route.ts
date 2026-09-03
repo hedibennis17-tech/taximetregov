@@ -1,11 +1,13 @@
 // POST /api/auth/logout
 import { NextRequest } from 'next/server'
-import { db, apiSuccess, apiError } from '@/lib/db'
+import { getDb, apiSuccess, apiError } from '@/lib/db'
+
 import { requireAuth } from '@/lib/auth'
 import { sql } from 'drizzle-orm'
 import { createHash } from 'crypto'
 
 export async function POST(req: NextRequest) {
+  const db = getDb()
   try {
     const token = req.headers.get('authorization')?.replace('Bearer ', '')
       || req.cookies.get('session_token')?.value

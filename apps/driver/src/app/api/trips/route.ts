@@ -3,12 +3,14 @@
 // POST /api/trips/complete — Terminer une course
 
 import { NextRequest } from 'next/server'
-import { db, apiSuccess, apiError } from '@/lib/db'
+import { getDb, apiSuccess, apiError } from '@/lib/db'
+
 import { requireAuth } from '@/lib/auth'
 import { sql } from 'drizzle-orm'
 
 // GET — Historique des courses
 export async function GET(req: NextRequest) {
+  const db = getDb()
   const ctx = await requireAuth(req)
   if (ctx instanceof Response) return ctx
   if (!ctx.driverId) return apiError('Profil chauffeur introuvable', 404)

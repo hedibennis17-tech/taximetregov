@@ -1,10 +1,9 @@
 // ================================================================
 // TAXIMÈTRE.GOV — AUTH MIDDLEWARE
-// Valide session + RBAC sur chaque route API
 // ================================================================
 
 import { NextRequest } from 'next/server'
-import { db, apiError } from './db'
+import { getDb, apiError } from './db'
 import { sql } from 'drizzle-orm'
 
 export interface AuthContext {
@@ -14,17 +13,14 @@ export interface AuthContext {
   driverId: string | null
 }
 
-// Extrait et valide le token de session
 export async function requireAuth(req: NextRequest): Promise<AuthContext | Response> {
   const token = req.headers.get('authorization')?.replace('Bearer ', '')
     || req.cookies.get('session_token')?.value
 
-  if (!token) {
-    return apiError('Non authentifié', 401)
-  }
+  if (!token) return apiError('Non authentifié', 401)
 
   try {
-    // Vérifier la session en base
+    const db = getDb()
     const result = await db.execute(sql`
       SELECT
         s.user_id,
@@ -42,41 +38,26 @@ export async function requireAuth(req: NextRequest): Promise<AuthContext | Respo
       LIMIT 1
     `)
 
-    if (!result.length) {
-      return apiError('Session invalide ou expirée', 401)
-    }
+    if (!result.length) return apiError('Session invalide ou expirée', 401)
 
     const row = result[0] as {
-      user_id: string
-      email: string
-      role: string
-      driver_id: string | null
+      user_id: string; email: string
+      role: string; driver_id: string | null
     }
 
-    return {
-      userId:   row.user_id,
-      email:    row.email,
-      role:     row.role,
-      driverId: row.driver_id,
-    }
+    return { userId: row.user_id, email: row.email, role: row.role, driverId: row.driver_id }
   } catch {
     return apiError('Erreur authentification', 500)
   }
 }
 
-// Guard: driver ne voit que ses propres données
 export function requireDriverScope(ctx: AuthContext, driverId: string): Response | null {
-  if (ctx.role === 'DRIVER' && ctx.driverId !== driverId) {
-    return apiError('Accès refusé', 403)
-  }
+  if (ctx.role === 'DRIVER' && ctx.driverId !== driverId) return apiError('Accès refusé', 403)
   return null
 }
 
-// Guard: rôles gouvernementaux uniquement
 export function requireGovRole(ctx: AuthContext): Response | null {
   const govRoles = ['SUPER_ADMIN', 'GOV_ADMIN', 'GOV_AUDITOR', 'GOV_TAX_OFFICER', 'GOV_INSPECTOR']
-  if (!govRoles.includes(ctx.role)) {
-    return apiError('Accès réservé aux utilisateurs gouvernementaux', 403)
-  }
+  if (!govRoles.includes(ctx.role)) return apiError('Accès réservé aux utilisateurs gouvernementaux', 403)
   return null
 }

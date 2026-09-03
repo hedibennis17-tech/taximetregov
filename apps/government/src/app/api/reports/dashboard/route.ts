@@ -1,10 +1,12 @@
 // GET /api/reports/dashboard — Métriques gouvernementales
 import { NextRequest } from 'next/server'
-import { db, apiSuccess, apiError } from '@/lib/db'
+import { getDb, apiSuccess, apiError } from '@/lib/db'
+
 import { requireAuth, requireGovRole } from '@/lib/auth'
 import { sql } from 'drizzle-orm'
 
 export async function GET(req: NextRequest) {
+  const db = getDb()
   const ctx = await requireAuth(req)
   if (ctx instanceof Response) return ctx
 

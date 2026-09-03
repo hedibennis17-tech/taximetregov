@@ -1,28 +1,27 @@
 // ================================================================
-// TAXIMÈTRE.GOV — DATABASE CLIENT (shared entre driver + gov)
-// Connexion Supabase PostgreSQL
+// TAXIMÈTRE.GOV — DATABASE CLIENT
+// Connexion Supabase PostgreSQL — lazy initialized
 // ================================================================
 
-import { drizzle } from 'drizzle-orm/postgres-js'
+import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
-// Validation DATABASE_URL — jamais hardcodé
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL manquante — configurer dans Vercel Environment Variables')
+let _db: PostgresJsDatabase | null = null
+
+export function getDb(): PostgresJsDatabase {
+  if (_db) return _db
+  const url = process.env.DATABASE_URL
+  if (!url) throw new Error('DATABASE_URL manquante — configurer dans Vercel Environment Variables')
+  const client = postgres(url, {
+    max: 1,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    connect_timeout: 10,
+    idle_timeout: 20,
+  })
+  _db = drizzle(client)
+  return _db
 }
 
-// Pool de connexions optimisé pour Next.js (serverless)
-const client = postgres(process.env.DATABASE_URL, {
-  max: 1,          // Serverless = 1 connexion par instance
-  ssl: { rejectUnauthorized: false },
-  connect_timeout: 10,
-  idle_timeout: 20,
-  max_lifetime: 300,
-})
-
-export const db = drizzle(client)
-
-// Helper: réponse API standardisée
 export function apiSuccess(data: unknown, status = 200) {
   return Response.json({ success: true, data }, { status })
 }

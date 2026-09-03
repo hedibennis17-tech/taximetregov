@@ -4,11 +4,13 @@
 // ================================================================
 
 import { NextRequest } from 'next/server'
-import { db, apiSuccess, apiError } from '@/lib/db'
+import { getDb, apiSuccess, apiError } from '@/lib/db'
+
 import { sql } from 'drizzle-orm'
 import { createHash, randomBytes } from 'crypto'
 
 export async function POST(req: NextRequest) {
+  const db = getDb()
   try {
     const { email, password } = await req.json()
 
