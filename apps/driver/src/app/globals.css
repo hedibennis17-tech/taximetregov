@@ -54,3 +54,15 @@ body {
 
 /* Amount display */
 .amount-display { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+/* TAXIMETER.GOV — Scan line animation */
+@keyframes scan {
+  0%   { transform: translateY(0); opacity: 0.8; }
+  100% { transform: translateY(100px); opacity: 0; }
+}
+
+/* 7-segment font fallback */
+.dseg {
+  font-family: 'DSEG7', 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+}

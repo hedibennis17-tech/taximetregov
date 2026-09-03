@@ -1,65 +1,95 @@
 'use client'
 
 // ================================================================
-// TAXIMÈTRE.GOV — PAGE TAXIMÈTRE
-// Phase 4 — Données réelles · API Backend · GPS téléphone
-// RÈGLE: Taximètre UNIQUEMENT pour TAXI — jamais DELIVERY
+// TAXIMÈTRE.GOV — TAXIMÈTRE NUMÉRIQUE PREMIUM
+// Design: 7 segments · Québec bleu · Dark/Light · Rotation
+// Architecture: API Backend · GPS réel · Calcul serveur
 // ================================================================
 
-import { AppShell } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import {
-  useState, useEffect, useRef, useCallback
-} from 'react'
-import {
-  Shield, AlertCircle, CheckCircle, MapPin,
-  Clock, Gauge, Navigation, ArrowLeft, Pause, Play, Square
+  Wifi, WifiOff, Navigation, NavigationOff,
+  RotateCcw, Sun, Moon, ArrowLeft,
+  Pause, Play, Square, Zap, AlertTriangle, CheckCircle
 } from 'lucide-react'
 import { getToken } from '@/lib/api'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 // ─── TYPES ───────────────────────────────────────────────────
 
-type ServiceMode = 'TAXI' | 'RIDESHARE' | 'DELIVERY' | 'PERSONAL'
+type Theme    = 'dark' | 'light'
+type Orientation = 'portrait' | 'landscape'
 type TripStatus = 'IDLE' | 'STARTING' | 'ACTIVE' | 'PAUSED' | 'STOPPING' | 'COMPLETED' | 'ERROR'
+type TariffCode = 'VILLE_JOUR' | 'VILLE_NUIT' | 'AEROPORT_FIXE' | 'AEROPORT_PRISE' | 'BANLIEUE_JOUR' | 'AUTOROUTE' | 'ZONE_SPECIALE' | 'ATTENTE'
 
-const TAXIMETER_BY_SERVICE: Record<ServiceMode, boolean> = {
-  TAXI:      true,
-  RIDESHARE: false,
-  DELIVERY:  false,
-  PERSONAL:  false,
+interface FareSnapshot {
+  baseFare: string
+  distanceRatePer100m: string
+  timeRatePerMinute: string
+  waitingRatePerMinute: string
+  minimumFare: string
+  airportSurcharge: string
+  currency: string
+  version: string
 }
 
-const SERVICE_CONF: Record<ServiceMode, { icon: string; label: string; color: string; bg: string }> = {
-  TAXI:      { icon: '🚕', label: 'Taxi',      color: 'text-blue-400',   bg: 'bg-blue-500/20'  },
-  RIDESHARE: { icon: '🚗', label: 'Rideshare', color: 'text-slate-300',  bg: 'bg-slate-700'    },
-  DELIVERY:  { icon: '📦', label: 'Livraison', color: 'text-red-400',    bg: 'bg-red-500/10'   },
-  PERSONAL:  { icon: '🏠', label: 'Personnel', color: 'text-slate-500',  bg: 'bg-slate-800'    },
+interface CompletedTrip {
+  tripReference: string
+  receiptReference: string
+  finalAmount: number
+  distanceMeters: number
+  elapsedSeconds: number
+  waitingSeconds: number
 }
 
-function fmt(n: number, decimals = 2) {
-  return n.toFixed(decimals)
+// ─── TARIFFS ─────────────────────────────────────────────────
+
+const TARIFFS: Record<TariffCode, { label: string; icon: string; surcharge: number }> = {
+  VILLE_JOUR:     { label: 'Ville — Jour',         icon: '🌆', surcharge: 0 },
+  VILLE_NUIT:     { label: 'Ville — Nuit',         icon: '🌙', surcharge: 1.5 },
+  AEROPORT_FIXE:  { label: 'Aéroport — Fixe',      icon: '✈️', surcharge: 0 },
+  AEROPORT_PRISE: { label: 'Aéroport — Prise en charge', icon: '🛫', surcharge: 1.5 },
+  BANLIEUE_JOUR:  { label: 'Banlieue — Jour',      icon: '🏘️', surcharge: 0 },
+  AUTOROUTE:      { label: 'Autoroute',             icon: '🛣️', surcharge: 0 },
+  ZONE_SPECIALE:  { label: 'Zone spéciale',         icon: '📍', surcharge: 2.0 },
+  ATTENTE:        { label: 'Attente',               icon: '⏱️', surcharge: 0 },
 }
 
-function formatDuration(sec: number) {
+// ─── HELPERS ─────────────────────────────────────────────────
+
+function formatFare(n: number): string {
+  const s = n.toFixed(2)
+  const [int, dec] = s.split('.')
+  return `${int?.padStart(4, ' ')}.${dec}`
+}
+
+function formatTime(sec: number): string {
   const h = Math.floor(sec / 3600)
   const m = Math.floor((sec % 3600) / 60)
   const s = sec % 60
-  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
-// ─── API CALLS ────────────────────────────────────────────────
+function formatDist(m: number): string {
+  return m >= 1000 ? `${(m / 1000).toFixed(2)}` : `${Math.round(m)}`
+}
 
-async function apiCall(path: string, body?: unknown) {
+function distUnit(m: number): string { return m >= 1000 ? 'km' : 'm' }
+
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371000
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+async function apiFetch(path: string, body?: unknown) {
   const token = getToken()
   const res = await fetch(path, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+    method: body ? 'POST' : 'GET',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: body ? JSON.stringify(body) : undefined,
   })
   const json = await res.json() as { success: boolean; data: unknown; error?: string }
@@ -67,142 +97,190 @@ async function apiCall(path: string, body?: unknown) {
   return json.data
 }
 
-async function apiGet(path: string) {
-  const token = getToken()
-  const res = await fetch(path, {
-    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-  })
-  const json = await res.json() as { success: boolean; data: unknown; error?: string }
-  if (!res.ok || !json.success) throw new Error(json.error ?? `Erreur ${res.status}`)
-  return json.data
+// ─── THEME TOKENS ─────────────────────────────────────────────
+
+const T = {
+  dark: {
+    bg:         'bg-[#000E1A]',
+    panel:      'bg-[#001428]',
+    panelBorder:'border-[#1A3A5C]',
+    fareBox:    'bg-black border-[#0047AB]',
+    fareText:   'text-[#00FF88]',
+    fareGlow:   'drop-shadow-[0_0_18px_rgba(0,255,136,0.7)]',
+    label:      'text-[#4A8FCC]',
+    value:      'text-white',
+    dimText:    'text-[#2A5F8A]',
+    tariffBtn:  'bg-[#001428] border-[#1A3A5C] text-white hover:border-[#0047AB]',
+    tariffSel:  'bg-[#0047AB] border-[#0066DD] text-white',
+    ctrlStart:  'bg-[#003DA5] hover:bg-[#0047AB] text-white',
+    ctrlPause:  'bg-[#1A3A5C] hover:bg-[#243F62] text-[#4A8FCC]',
+    ctrlStop:   'bg-[#3A0A0A] hover:bg-[#4A0A0A] text-[#FF4444] border border-[#FF4444]/30',
+    statusBar:  'bg-[#000E1A] border-[#0A2440]',
+    badge:      'bg-[#0047AB]/20 text-[#4A8FCC] border-[#0047AB]/40',
+    infoSep:    'border-[#0A2440]',
+    text:       'text-white',
+  },
+  light: {
+    bg:         'bg-[#EEF4FF]',
+    panel:      'bg-white',
+    panelBorder:'border-[#B8D0F0]',
+    fareBox:    'bg-[#001428] border-[#0047AB]',
+    fareText:   'text-[#00FF88]',
+    fareGlow:   'drop-shadow-[0_0_12px_rgba(0,255,136,0.5)]',
+    label:      'text-[#5588BB]',
+    value:      'text-[#001428]',
+    dimText:    'text-[#8AAABB]',
+    tariffBtn:  'bg-white border-[#B8D0F0] text-[#001428] hover:border-[#0047AB]',
+    tariffSel:  'bg-[#0047AB] border-[#0066DD] text-white',
+    ctrlStart:  'bg-[#003DA5] hover:bg-[#0047AB] text-white',
+    ctrlPause:  'bg-[#DDEEFF] hover:bg-[#C8E0FF] text-[#0047AB]',
+    ctrlStop:   'bg-[#FFEEEE] hover:bg-[#FFD8D8] text-[#CC2200] border border-[#CC2200]/30',
+    statusBar:  'bg-white border-[#B8D0F0]',
+    badge:      'bg-[#EEF4FF] text-[#0047AB] border-[#B8D0F0]',
+    infoSep:    'border-[#D8E8FF]',
+    text:       'text-[#001428]',
+  }
 }
 
 // ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 
-export default function TaxiPage() {
+export default function TaxiMeterPage() {
   const router = useRouter()
 
-  // Service mode
-  const [serviceMode, setServiceMode] = useState<ServiceMode>('TAXI')
+  // Theme + orientation
+  const [theme, setTheme] = useState<Theme>('dark')
+  const [orientation, setOrientation] = useState<Orientation>('portrait')
 
   // Trip state
   const [tripStatus, setTripStatus]       = useState<TripStatus>('IDLE')
   const [tripReference, setTripReference] = useState<string | null>(null)
   const [tripId, setTripId]               = useState<string | null>(null)
-  const [fareVersion, setFareVersion]     = useState<string | null>(null)
-  const [fareSnapshot, setFareSnapshot]   = useState<Record<string, string> | null>(null)
+  const [fareSnapshot, setFareSnapshot]   = useState<FareSnapshot | null>(null)
+  const [fareVersion, setFareVersion]     = useState<string>('—')
   const [isPilot, setIsPilot]             = useState(true)
+  const [selectedTariff, setSelectedTariff] = useState<TariffCode>('VILLE_JOUR')
 
-  // Compteurs
+  // Counters
   const [elapsedSec, setElapsedSec]   = useState(0)
-  const [distanceM, setDistanceM]     = useState(0)
   const [waitingSec, setWaitingSec]   = useState(0)
-  const [isWaiting, setIsWaiting]     = useState(false)
-
-  // Fare calculé localement depuis fareSnapshot (affichage seulement — final par serveur)
+  const [distanceM, setDistanceM]     = useState(0)
   const [displayFare, setDisplayFare] = useState(0)
+  const [speedKmh, setSpeedKmh]       = useState(0)
 
   // GPS
-  const [gpsStatus, setGpsStatus]       = useState<'unknown' | 'ok' | 'denied' | 'error'>('unknown')
-  const [lastPosition, setLastPosition] = useState<GeolocationPosition | null>(null)
+  const [gpsStatus, setGpsStatus] = useState<'unknown'|'ok'|'denied'|'weak'>('unknown')
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null)
 
   // UI
-  const [error, setError]                 = useState<string | null>(null)
+  const [error, setError]                     = useState<string | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
-  const [completedTrip, setCompletedTrip] = useState<{
-    tripReference: string; finalAmount: number
-    distanceMeters: number; elapsedSeconds: number
-  } | null>(null)
+  const [completedTrip, setCompletedTrip]     = useState<CompletedTrip | null>(null)
+  const [currentTime, setCurrentTime]         = useState('')
+  const [currentDate, setCurrentDate]         = useState('')
 
-  // Refs
-  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null)
-  const gpsWatchRef = useRef<number | null>(null)
-  const prevPosRef  = useRef<{ lat: number; lng: number } | null>(null)
+  const timerRef   = useRef<ReturnType<typeof setInterval> | null>(null)
+  const gpsRef     = useRef<number | null>(null)
+  const prevPosRef = useRef<{ lat: number; lng: number } | null>(null)
 
-  const taximeterOn = TAXIMETER_BY_SERVICE[serviceMode]
+  const tk = T[theme]
+  const isActive = tripStatus === 'ACTIVE' || tripStatus === 'PAUSED'
 
-  // ─── Fare display calculation ─────────────────────────────
+  // ─── Clock ─────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!fareSnapshot || !taximeterOn) { setDisplayFare(0); return }
-    const base     = parseFloat(fareSnapshot.baseFare      ?? '4.10')
-    const distRate = parseFloat(fareSnapshot.distanceRatePer100m ?? '0.185')
-    const timeRate = parseFloat(fareSnapshot.timeRatePerMinute   ?? '0.55')
-    const waitRate = parseFloat(fareSnapshot.waitingRatePerMinute ?? '0.55')
-    const minFare  = parseFloat(fareSnapshot.minimumFare    ?? '4.10')
-    const computed = base
-      + (distanceM / 100) * distRate
-      + (elapsedSec / 60) * timeRate
-      + (waitingSec / 60) * waitRate
-    setDisplayFare(Math.max(computed, minFare))
-  }, [fareSnapshot, distanceM, elapsedSec, waitingSec, taximeterOn])
+    const tick = () => {
+      const now = new Date()
+      setCurrentTime(now.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+      setCurrentDate(now.toLocaleDateString('fr-CA', { weekday: 'short', day: 'numeric', month: 'short' }))
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [])
 
-  // ─── Timer ───────────────────────────────────────────────
+  // ─── Fare display ───────────────────────────────────────────
+
+  useEffect(() => {
+    if (!fareSnapshot) { setDisplayFare(0); return }
+    const surcharge = TARIFFS[selectedTariff]?.surcharge ?? 0
+    const base    = parseFloat(fareSnapshot.baseFare) + surcharge
+    const dist    = (distanceM / 100) * parseFloat(fareSnapshot.distanceRatePer100m)
+    const time    = (elapsedSec / 60)  * parseFloat(fareSnapshot.timeRatePerMinute)
+    const wait    = (waitingSec / 60)  * parseFloat(fareSnapshot.waitingRatePerMinute)
+    const sub     = base + dist + time + wait
+    setDisplayFare(Math.max(sub, parseFloat(fareSnapshot.minimumFare)))
+  }, [fareSnapshot, distanceM, elapsedSec, waitingSec, selectedTariff])
+
+  // ─── Timer ─────────────────────────────────────────────────
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
     timerRef.current = setInterval(() => {
       setElapsedSec(s => s + 1)
-      if (isWaiting) setWaitingSec(w => w + 1)
     }, 1000)
-  }, [isWaiting])
+  }, [])
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
   }, [])
 
-  // ─── GPS ─────────────────────────────────────────────────
-
-  function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-    const R = 6371000
-    const dLat = (lat2 - lat1) * Math.PI / 180
-    const dLng = (lng2 - lng1) * Math.PI / 180
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
-  }
+  // ─── GPS ───────────────────────────────────────────────────
 
   const startGPS = useCallback((currentTripId: string) => {
-    if (!navigator.geolocation) { setGpsStatus('error'); return }
-    gpsWatchRef.current = navigator.geolocation.watchPosition(
+    if (!navigator.geolocation) { setGpsStatus('denied'); return }
+    gpsRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        setGpsStatus('ok')
-        setLastPosition(pos)
+        const acc = pos.coords.accuracy
+        setGpsAccuracy(acc)
+        setGpsStatus(acc < 30 ? 'ok' : 'weak')
+        setSpeedKmh(Math.round((pos.coords.speed ?? 0) * 3.6))
         const { latitude: lat, longitude: lng } = pos.coords
-        if (prevPosRef.current && !isWaiting) {
-          const delta = haversineDistance(prevPosRef.current.lat, prevPosRef.current.lng, lat, lng)
-          if (delta > 5 && delta < 200) {
+        if (prevPosRef.current && tripStatus !== 'PAUSED') {
+          const delta = haversine(prevPosRef.current.lat, prevPosRef.current.lng, lat, lng)
+          if (delta > 3 && delta < 300) {
             setDistanceM(d => d + delta)
-            void apiCall('/api/taximeter/gps', {
+            void apiFetch('/api/taximeter/gps', {
               tripId: currentTripId, latitude: lat, longitude: lng,
-              accuracy: pos.coords.accuracy, speedKmh: (pos.coords.speed ?? 0) * 3.6,
-              distanceDelta: Math.round(delta), elapsedDelta: 1,
+              accuracy: acc, speedKmh: (pos.coords.speed ?? 0) * 3.6, distanceDelta: Math.round(delta),
             }).catch(() => null)
           }
         }
         prevPosRef.current = { lat, lng }
       },
       () => setGpsStatus('denied'),
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+      { enableHighAccuracy: true, maximumAge: 3000, timeout: 15000 }
     )
-  }, [isWaiting])
+  }, [tripStatus])
 
   const stopGPS = useCallback(() => {
-    if (gpsWatchRef.current !== null) {
-      navigator.geolocation.clearWatch(gpsWatchRef.current)
-      gpsWatchRef.current = null
-    }
+    if (gpsRef.current !== null) { navigator.geolocation.clearWatch(gpsRef.current); gpsRef.current = null }
   }, [])
 
   useEffect(() => () => { stopTimer(); stopGPS() }, [stopTimer, stopGPS])
 
-  // ─── Check status on mount ────────────────────────────────
+  // ─── Detect real orientation ────────────────────────────────
+
+  useEffect(() => {
+    const check = () => {
+      setOrientation(window.innerWidth > window.innerHeight ? 'landscape' : 'portrait')
+    }
+    check()
+    window.addEventListener('resize', check)
+    screen.orientation?.addEventListener('change', check)
+    return () => {
+      window.removeEventListener('resize', check)
+      screen.orientation?.removeEventListener('change', check)
+    }
+  }, [])
+
+  // ─── Check active trip on mount ─────────────────────────────
 
   useEffect(() => {
     void (async () => {
       try {
-        const data = await apiGet('/api/taximeter/status') as {
+        const data = await apiFetch('/api/taximeter/status') as {
           hasActiveMeter: boolean
-          taximeter: { active_trip: { id: string; publicTripId: string; tripReference: string; status: string; distanceMeters: number; elapsedSeconds: number } | null } | null
+          taximeter: { active_trip: { id: string; tripReference: string; status: string; distanceMeters: number; elapsedSeconds: number } | null; fare_version: string } | null
         }
         if (data.hasActiveMeter && data.taximeter?.active_trip) {
           const t = data.taximeter.active_trip
@@ -210,336 +288,496 @@ export default function TaxiPage() {
           setTripId(t.id)
           setDistanceM(t.distanceMeters)
           setElapsedSec(t.elapsedSeconds)
+          setFareVersion(data.taximeter.fare_version ?? '—')
           setTripStatus(t.status === 'PAUSED' ? 'PAUSED' : 'ACTIVE')
           if (t.status !== 'PAUSED') { startTimer(); startGPS(t.id) }
         }
-      } catch { /* pas de course active */ }
+      } catch { /* no active trip */ }
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ─── Start trip ───────────────────────────────────────────
+  // ─── Actions ────────────────────────────────────────────────
 
   async function startTrip() {
-    if (tripStatus !== 'IDLE') return
-    setError(null)
-    setTripStatus('STARTING')
+    setError(null); setTripStatus('STARTING')
     try {
-      const data = await apiCall('/api/taximeter/start') as {
-        tripReference: string; publicTripId: string; fareVersion: string
-        fareSnapshot: Record<string, string>; isPilot: boolean
+      const data = await apiFetch('/api/taximeter/start') as {
+        tripReference: string; fareVersion: string
+        fareSnapshot: FareSnapshot; isPilot: boolean
+        taximeter: { id: string } | null
       }
+      const resolvedId = (data as { taximeterId?: string }).taximeterId ?? 'unknown'
       setTripReference(data.tripReference)
       setFareVersion(data.fareVersion)
       setFareSnapshot(data.fareSnapshot)
       setIsPilot(data.isPilot)
+      setTripId(resolvedId)
       setElapsedSec(0); setDistanceM(0); setWaitingSec(0)
       setTripStatus('ACTIVE')
-      startTimer()
-      startGPS(data.tripReference)
-    } catch (e) {
-      setError((e as Error).message)
-      setTripStatus('IDLE')
-    }
+      startTimer(); startGPS(resolvedId)
+    } catch (e) { setError((e as Error).message); setTripStatus('IDLE') }
   }
 
-  // ─── Pause / Resume ───────────────────────────────────────
-
-  async function togglePause() {
+  async function pauseTrip() {
     if (!tripReference) return
     try {
       if (tripStatus === 'ACTIVE') {
-        await apiCall('/api/taximeter/pause', { tripReference })
-        setIsWaiting(true); setTripStatus('PAUSED'); stopTimer()
-        if (gpsWatchRef.current !== null) { navigator.geolocation.clearWatch(gpsWatchRef.current); gpsWatchRef.current = null }
-      } else if (tripStatus === 'PAUSED') {
-        await apiCall('/api/taximeter/resume', { tripReference })
-        setIsWaiting(false); setTripStatus('ACTIVE'); startTimer()
+        await apiFetch('/api/taximeter/pause', { tripReference })
+        setTripStatus('PAUSED'); stopTimer(); stopGPS()
+      } else {
+        await apiFetch('/api/taximeter/resume', { tripReference })
+        setTripStatus('ACTIVE'); startTimer()
         if (tripId) startGPS(tripId)
       }
     } catch (e) { setError((e as Error).message) }
   }
 
-  // ─── Stop trip ────────────────────────────────────────────
-
   async function stopTrip() {
-    if (!tripReference || tripStatus === 'IDLE' || tripStatus === 'STOPPING') return
+    if (!tripReference) return
     setTripStatus('STOPPING'); stopTimer(); stopGPS()
     try {
-      const data = await apiCall('/api/taximeter/stop', {
+      const data = await apiFetch('/api/taximeter/stop', {
         tripReference,
         distanceMeters: Math.round(distanceM),
         elapsedSeconds: elapsedSec,
         waitingSeconds: waitingSec,
-        isAirportTrip:  false,
-      }) as { tripReference: string; finalAmount: number; distanceMeters: number; elapsedSeconds: number }
-      setCompletedTrip(data)
-      setTripStatus('COMPLETED')
+        isAirportTrip: selectedTariff === 'AEROPORT_FIXE' || selectedTariff === 'AEROPORT_PRISE',
+      }) as CompletedTrip
+      setCompletedTrip(data); setTripStatus('COMPLETED')
       setTripReference(null); setFareSnapshot(null)
-    } catch (e) {
-      setError((e as Error).message)
-      setTripStatus('ACTIVE'); startTimer()
-    }
+    } catch (e) { setError((e as Error).message); setTripStatus('ACTIVE'); startTimer() }
   }
 
-  // ─── Leave guard ─────────────────────────────────────────
+  function resetForNewTrip() {
+    setCompletedTrip(null); setTripStatus('IDLE')
+    setElapsedSec(0); setDistanceM(0); setWaitingSec(0); setDisplayFare(0)
+  }
 
   function handleBack() {
-    if (tripStatus === 'ACTIVE' || tripStatus === 'PAUSED') {
-      setShowLeaveConfirm(true)
-    } else {
-      router.push('/home')
-    }
+    if (isActive) setShowLeaveConfirm(true)
+    else router.push('/home')
   }
 
-  // ─── COMPLETED screen ─────────────────────────────────────
+  // ─── TPS/TVQ ────────────────────────────────────────────────
+
+  const tps = displayFare * 0.05
+  const tvq = displayFare * 0.09975
+  const total = displayFare + tps + tvq
+
+  // ─── COMPLETED SCREEN ─────────────────────────────────────
 
   if (tripStatus === 'COMPLETED' && completedTrip) {
+    const tpsC = completedTrip.finalAmount * 0.05
+    const tvqC = completedTrip.finalAmount * 0.09975
+    const totalC = completedTrip.finalAmount + tpsC + tvqC
+
     return (
-      <AppShell>
-        <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
-            <CheckCircle size={32} className="text-green-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Course terminée</h1>
-          <div className="text-5xl font-black text-green-400 mb-2">
-            {new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(completedTrip.finalAmount)}
-          </div>
-          <p className="text-xs text-slate-400 mb-1">Calcul officiel côté serveur</p>
-          <div className="font-mono text-xs text-slate-500 mb-8">{completedTrip.tripReference}</div>
+      <div className={`min-h-screen ${tk.bg} ${tk.text} flex flex-col items-center justify-center p-6 space-grotesk`}>
+        <div className="w-full max-w-sm">
 
-          <div className="grid grid-cols-2 gap-3 w-full max-w-xs mb-8">
-            <div className="bg-slate-800 rounded-2xl p-4 text-center">
-              <div className="font-bold text-white">{(completedTrip.distanceMeters / 1000).toFixed(2)} km</div>
-              <div className="text-[10px] text-slate-400">Distance</div>
-            </div>
-            <div className="bg-slate-800 rounded-2xl p-4 text-center">
-              <div className="font-bold text-white">{formatDuration(completedTrip.elapsedSeconds)}</div>
-              <div className="text-[10px] text-slate-400">Durée</div>
-            </div>
+          {/* Header */}
+          <div className="text-center mb-6">
+            <div className="text-xs font-bold tracking-[0.3em] text-[#4A8FCC] mb-1">TAXIMETER.GOV</div>
+            <div className="text-xs text-[#4A8FCC]/60">REÇU DE COURSE</div>
           </div>
 
-          <button
-            onClick={() => { setTripStatus('IDLE'); setCompletedTrip(null); setElapsedSec(0); setDistanceM(0); setWaitingSec(0) }}
-            className="w-full max-w-xs py-4 rounded-2xl bg-qc-blue text-white font-bold text-lg mb-3"
-          >
-            Nouvelle course
+          {/* Final amount */}
+          <div className={`rounded-2xl border-2 ${tk.fareBox} p-6 text-center mb-4`}>
+            <div className="text-xs text-[#4A8FCC] mb-2 tracking-widest">TOTAL PAYÉ</div>
+            <div className={`dseg text-6xl font-bold ${tk.fareText} ${tk.fareGlow}`}>
+              {formatFare(completedTrip.finalAmount)}
+            </div>
+            <div className="text-xs text-[#4A8FCC] mt-1">CAD $</div>
+          </div>
+
+          {/* Tax breakdown */}
+          <div className={`rounded-xl border ${tk.panelBorder} ${tk.panel} p-4 mb-4`}>
+            {[
+              { label: 'Sous-total', val: `${completedTrip.finalAmount.toFixed(2)} $` },
+              { label: 'TPS (5 %)',  val: `${tpsC.toFixed(2)} $` },
+              { label: 'TVQ (9,975 %)', val: `${tvqC.toFixed(2)} $` },
+            ].map(r => (
+              <div key={r.label} className={`flex justify-between py-2 border-b ${tk.infoSep} last:border-0 text-xs`}>
+                <span className={tk.label}>{r.label}</span>
+                <span className={`font-bold space-mono ${tk.value}`}>{r.val}</span>
+              </div>
+            ))}
+            <div className="flex justify-between pt-3 text-sm font-bold">
+              <span className="text-[#0047AB]">TOTAL TTC</span>
+              <span className={`space-mono ${tk.fareText}`}>{totalC.toFixed(2)} $</span>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2 mb-6">
+            {[
+              { label: 'Distance', val: `${(completedTrip.distanceMeters / 1000).toFixed(2)} km` },
+              { label: 'Durée',    val: formatTime(completedTrip.elapsedSeconds) },
+              { label: 'Attente',  val: formatTime(completedTrip.waitingSeconds) },
+            ].map(s => (
+              <div key={s.label} className={`rounded-xl border ${tk.panelBorder} ${tk.panel} p-3 text-center`}>
+                <div className={`font-bold text-sm space-mono ${tk.value}`}>{s.val}</div>
+                <div className={`text-[10px] mt-0.5 ${tk.label}`}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Ref */}
+          <div className={`text-center text-[10px] ${tk.label} mb-6`}>
+            <div>Réf. officielle</div>
+            <div className={`font-mono font-bold ${tk.value}`}>{completedTrip.tripReference}</div>
+          </div>
+
+          {/* Actions */}
+          <button onClick={resetForNewTrip}
+            className="w-full py-4 rounded-2xl bg-[#003DA5] hover:bg-[#0047AB] text-white font-bold tracking-wide transition-all mb-3">
+            ▶ NOUVELLE COURSE
           </button>
-          <Link href="/home" className="text-sm text-slate-400 hover:text-white">
+          <button onClick={() => router.push('/home')}
+            className={`w-full py-3 rounded-2xl text-sm ${tk.label} transition-all`}>
             ← Retour à l'accueil
-          </Link>
+          </button>
         </div>
-      </AppShell>
+      </div>
     )
   }
 
-  // ─── MAIN SCREEN ──────────────────────────────────────────
+  // ─── LEAVE CONFIRM MODAL ────────────────────────────────────
 
-  const isActive   = tripStatus === 'ACTIVE' || tripStatus === 'PAUSED'
-  const statusConf = {
-    IDLE:     { label: 'Disponible',    dot: 'bg-green-500 animate-pulse' },
-    STARTING: { label: 'Démarrage…',   dot: 'bg-amber-500 animate-pulse' },
-    ACTIVE:   { label: 'En course',     dot: 'bg-green-500' },
-    PAUSED:   { label: 'En attente',    dot: 'bg-amber-500 animate-pulse' },
-    STOPPING: { label: 'Terminaison…', dot: 'bg-red-500 animate-pulse' },
-    COMPLETED:{ label: 'Terminée',     dot: 'bg-blue-500' },
-    ERROR:    { label: 'Erreur',        dot: 'bg-red-500' },
-  }[tripStatus]
-
-  return (
-    <AppShell>
-      {/* Leave confirmation modal */}
-      {showLeaveConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6">
-          <Card className="p-6 max-w-sm w-full text-center">
-            <AlertCircle size={32} className="mx-auto text-amber-400 mb-4" />
-            <h2 className="text-lg font-bold text-white mb-2">⚠️ Course en cours</h2>
-            <p className="text-sm text-slate-400 mb-6">Voulez-vous quitter le taximètre ? La course reste active et sécurisée côté serveur.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowLeaveConfirm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-white text-sm font-semibold">Annuler</button>
-              <button onClick={() => router.push('/home')} className="flex-1 py-3 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-300 text-sm font-semibold">Quitter</button>
-            </div>
-          </Card>
+  const LeaveModal = () => (
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6">
+      <div className={`w-full max-w-sm rounded-2xl border-2 border-[#0047AB] ${tk.panel} p-6`}>
+        <div className="text-center mb-6">
+          <AlertTriangle size={32} className="mx-auto text-amber-400 mb-3" />
+          <h2 className="text-lg font-bold text-white">⚠️ Course active</h2>
+          <p className={`text-sm mt-2 ${tk.label}`}>
+            Voulez-vous quitter le taximètre ?<br />
+            La course reste active et sécurisée côté serveur.
+          </p>
         </div>
-      )}
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => setShowLeaveConfirm(false)}
+            className={`py-3 rounded-xl border ${tk.panelBorder} ${tk.panel} text-sm font-semibold ${tk.value}`}>
+            Annuler
+          </button>
+          <button onClick={() => router.push('/home')}
+            className="py-3 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-400 text-sm font-semibold">
+            Quitter
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <button onClick={handleBack} className="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors">
-          <ArrowLeft size={18} /> Accueil
+  // ─── GPS SIGNAL BARS ────────────────────────────────────────
+
+  const GpsSignal = () => {
+    const strength = gpsStatus === 'ok' ? 3 : gpsStatus === 'weak' ? 1 : 0
+    return (
+      <div className="flex items-end gap-[2px]">
+        {[1, 2, 3].map(i => (
+          <div key={i} className={`w-[3px] rounded-sm transition-colors ${i <= strength ? 'bg-[#00FF88]' : 'bg-[#1A3A5C]'}`}
+            style={{ height: `${4 + i * 3}px` }} />
+        ))}
+      </div>
+    )
+  }
+
+  // ─── STATUS BADGE ───────────────────────────────────────────
+
+  const statusMap: Record<TripStatus, { label: string; color: string; dot: string }> = {
+    IDLE:     { label: 'DISPONIBLE',  color: 'text-[#4A8FCC]',  dot: 'bg-[#4A8FCC]' },
+    STARTING: { label: 'DÉMARRAGE…', color: 'text-amber-400',  dot: 'bg-amber-400 animate-pulse' },
+    ACTIVE:   { label: 'EN COURSE',   color: 'text-[#00FF88]',  dot: 'bg-[#00FF88]' },
+    PAUSED:   { label: 'EN ATTENTE',  color: 'text-amber-400',  dot: 'bg-amber-400 animate-pulse' },
+    STOPPING: { label: 'FERMETURE…', color: 'text-red-400',    dot: 'bg-red-400 animate-pulse' },
+    COMPLETED:{ label: 'TERMINÉE',   color: 'text-[#00FF88]',  dot: 'bg-[#00FF88]' },
+    ERROR:    { label: 'ERREUR',      color: 'text-red-400',    dot: 'bg-red-500' },
+  }
+  const st = statusMap[tripStatus]
+
+  // ─── TARIFF PANEL ───────────────────────────────────────────
+
+  const TariffPanel = ({ vertical = false }) => (
+    <div className={`${vertical ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-2'}`}>
+      {(Object.entries(TARIFFS) as [TariffCode, typeof TARIFFS[TariffCode]][]).map(([code, t]) => (
+        <button
+          key={code}
+          disabled={isActive && code !== selectedTariff}
+          onClick={() => setSelectedTariff(code)}
+          className={`px-3 py-2.5 rounded-xl border text-left transition-all text-xs font-semibold
+            ${selectedTariff === code ? tk.tariffSel : tk.tariffBtn}
+            ${isActive && code !== selectedTariff ? 'opacity-40 cursor-not-allowed' : ''}
+          `}
+        >
+          <span className="mr-1.5">{t.icon}</span>
+          {t.label}
+          {t.surcharge > 0 && <span className="ml-1 text-[9px] opacity-70">+{t.surcharge}$</span>}
         </button>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${statusConf.dot}`} />
-          <span className="text-sm text-slate-300">{statusConf.label}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {gpsStatus === 'ok'
-            ? <Navigation size={16} className="text-green-400" />
-            : <MapPin size={16} className="text-slate-500" />}
-          {isPilot && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold">PILOTE</span>}
-        </div>
-      </div>
+      ))}
+    </div>
+  )
 
-      {/* Service mode selector */}
-      {!isActive && (
-        <div className="px-4 mb-4">
-          <div className="flex gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
-            {(Object.keys(SERVICE_CONF) as ServiceMode[]).map(mode => {
-              const conf = SERVICE_CONF[mode]
-              const isSelected = serviceMode === mode
-              return (
-                <button
-                  key={mode}
-                  onClick={() => setServiceMode(mode)}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-1
-                    ${isSelected ? `${conf.bg} ${conf.color} border border-current/30` : 'text-slate-500'}`}
-                >
-                  <span className="text-base">{conf.icon}</span>
-                  <span>{conf.label}</span>
-                </button>
-              )
-            })}
+  // ─── INFO PANEL ─────────────────────────────────────────────
+
+  const InfoPanel = ({ horizontal = false }) => {
+    const items = [
+      { label: 'VITESSE',   val: `${speedKmh}`, unit: 'km/h', big: true },
+      { label: 'DISTANCE',  val: formatDist(distanceM), unit: distUnit(distanceM) },
+      { label: 'DURÉE',     val: formatTime(elapsedSec), unit: '' },
+      { label: 'ATTENTE',   val: formatTime(waitingSec), unit: '' },
+      { label: 'DATE',      val: currentDate, unit: '' },
+    ]
+    return (
+      <div className={`${horizontal ? 'flex gap-3' : 'space-y-3'}`}>
+        {items.map(item => (
+          <div key={item.label} className={`${horizontal ? 'flex-1' : ''}`}>
+            <div className={`text-[9px] tracking-[0.2em] ${tk.dimText}`}>{item.label}</div>
+            <div className={`space-mono font-bold ${item.big ? 'text-2xl text-[#00FF88]' : 'text-sm'} ${tk.value} leading-tight`}>
+              {item.val}
+              {item.unit && <span className={`text-[9px] ml-1 ${tk.label}`}>{item.unit}</span>}
+            </div>
           </div>
+        ))}
+      </div>
+    )
+  }
+
+  // ─── CONTROLS ───────────────────────────────────────────────
+
+  const Controls = () => (
+    <div className="space-y-2">
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-2 p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+          <AlertTriangle size={12} /> {error}
         </div>
       )}
 
-      {/* Main meter display */}
-      <div className="px-4 mb-4">
-        <div className={`rounded-3xl p-6 border-2 transition-all ${
-          isActive
-            ? tripStatus === 'PAUSED'
-              ? 'bg-amber-500/5 border-amber-500/40'
-              : 'bg-green-500/5 border-green-500/40'
-            : 'bg-slate-900 border-slate-700'
-        }`}>
+      {!isActive ? (
+        <button onClick={() => void startTrip()} disabled={tripStatus === 'STARTING'}
+          className={`w-full py-5 rounded-2xl font-bold text-lg tracking-widest transition-all active:scale-[0.98] disabled:opacity-50 ${tk.ctrlStart} space-grotesk`}>
+          {tripStatus === 'STARTING' ? '⏳ DÉMARRAGE…' : '▶ DÉMARRER LA COURSE'}
+        </button>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => void pauseTrip()}
+            className={`py-4 rounded-2xl font-bold text-sm tracking-wide transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${tk.ctrlPause}`}>
+            {tripStatus === 'PAUSED'
+              ? <><Play size={16} /> REPRENDRE</>
+              : <><Pause size={16} /> PAUSE</>}
+          </button>
+          <button onClick={() => void stopTrip()} disabled={(tripStatus as string) === 'STOPPING'}
+            className={`py-4 rounded-2xl font-bold text-sm tracking-wide transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 ${tk.ctrlStop}`}>
+            <Square size={16} />
+            {String(tripStatus) === 'STOPPING' ? 'ENVOI…' : 'FIN DE COURSE'}
+          </button>
+        </div>
+      )}
+    </div>
+  )
 
-          {/* Fare display */}
-          <div className="text-center mb-6">
-            {taximeterOn ? (
-              <>
-                <div className="text-xs text-slate-400 mb-1">
-                  {isActive ? 'Tarif en cours — calcul final côté serveur' : 'Tarif — prêt à démarrer'}
-                </div>
-                <div className={`font-black tabular-nums transition-all ${isActive ? 'text-6xl text-green-400' : 'text-5xl text-slate-500'}`}>
-                  {new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(displayFare)}
-                </div>
-                {fareVersion && (
-                  <div className="text-[9px] text-slate-600 mt-1">Tarif: {fareVersion}</div>
-                )}
-              </>
-            ) : (
-              <div className="py-4">
-                <div className="text-4xl mb-2">{SERVICE_CONF[serviceMode].icon}</div>
-                <div className="text-sm font-semibold text-slate-400">Mode {SERVICE_CONF[serviceMode].label}</div>
-                <div className="text-xs text-slate-500 mt-1">Taximètre désactivé · Montant fourni par la plateforme</div>
-              </div>
-            )}
-          </div>
+  // ─── TOP BAR ────────────────────────────────────────────────
 
-          {/* Counters */}
-          {taximeterOn && (
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              {[
-                { icon: <Clock size={14} />,    label: 'Durée',    val: formatDuration(elapsedSec) },
-                { icon: <Gauge size={14} />,    label: 'Distance', val: distanceM >= 1000 ? `${fmt(distanceM/1000,1)} km` : `${Math.round(distanceM)} m` },
-                { icon: <Navigation size={14} />, label: 'Attente', val: formatDuration(waitingSec) },
-              ].map(item => (
-                <div key={item.label} className="bg-slate-800/60 rounded-2xl p-3 text-center">
-                  <div className="flex items-center justify-center gap-1 text-slate-400 mb-1">{item.icon}</div>
-                  <div className="font-bold text-white text-sm tabular-nums">{item.val}</div>
-                  <div className="text-[10px] text-slate-500">{item.label}</div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Breakdown */}
-          {isActive && taximeterOn && fareSnapshot && (
-            <div className="space-y-1.5 mb-6">
-              {[
-                { label: 'Prise en charge', val: parseFloat(fareSnapshot.baseFare ?? '4.10') },
-                { label: 'Distance',        val: (distanceM / 100) * parseFloat(fareSnapshot.distanceRatePer100m ?? '0.185') },
-                { label: 'Temps',           val: (elapsedSec / 60) * parseFloat(fareSnapshot.timeRatePerMinute ?? '0.55') },
-                ...(waitingSec > 0 ? [{ label: 'Attente', val: (waitingSec / 60) * parseFloat(fareSnapshot.waitingRatePerMinute ?? '0.55') }] : []),
-              ].map(item => (
-                <div key={item.label} className="flex justify-between text-xs">
-                  <span className="text-slate-400">{item.label}</span>
-                  <span className="text-white font-mono">{new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(item.val)}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
-              <div className="flex items-center gap-2 text-red-400 text-xs">
-                <AlertCircle size={14} /> {error}
-              </div>
-            </div>
-          )}
-
-          {/* Controls */}
-          {!isActive ? (
-            <button
-              onClick={() => void startTrip()}
-              disabled={tripStatus === 'STARTING' || !taximeterOn}
-              className={`w-full py-5 rounded-2xl font-bold text-xl transition-all active:scale-98 disabled:opacity-50
-                ${taximeterOn
-                  ? 'bg-qc-blue text-white shadow-lg shadow-blue-900/30 hover:bg-qc-blue/90'
-                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
-            >
-              {tripStatus === 'STARTING' ? '⏳ Démarrage…' : taximeterOn ? '▶ DÉMARRER LA COURSE' : 'Taximètre non applicable'}
-            </button>
-          ) : (
-            <div className="flex gap-3">
-              <button
-                onClick={() => void togglePause()}
-                className={`flex-1 py-4 rounded-2xl font-bold transition-all active:scale-98 flex items-center justify-center gap-2
-                  ${tripStatus === 'PAUSED'
-                    ? 'bg-green-500/20 border border-green-500/50 text-green-400'
-                    : 'bg-amber-500/20 border border-amber-500/50 text-amber-400'}`}
-              >
-                {tripStatus === 'PAUSED' ? <><Play size={18} /> Reprendre</> : <><Pause size={18} /> Pause</>}
-              </button>
-              <button
-                onClick={() => void stopTrip()}
-                disabled={tripStatus === ('STOPPING' as TripStatus)}
-                className="flex-1 py-4 rounded-2xl font-bold bg-red-500/20 border border-red-500/50 text-red-400 transition-all active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                <Square size={18} /> {(tripStatus as string) === 'STOPPING' ? 'Envoi…' : 'Terminer'}
-              </button>
-            </div>
-          )}
+  const TopBar = () => (
+    <div className={`flex items-center justify-between px-4 py-3 border-b ${tk.statusBar} ${tk.panelBorder}`}>
+      {/* Left: back + logo */}
+      <div className="flex items-center gap-3">
+        <button onClick={handleBack} className={`flex items-center gap-1.5 text-xs ${tk.label} hover:${tk.value} transition-colors`}>
+          <ArrowLeft size={15} /> Accueil
+        </button>
+        <div className="h-4 w-px bg-current opacity-20" />
+        <div>
+          <span className={`text-[9px] font-black tracking-[0.25em] text-[#0047AB]`}>TAXIMETER</span>
+          <span className={`text-[9px] font-black tracking-[0.25em] text-[#4A8FCC]`}>.GOV</span>
         </div>
       </div>
 
-      {/* Status bar */}
-      <div className="px-4 mb-4">
-        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-          <div className="flex items-center gap-2">
-            <Shield size={14} className="text-qc-blue" />
-            <span className="text-[10px] text-slate-400">Calcul certifié côté serveur</span>
+      {/* Center: status */}
+      <div className="flex items-center gap-1.5">
+        <div className={`w-2 h-2 rounded-full ${st.dot}`} />
+        <span className={`text-[10px] font-bold tracking-widest ${st.color}`}>{st.label}</span>
+      </div>
+
+      {/* Right: time + controls */}
+      <div className="flex items-center gap-3">
+        <span className={`space-mono text-xs font-bold ${tk.value}`}>{currentTime}</span>
+        <GpsSignal />
+        {/* Orientation toggle */}
+        <button onClick={() => setOrientation(o => o === 'portrait' ? 'landscape' : 'portrait')}
+          className={`p-1.5 rounded-lg border ${tk.panelBorder} ${tk.label} transition-colors`} title="Rotation">
+          <RotateCcw size={13} />
+        </button>
+        {/* Theme toggle */}
+        <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+          className={`p-1.5 rounded-lg border ${tk.panelBorder} ${tk.label} transition-colors`}>
+          {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
+        </button>
+      </div>
+    </div>
+  )
+
+  // ─── FARE BOX ───────────────────────────────────────────────
+
+  const FareBox = () => (
+    <div className={`rounded-2xl border-2 ${tk.fareBox} p-4 relative overflow-hidden`}>
+      {/* Scan line animation */}
+      {isActive && tripStatus === 'ACTIVE' && (
+        <div className="absolute inset-x-0 top-0 h-px bg-[#00FF88]/30 animate-[scan_2s_linear_infinite]" />
+      )}
+      <div className={`text-[10px] tracking-[0.3em] text-center mb-2 ${gpsStatus === 'ok' ? 'text-[#4A8FCC]' : 'text-amber-400'}`}>
+        TOTAL À PAYER — CAD $
+      </div>
+      <div className={`dseg text-center font-bold ${tk.fareText} ${tk.fareGlow} leading-none`}
+        style={{ fontSize: 'clamp(48px, 12vw, 80px)', letterSpacing: '0.05em' }}>
+        {formatFare(isActive || displayFare > 0 ? displayFare : 0)}
+      </div>
+      {/* TPS/TVQ */}
+      {(isActive || displayFare > 0) && (
+        <div className="flex justify-center gap-4 mt-2">
+          <span className={`text-[9px] space-mono ${tk.dimText}`}>TPS {tps.toFixed(2)}</span>
+          <span className={`text-[9px] space-mono ${tk.dimText}`}>TVQ {tvq.toFixed(2)}</span>
+          <span className={`text-[9px] space-mono text-[#00CC66]`}>TTC {total.toFixed(2)}$</span>
+        </div>
+      )}
+      {/* Fare version */}
+      {fareVersion !== '—' && (
+        <div className={`text-[8px] text-center mt-1 ${tk.dimText}`}>{fareVersion}{isPilot && ' · PILOTE'}</div>
+      )}
+    </div>
+  )
+
+  // ─── PILOT BANNER ───────────────────────────────────────────
+
+  const PilotBanner = () => isPilot ? (
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+      <Zap size={10} className="text-amber-400 shrink-0" />
+      <span className="text-[9px] text-amber-400 font-medium">Mode pilote · Calcul officiel côté serveur</span>
+    </div>
+  ) : null
+
+  // ─── TRIP REF ───────────────────────────────────────────────
+
+  const TripRef = () => tripReference ? (
+    <div className={`text-center text-[9px] ${tk.dimText}`}>
+      <span className="tracking-widest">RÉF. OFFICIELLE </span>
+      <span className={`space-mono font-bold ${tk.value}`}>{tripReference}</span>
+    </div>
+  ) : null
+
+  // ─── PORTRAIT LAYOUT ────────────────────────────────────────
+
+  if (orientation === 'portrait') {
+    return (
+      <div className={`min-h-screen ${tk.bg} flex flex-col space-grotesk`}>
+        {showLeaveConfirm && <LeaveModal />}
+        <TopBar />
+
+        <div className="flex-1 px-4 py-3 space-y-3 overflow-y-auto">
+          <FareBox />
+          <PilotBanner />
+
+          {/* Info row */}
+          <div className={`grid grid-cols-4 gap-2 px-1`}>
+            {[
+              { label: 'km/h',  val: String(speedKmh) },
+              { label: 'km',    val: formatDist(distanceM) },
+              { label: 'durée', val: formatTime(elapsedSec) },
+              { label: 'attente', val: formatTime(waitingSec) },
+            ].map(item => (
+              <div key={item.label} className={`rounded-xl border ${tk.panelBorder} ${tk.panel} p-2 text-center`}>
+                <div className={`space-mono font-bold text-sm ${tk.value}`}>{item.val}</div>
+                <div className={`text-[9px] ${tk.label}`}>{item.label}</div>
+              </div>
+            ))}
           </div>
+
+          <Controls />
+          <TripRef />
+
+          {/* Tariffs */}
+          <div>
+            <div className={`text-[9px] tracking-[0.25em] ${tk.dimText} mb-2`}>TARIFS & SERVICES</div>
+            <TariffPanel />
+          </div>
+        </div>
+
+        {/* Bottom GPS bar */}
+        <div className={`px-4 py-2 border-t ${tk.statusBar} ${tk.panelBorder} flex items-center justify-between`}>
           <div className="flex items-center gap-2">
             {gpsStatus === 'ok'
-              ? <><Navigation size={12} className="text-green-400" /><span className="text-[10px] text-green-400">GPS actif</span></>
-              : gpsStatus === 'denied'
-              ? <><MapPin size={12} className="text-red-400" /><span className="text-[10px] text-red-400">GPS refusé</span></>
-              : <><MapPin size={12} className="text-slate-500" /><span className="text-[10px] text-slate-500">GPS inactif</span></>}
+              ? <Navigation size={12} className="text-[#00FF88]" />
+              : <NavigationOff size={12} className="text-red-400" />}
+            <span className={`text-[10px] space-mono ${gpsStatus === 'ok' ? 'text-[#00FF88]' : 'text-red-400'}`}>
+              GPS {gpsStatus === 'ok' ? 'ACTIF' : gpsStatus === 'denied' ? 'REFUSÉ' : gpsStatus === 'weak' ? 'FAIBLE' : 'INACTIF'}
+            </span>
+            {gpsAccuracy && <span className={`text-[9px] ${tk.dimText}`}>±{Math.round(gpsAccuracy)}m</span>}
+          </div>
+          <div className="flex items-center gap-1">
+            <Wifi size={11} className="text-[#0047AB]" />
+            <span className={`text-[9px] ${tk.label}`}>Connecté · Supabase</span>
           </div>
         </div>
       </div>
+    )
+  }
 
-      {/* Trip reference */}
-      {tripReference && (
-        <div className="px-4 mb-4">
-          <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
-            <div className="text-[9px] text-slate-500 uppercase tracking-wider mb-1">Référence officielle</div>
-            <div className="font-mono text-sm text-white font-bold">{tripReference}</div>
+  // ─── LANDSCAPE LAYOUT ────────────────────────────────────────
+
+  return (
+    <div className={`min-h-screen ${tk.bg} flex flex-col space-grotesk`}>
+      {showLeaveConfirm && <LeaveModal />}
+      <TopBar />
+
+      <div className="flex-1 flex gap-3 px-3 py-3 overflow-hidden">
+        {/* Left panel — infos */}
+        <div className={`w-36 shrink-0 rounded-2xl border ${tk.panelBorder} ${tk.panel} p-3 flex flex-col gap-3`}>
+          {/* Speed */}
+          <div className="text-center">
+            <div className={`dseg text-4xl font-bold text-[#00FF88] ${tk.fareGlow}`}>{speedKmh}</div>
+            <div className={`text-[9px] tracking-widest ${tk.dimText}`}>km/h</div>
+          </div>
+          <div className={`border-t ${tk.infoSep}`} />
+          <InfoPanel />
+          <div className={`border-t ${tk.infoSep}`} />
+          {/* GPS */}
+          <div className="flex flex-col items-center gap-1">
+            <GpsSignal />
+            <span className={`text-[9px] ${gpsStatus === 'ok' ? 'text-[#00FF88]' : 'text-amber-400'}`}>
+              {gpsStatus === 'ok' ? 'GPS FORT' : gpsStatus === 'weak' ? 'GPS FAIBLE' : 'GPS —'}
+            </span>
           </div>
         </div>
-      )}
-    </AppShell>
+
+        {/* Centre — fare + controls */}
+        <div className="flex-1 flex flex-col gap-3 min-w-0">
+          <FareBox />
+          <PilotBanner />
+          <Controls />
+          <TripRef />
+        </div>
+
+        {/* Right panel — tariffs */}
+        <div className={`w-44 shrink-0 rounded-2xl border ${tk.panelBorder} ${tk.panel} p-3`}>
+          <div className={`text-[9px] tracking-[0.25em] ${tk.dimText} mb-2`}>TARIFS</div>
+          <TariffPanel vertical />
+        </div>
+      </div>
+
+      {/* GPS bar */}
+      <div className={`px-4 py-1.5 border-t ${tk.statusBar} ${tk.panelBorder} flex items-center justify-between`}>
+        <div className="flex items-center gap-2">
+          <Navigation size={11} className={gpsStatus === 'ok' ? 'text-[#00FF88]' : 'text-amber-400'} />
+          <span className={`text-[9px] space-mono ${gpsStatus === 'ok' ? 'text-[#00FF88]' : 'text-amber-400'}`}>
+            GPS {gpsStatus === 'ok' ? 'ACTIF' : 'FAIBLE'}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Wifi size={10} className="text-[#0047AB]" />
+          <span className={`text-[9px] ${tk.label}`}>Connecté · Supabase</span>
+        </div>
+      </div>
+    </div>
   )
 }
