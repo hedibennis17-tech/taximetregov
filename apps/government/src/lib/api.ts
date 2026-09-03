@@ -171,3 +171,159 @@ export const statusConfig: Record<string, { label: string; color: string }> = {
   UNDER_REVIEW:        { label: 'En révision',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
   DOCUMENTS_REQUIRED:  { label: 'Docs requis',   color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
 }
+
+// ─── Tax Center ───────────────────────────────────────────────
+
+export interface TaxSummary {
+  total_tps:          string
+  total_tvq:          string
+  total_tax:          string
+  total_gross:        string
+  taxi_gross:         string
+  rideshare_gross:    string
+  delivery_gross:     string
+  drivers_with_revenue: string
+}
+
+export interface TaxPeriod {
+  id:                     string
+  period_start:           string
+  period_end:             string
+  status:                 string
+  tps_status:             string
+  tvq_status:             string
+  filing_due_date:        string
+  gross_revenue_taxi:     string
+  gross_revenue_rideshare: string
+  gross_revenue_delivery: string
+  public_driver_id:       string
+  first_name:             string
+  last_name:              string
+}
+
+export function useTaxCenter() {
+  const [data, setData]       = useState<{ summary: TaxSummary; periods: TaxPeriod[]; registrations: unknown[] } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState<string | null>(null)
+
+  const fetch_ = useCallback(async () => {
+    try {
+      setLoading(true); setError(null)
+      const d = await apiFetch<typeof data>('/api/tax')
+      setData(d)
+    } catch (e) { setError((e as Error).message) }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { void fetch_() }, [fetch_])
+  return { taxData: data, loading, error, refresh: fetch_ }
+}
+
+// ─── Audit Logs ───────────────────────────────────────────────
+
+export interface AuditLog {
+  id:                         string
+  action:                     string
+  module:                     string
+  severity:                   string
+  result:                     string
+  resource_type:              string | null
+  resource_id:                string | null
+  occurred_at:                string
+  actor_type:                 string
+  actor_role:                 string | null
+  actor_email:                string | null
+  subject_driver_public_id:   string | null
+}
+
+export function useAuditLogs(opts: { module?: string; severity?: string; search?: string } = {}) {
+  const [logs, setLogs]       = useState<AuditLog[]>([])
+  const [total, setTotal]     = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState<string | null>(null)
+
+  const fetch_ = useCallback(async () => {
+    try {
+      setLoading(true); setError(null)
+      const params = new URLSearchParams({ limit: '50' })
+      if (opts.module)   params.set('module', opts.module)
+      if (opts.severity) params.set('severity', opts.severity)
+      if (opts.search)   params.set('search', opts.search)
+      const result = await apiFetch<{ logs: AuditLog[]; total: number }>(`/api/audit?${params}`)
+      setLogs(result.logs)
+      setTotal(result.total)
+    } catch (e) { setError((e as Error).message) }
+    finally { setLoading(false) }
+  }, [opts.module, opts.severity, opts.search])
+
+  useEffect(() => { void fetch_() }, [fetch_])
+  return { logs, total, loading, error, refresh: fetch_ }
+}
+
+// ─── Transactions ────────────────────────────────────────────
+
+export interface Transaction {
+  id:               string
+  source_type:      string
+  activity_type:    string
+  entry_type:       string
+  gross_amount:     string
+  fee_amount:       string
+  tip_amount:       string
+  net_amount:       string
+  currency:         string
+  activity_date:    string
+  is_settled:       boolean
+  source_reference: string | null
+  public_driver_id: string
+  first_name:       string
+  last_name:        string
+}
+
+export function useTransactions(opts: { source?: string; driverId?: string } = {}) {
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [totals, setTotals]             = useState<unknown[]>([])
+  const [total, setTotal]               = useState(0)
+  const [loading, setLoading]           = useState(true)
+  const [error, setError]               = useState<string | null>(null)
+
+  const fetch_ = useCallback(async () => {
+    try {
+      setLoading(true); setError(null)
+      const params = new URLSearchParams({ limit: '50' })
+      if (opts.source)   params.set('source', opts.source)
+      if (opts.driverId) params.set('driver_id', opts.driverId)
+      const result = await apiFetch<{ transactions: Transaction[]; totals: unknown[]; total: number }>(
+        `/api/transactions?${params}`
+      )
+      setTransactions(result.transactions)
+      setTotals(result.totals)
+      setTotal(result.total)
+    } catch (e) { setError((e as Error).message) }
+    finally { setLoading(false) }
+  }, [opts.source, opts.driverId])
+
+  useEffect(() => { void fetch_() }, [fetch_])
+  return { transactions, totals, total, loading, error, refresh: fetch_ }
+}
+
+// ─── Driver Detail ────────────────────────────────────────────
+
+export function useDriverDetail(id: string) {
+  const [data, setData]       = useState<unknown | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState<string | null>(null)
+
+  const fetch_ = useCallback(async () => {
+    if (!id) return
+    try {
+      setLoading(true); setError(null)
+      const d = await apiFetch<unknown>(`/api/drivers/${id}`)
+      setData(d)
+    } catch (e) { setError((e as Error).message) }
+    finally { setLoading(false) }
+  }, [id])
+
+  useEffect(() => { void fetch_() }, [fetch_])
+  return { driverDetail: data, loading, error, refresh: fetch_ }
+}

@@ -1,220 +1,139 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
 import { PageHeader, Card, KpiCard } from '@/components/ui'
-import { mockTaxPeriods, mockDeclarations, taxRuleSets, controlCenterKpis, type TaxPeriodStatus, type DeclarationStatus } from '@/data/compliance.mock'
+import { useTaxCenter, money } from '@/lib/api'
 import { useState } from 'react'
-import { Percent, CheckCircle, AlertCircle, Clock, FileText, Scale } from 'lucide-react'
+import { RefreshCw, DollarSign, TrendingUp } from 'lucide-react'
 
-const fmt = (n: number) => new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(n)
-
-const periodStatusColors: Record<TaxPeriodStatus, string> = {
-  OPEN: 'bg-blue-100 text-blue-700', READY: 'bg-indigo-100 text-indigo-700',
-  FILED: 'bg-amber-100 text-amber-700', UNDER_REVIEW: 'bg-orange-100 text-orange-700',
-  ACCEPTED: 'bg-green-100 text-green-700', ADJUSTED: 'bg-purple-100 text-purple-700',
-  CLOSED: 'bg-slate-100 text-slate-600',
-}
-const declarationColors: Record<DeclarationStatus, string> = {
-  DRAFT: 'bg-slate-100 text-slate-600', SUBMITTED: 'bg-blue-100 text-blue-700',
-  RECEIVED: 'bg-indigo-100 text-indigo-700', UNDER_REVIEW: 'bg-amber-100 text-amber-700',
-  ACCEPTED: 'bg-green-100 text-green-700', REJECTED: 'bg-red-100 text-red-700',
-  AMENDED: 'bg-purple-100 text-purple-700',
+const periodStatus: Record<string, { label: string; color: string }> = {
+  OPEN:          { label: 'Ouverte',       color: 'text-blue-400 bg-blue-500/10' },
+  FILED:         { label: 'Déclarée',      color: 'text-green-400 bg-green-500/10' },
+  ACCEPTED:      { label: 'Acceptée',      color: 'text-green-400 bg-green-500/10' },
+  CLOSED:        { label: 'Fermée',        color: 'text-slate-400 bg-slate-800' },
+  CALCULATING:   { label: 'En calcul',     color: 'text-amber-400 bg-amber-500/10' },
+  READY_TO_FILE: { label: 'Prête',         color: 'text-purple-400 bg-purple-500/10' },
 }
 
 export default function TaxCenterPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'periods' | 'declarations' | 'rules'>('overview')
-  const { tps, tvq, taxableRevenue, reportedRevenue } = controlCenterKpis
+  const { taxData, loading, error, refresh } = useTaxCenter()
+  const [tab, setTab] = useState<'summary' | 'periods'>('summary')
 
-  const tabs = [
-    { key: 'overview', label: 'Aperçu' },
-    { key: 'periods', label: 'Périodes fiscales' },
-    { key: 'declarations', label: 'Déclarations' },
-    { key: 'rules', label: 'Règles fiscales' },
-  ] as const
+  if (loading) return (
+    <AppShell><PageHeader title="Centre fiscal" subtitle="Chargement…" />
+      <div className="py-20 text-center"><RefreshCw className="mx-auto animate-spin text-qc-blue" size={24} /></div>
+    </AppShell>
+  )
+
+  if (!taxData) return (
+    <AppShell><PageHeader title="Centre fiscal" subtitle="Erreur" />
+      <div className="px-6 py-8 text-center">
+        <p className="text-sm text-red-400 mb-4">{error ?? 'Données indisponibles.'}</p>
+        <button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">Réessayer</button>
+      </div>
+    </AppShell>
+  )
+
+  const s = taxData.summary
 
   return (
     <AppShell>
-      <PageHeader
-        title="Tax Control Center"
-        subtitle="TPS 5% · TVQ 9.975% · Règles versionnées · Tax Engine centralisé"
-      />
+      <PageHeader title="Centre fiscal" subtitle={`TPS/TVQ · Données Supabase · ${taxData.periods.length} période(s)`} />
+      <div className="px-4 md:px-6 space-y-4 pb-8">
 
-      {/* Important rule */}
-      <div className="flex items-start gap-2 px-4 py-3 mb-5 rounded-xl bg-blue-50 border border-blue-200">
-        <Scale size={14} className="text-qc-blue mt-0.5 shrink-0" />
-        <p className="text-xs text-blue-700">
-          <strong>Architecture Tax Engine :</strong> Les taxes ne sont jamais calculées directement dans l'interface. Toutes les règles fiscales sont versionnées et proviennent du Tax Rule Service. Une ancienne transaction utilise les taux en vigueur à sa date.
-        </p>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 mb-5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-fit">
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => setActiveTab(t.key)}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === t.key ? 'bg-white dark:bg-slate-900 text-qc-blue shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
-            {t.label}
+        {/* Tabs */}
+        <div className="flex gap-2">
+          {(['summary', 'periods'] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${tab === t ? 'bg-qc-blue text-white' : 'bg-slate-800 text-slate-400'}`}>
+              {t === 'summary' ? '📊 Résumé annuel' : '📋 Périodes fiscales'}
+            </button>
+          ))}
+          <button onClick={() => void refresh()} className="ml-auto px-3 py-2 rounded-xl bg-slate-800 text-slate-400 text-xs flex items-center gap-1">
+            <RefreshCw size={12} /> Actualiser
           </button>
-        ))}
-      </div>
+        </div>
 
-      {/* OVERVIEW */}
-      {activeTab === 'overview' && (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-            <KpiCard label="TPS Perçue (5%)" value={fmt(tps)} icon={<Percent size={16} />} color="blue" sub="Fédérale — Canada" />
-            <KpiCard label="TVQ Perçue (9.975%)" value={fmt(tvq)} icon={<Percent size={16} />} color="purple" sub="Provinciale — Québec" />
-            <KpiCard label="Total taxes" value={fmt(tps + tvq)} icon={<Percent size={16} />} color="green" sub="14.975% combiné" />
-            <KpiCard label="Revenus taxables" value={fmt(taxableRevenue)} icon={<Scale size={16} />} color="blue" />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-            <KpiCard label="Taxes remises" value={fmt(Math.round((tps + tvq) * 0.85))} color="green" sub="85% du total" />
-            <KpiCard label="En attente" value={fmt(Math.round((tps + tvq) * 0.15))} color="orange" sub="15% — Q3 2026" />
-            <KpiCard label="Remboursements" value={fmt(42300)} color="purple" />
-            <KpiCard label="Ajustements" value={fmt(18900)} color="gray" />
-          </div>
-
-          {/* Tax reconciliation */}
-          <Card className="mb-5 p-4">
-            <div className="font-semibold text-sm text-slate-700 dark:text-slate-200 mb-4">Réconciliation revenus enregistrés vs déclarés</div>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              {[
-                { label: 'Revenus enregistrés (Ledger)', val: fmt(reportedRevenue), color: 'text-slate-700 dark:text-slate-200', bg: 'bg-slate-50 dark:bg-slate-800' },
-                { label: 'Revenus déclarés', val: fmt(reportedRevenue - 2209), color: 'text-slate-700 dark:text-slate-200', bg: 'bg-slate-50 dark:bg-slate-800' },
-                { label: 'Écart fiscal', val: fmt(2209), color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-950' },
-              ].map(r => (
-                <div key={r.label} className={`p-4 rounded-xl ${r.bg} text-center`}>
-                  <div className="text-[10px] text-slate-500 mb-1">{r.label}</div>
-                  <div className={`text-xl font-bold font-mono ${r.color}`}>{r.val}</div>
-                </div>
-              ))}
+        {tab === 'summary' && (
+          <>
+            {/* KPIs Taxes */}
+            <div>
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Taxes collectées (année)</div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <KpiCard label="TPS (5%)"       value={money(s.total_tps)}   icon={<DollarSign size={16} />} color="blue"   large />
+                <KpiCard label="TVQ (9.975%)"   value={money(s.total_tvq)}   icon={<DollarSign size={16} />} color="purple" large />
+                <KpiCard label="Total taxes"    value={money(s.total_tax)}   icon={<TrendingUp size={16} />} color="green"  large />
+              </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-amber-50 border border-amber-200">
-              <AlertCircle size={13} className="text-amber-600 shrink-0" />
-              <p className="text-xs text-amber-700">
-                <strong>Écart de 2 209 $ :</strong> Peut indiquer un délai de déclaration, un ajustement en cours ou un dossier à réviser. Analyse humaine requise avant toute action.
-              </p>
+
+            {/* KPIs Revenus */}
+            <div>
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Revenus imposables (année)</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <KpiCard label="Total brut"    value={money(s.total_gross)}    icon={<DollarSign size={16} />} color="blue" large />
+                <KpiCard label="Taxi"          value={money(s.taxi_gross)}     icon={<DollarSign size={16} />} color="green" />
+                <KpiCard label="Rideshare"     value={money(s.rideshare_gross)} icon={<DollarSign size={16} />} color="purple" />
+                <KpiCard label="Livraison"     value={money(s.delivery_gross)} icon={<DollarSign size={16} />} color="orange" />
+              </div>
             </div>
-          </Card>
-        </>
-      )}
 
-      {/* PERIODS */}
-      {activeTab === 'periods' && (
-        <Card>
-          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="font-semibold text-sm text-slate-700 dark:text-slate-200">Périodes fiscales</div>
-            <div className="text-[10px] text-slate-400">TaxPeriod · Jurisdiction: QC-CA · TPS 5% + TVQ 9.975%</div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800">
-                  {['Chauffeur','Période','Revenus','Taxables','TPS','TVQ','Perçue','Remise','Solde','Statut'].map(h => (
-                    <th key={h} className="px-3 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {mockTaxPeriods.map(p => (
-                  <tr key={p.id} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800">
-                    <td className="px-3 py-2.5">
-                      <div className="text-xs font-medium text-slate-700 dark:text-slate-200">{p.driverName}</div>
-                      <div className="font-mono text-[10px] text-qc-blue">{p.driverId}</div>
-                    </td>
-                    <td className="px-3 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400">{p.periodLabel}</td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-400">{fmt(p.revenue)}</td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-400">{fmt(p.taxableRevenue)}</td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-blue-600">{fmt(p.tps)}</td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-purple-600">{fmt(p.tvq)}</td>
-                    <td className="px-3 py-2.5 font-mono text-xs font-bold text-slate-700 dark:text-slate-200">{fmt(p.taxCollected)}</td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-green-600">{fmt(p.taxRemitted)}</td>
-                    <td className="px-3 py-2.5 font-mono text-xs font-bold text-orange-600">{fmt(p.balance)}</td>
-                    <td className="px-3 py-2.5">
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${periodStatusColors[p.status]}`}>{p.status}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* DECLARATIONS */}
-      {activeTab === 'declarations' && (
-        <Card>
-          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="font-semibold text-sm text-slate-700 dark:text-slate-200">Déclarations fiscales</div>
-            <div className="text-[10px] text-slate-400">DRAFT → SUBMITTED → RECEIVED → UNDER_REVIEW → ACCEPTED / REJECTED / AMENDED</div>
-          </div>
-          <div className="divide-y divide-slate-50 dark:divide-slate-800">
-            {mockDeclarations.map(d => (
-              <div key={d.id} className="px-4 py-4 flex items-start gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 flex-wrap mb-2">
-                    <span className="font-mono text-xs font-bold text-qc-blue">{d.driverId}</span>
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{d.driverName}</span>
-                    <span className="text-xs text-slate-500">{d.period}</span>
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${declarationColors[d.status]}`}>{d.status}</span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-4">
-                    {[
-                      { l: 'Revenus', v: fmt(d.revenue) },
-                      { l: 'TPS', v: fmt(d.tps) },
-                      { l: 'TVQ', v: fmt(d.tvq) },
-                      { l: 'Total taxes', v: fmt(d.totalTax) },
-                    ].map(r => (
-                      <div key={r.l} className="text-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                        <div className="text-[9px] text-slate-400">{r.l}</div>
-                        <div className="text-sm font-bold font-mono text-slate-700 dark:text-slate-200">{r.v}</div>
+            {/* Enregistrements */}
+            <Card className="p-4">
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Statuts d'enregistrement TPS/TVQ</div>
+              <div className="space-y-2">
+                {taxData.registrations.map((r, i) => {
+                  const row = r as { tps_status: string; tvq_status: string; count: string }
+                  return (
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-slate-800 last:border-0">
+                      <div className="text-xs">
+                        <span className="text-white">TPS: {row.tps_status}</span>
+                        <span className="text-slate-400 mx-2">·</span>
+                        <span className="text-white">TVQ: {row.tvq_status}</span>
                       </div>
-                    ))}
-                  </div>
-                  {d.notes && (
-                    <p className="text-xs text-orange-600 mt-2 flex items-center gap-1.5">
-                      <AlertCircle size={11} /> {d.notes}
-                    </p>
-                  )}
-                  {d.reviewedBy && (
-                    <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1.5">
-                      <CheckCircle size={10} className="text-green-500" /> Révisé par {d.reviewedBy} · {d.reviewedAt ? new Date(d.reviewedAt).toLocaleDateString('fr-CA') : ''}
-                    </p>
-                  )}
-                </div>
+                      <span className="text-sm font-bold text-white">{row.count} chauffeur(s)</span>
+                    </div>
+                  )
+                })}
+                {taxData.registrations.length === 0 && (
+                  <p className="text-sm text-slate-500">Aucun compte fiscal enregistré.</p>
+                )}
               </div>
-            ))}
-          </div>
-        </Card>
-      )}
+            </Card>
+          </>
+        )}
 
-      {/* TAX RULES */}
-      {activeTab === 'rules' && (
-        <Card>
-          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="font-semibold text-sm text-slate-700 dark:text-slate-200">Règles fiscales versionnées — TaxRuleSet</div>
-            <div className="text-[10px] text-slate-400">Les taux sont versionnés. Une ancienne transaction utilise les taux applicables à sa date.</div>
-          </div>
-          <div className="divide-y divide-slate-50 dark:divide-slate-800">
-            {taxRuleSets.map(r => (
-              <div key={r.id} className="px-4 py-4 flex items-center gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className="text-sm font-bold text-qc-blue">{(r.rate * 100).toFixed(3)}%</span>
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{r.taxType}</span>
-                    <span className="text-xs text-slate-500">{r.jurisdiction}</span>
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${r.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>{r.status}</span>
+        {tab === 'periods' && (
+          <div className="space-y-3">
+            {taxData.periods.length === 0 ? (
+              <Card className="py-12 text-center">
+                <p className="text-sm text-slate-400">Aucune période fiscale trouvée.</p>
+              </Card>
+            ) : taxData.periods.map((period) => {
+              const st = periodStatus[period.status] ?? { label: period.status, color: 'text-slate-400 bg-slate-800' }
+              return (
+                <Card key={period.id} className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="font-semibold text-white">{period.first_name} {period.last_name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">{period.public_driver_id}</div>
+                    </div>
+                    <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${st.color}`}>{st.label}</span>
                   </div>
-                  <div className="text-[10px] text-slate-400">
-                    Version: <span className="font-mono">{r.version}</span>
-                    {' · '}En vigueur depuis: {r.effectiveFrom}
-                    {r.effectiveUntil ? ` · Jusqu'au: ${r.effectiveUntil}` : ' · En cours'}
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div><div className="text-slate-400">Période</div><div className="text-white font-mono">{period.period_start?.slice(0,7)}</div></div>
+                    <div><div className="text-slate-400">TPS</div><div className="text-white">{period.tps_status}</div></div>
+                    <div><div className="text-slate-400">TVQ</div><div className="text-white">{period.tvq_status}</div></div>
                   </div>
-                </div>
-                <div className="text-[10px] font-mono text-slate-400">{r.id}</div>
-              </div>
-            ))}
+                  <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
+                    <div><div className="text-slate-400">Taxi</div><div className="text-green-400 font-bold">{money(period.gross_revenue_taxi)}</div></div>
+                    <div><div className="text-slate-400">Rideshare</div><div className="text-purple-400 font-bold">{money(period.gross_revenue_rideshare)}</div></div>
+                    <div><div className="text-slate-400">Livraison</div><div className="text-orange-400 font-bold">{money(period.gross_revenue_delivery)}</div></div>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
-        </Card>
-      )}
+        )}
+      </div>
     </AppShell>
   )
 }
