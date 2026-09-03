@@ -88,7 +88,7 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
 async function apiFetch(path: string, body?: unknown) {
   const token = getToken()
   const res = await fetch(path, {
-    method: body ? 'POST' : 'GET',
+    method: body !== undefined ? 'POST' : 'GET',
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: body ? JSON.stringify(body) : undefined,
   })
@@ -280,6 +280,7 @@ export default function TaxiMeterPage() {
       try {
         const token = getToken()
         if (!token) return  // Pas de session — ne pas appeler l'API
+        // Si erreur 401/404, rester en IDLE silencieusement
         const data = await apiFetch('/api/taximeter/status') as {
           hasActiveMeter: boolean
           taximeter: { active_trip: { id: string; tripReference: string; status: string; distanceMeters: number; elapsedSeconds: number } | null; fare_version: string } | null
@@ -304,7 +305,7 @@ export default function TaxiMeterPage() {
   async function startTrip() {
     setError(null); setTripStatus('STARTING')
     try {
-      const data = await apiFetch('/api/taximeter/start') as {
+      const data = await apiFetch('/api/taximeter/start', {}) as {
         tripReference: string; fareVersion: string
         fareSnapshot: FareSnapshot; isPilot: boolean
         taximeter: { id: string } | null
