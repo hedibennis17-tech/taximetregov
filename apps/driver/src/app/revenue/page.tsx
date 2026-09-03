@@ -2,76 +2,156 @@
 
 import { AppShell, PageHeader } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui'
-import { RefreshCw, WalletCards } from 'lucide-react'
-import { useDriverDashboard } from '@/lib/supabase/useDriverDashboard'
+import { RefreshCw } from 'lucide-react'
+import { useRevenue, money } from '@/lib/api'
+import { useState } from 'react'
 
-const money = (value: number, currency = 'CAD') => new Intl.NumberFormat('fr-CA', { style: 'currency', currency }).format(value)
+type Period = 'week' | 'month' | 'year'
 
-function monthKey(value: string | null) {
-  if (!value) return 'Sans date'
-  return new Intl.DateTimeFormat('fr-CA', { month: 'long', year: 'numeric' }).format(new Date(value))
+const periodLabels: Record<Period, string> = {
+  week:  '7 jours',
+  month: '30 jours',
+  year:  '12 mois',
+}
+
+const sourceIcon: Record<string, string> = {
+  TAXI:      '🚕',
+  UBER:      '⬛',
+  LYFT:      '🟣',
+  DOORDASH:  '🔴',
+  INSTACART: '🟢',
+  UBER_EATS: '🟡',
+  SKIP:      '🟠',
 }
 
 export default function RevenuePage() {
-  const { dashboard, loading, error, refresh } = useDriverDashboard()
+  const [period, setPeriod] = useState<Period>('month')
+  const { revenue, loading, error, refresh } = useRevenue(period)
 
   if (loading) {
-    return <AppShell><PageHeader title="Mes revenus" subtitle="Chargement sécurisé" /><div className="py-16 text-center text-sm text-slate-500">Chargement des revenus réels…</div></AppShell>
+    return (
+      <AppShell>
+        <PageHeader title="Mes revenus" subtitle="Chargement en cours" />
+        <div className="py-16 text-center">
+          <RefreshCw className="mx-auto text-qc-blue animate-spin" size={24} />
+        </div>
+      </AppShell>
+    )
   }
 
-  if (!dashboard) {
-    return <AppShell><PageHeader title="Mes revenus" subtitle="Données sécurisées" /><div className="px-4 py-16 text-center"><p className="text-sm text-red-300 mb-4">{error ?? 'Aucune donnée disponible.'}</p><button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">Réessayer</button></div></AppShell>
+  if (!revenue) {
+    return (
+      <AppShell>
+        <PageHeader title="Mes revenus" subtitle="Erreur" />
+        <div className="px-4 py-16 text-center">
+          <p className="text-sm text-red-300 mb-4">{error ?? 'Données indisponibles.'}</p>
+          <button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">
+            Réessayer
+          </button>
+        </div>
+      </AppShell>
+    )
   }
 
-  const totals = dashboard.activities.reduce((sum, activity) => ({
-    gross: sum.gross + activity.amount,
-    tax: sum.tax + activity.tax,
-    net: sum.net + (activity.net || activity.amount - activity.tax),
-    tips: sum.tips + activity.tip,
-  }), { gross: 0, tax: 0, net: 0, tips: 0 })
-
-  const byMonth = dashboard.activities.reduce<Record<string, number>>((result, activity) => {
-    const key = monthKey(activity.startedAt)
-    result[key] = (result[key] ?? 0) + activity.amount
-    return result
-  }, {})
+  const s = revenue.summary
+  const gross    = parseFloat(s.total_gross    ?? '0')
+  const tips     = parseFloat(s.total_tips     ?? '0')
+  const net      = parseFloat(s.total_net      ?? '0')
+  const taxiG    = parseFloat(s.taxi_gross     ?? '0')
+  const rideshareG = parseFloat(s.rideshare_gross ?? '0')
+  const deliveryG  = parseFloat(s.delivery_gross  ?? '0')
+  const wallet   = parseFloat(revenue.wallet.balance ?? '0')
 
   return (
     <AppShell>
-      <PageHeader title="Mes revenus" subtitle="Montants enregistrés dans votre dossier chauffeur" action={<button onClick={() => void refresh()} aria-label="Actualiser"><RefreshCw size={18} className="text-slate-400" /></button>} />
-      <div className="px-4 space-y-4 pb-6">
-        <Card className="bg-gradient-to-br from-qc-blue/25 to-slate-900 border-qc-blue/30">
-          <div className="text-xs text-slate-300 uppercase tracking-wider font-semibold">Revenus enregistrés</div>
-          <div className="text-3xl font-black text-white mt-2">{money(totals.gross)}</div>
-          <p className="mt-2 text-xs text-slate-400">Calculé à partir des {dashboard.activities.length} activité(s) auxquelles votre compte a accès.</p>
-        </Card>
+      <PageHeader title="Mes revenus" subtitle={`Données réelles · ${periodLabels[period]}`} />
+      <div className="px-4 space-y-4 pb-8">
 
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: 'Net', value: totals.net, color: 'text-green-300' },
-            { label: 'Taxes', value: totals.tax, color: 'text-amber-300' },
-            { label: 'Pourboires', value: totals.tips, color: 'text-purple-300' },
-          ].map((item) => <Card key={item.label} className="p-3"><div className={`font-bold text-sm ${item.color}`}>{money(item.value)}</div><div className="text-[10px] text-slate-500 mt-1">{item.label}</div></Card>)}
+        {/* Sélecteur de période */}
+        <div className="flex gap-2">
+          {(['week', 'month', 'year'] as Period[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
+                period === p ? 'bg-qc-blue text-white' : 'bg-slate-800 text-slate-400'
+              }`}
+            >
+              {periodLabels[p]}
+            </button>
+          ))}
         </div>
 
-        <Card>
-          <div className="flex items-center gap-2 mb-3"><WalletCards size={17} className="text-qc-blue-light" /><h2 className="font-semibold text-white text-sm">Historique récent</h2></div>
-          <div className="space-y-2">
-            {dashboard.activities.map((activity) => (
-              <div key={activity.id} className="flex items-center gap-3 py-2.5 border-b border-slate-800 last:border-0">
-                <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center">{activity.type === 'TAXI_TRIP' ? '🚕' : activity.type === 'RIDESHARE_TRIP' ? '🚗' : '📦'}</div>
-                <div className="flex-1 min-w-0"><p className="text-xs font-semibold text-white truncate">{activity.provider ?? activity.type.replaceAll('_', ' ')}</p><p className="text-[10px] text-slate-500">{activity.startedAt ? new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(activity.startedAt)) : 'Date non disponible'}</p></div>
-                <div className="text-right"><p className="text-xs font-bold text-white">{money(activity.amount, activity.currency)}</p>{activity.tax > 0 && <p className="text-[10px] text-amber-400">Taxes {money(activity.tax, activity.currency)}</p>}</div>
+        {/* Résumé principal */}
+        <Card className="p-4">
+          <div className="text-xs text-slate-400 mb-1">Revenus bruts</div>
+          <div className="text-3xl font-bold text-white mb-4">{money(gross)}</div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: 'Pourboires',  val: money(tips),   color: 'text-green-400' },
+              { label: 'Net chauffeur', val: money(net),   color: 'text-blue-400' },
+              { label: 'Solde wallet', val: money(wallet), color: 'text-amber-400' },
+              { label: 'Activités',   val: s.total_activities ?? '0', color: 'text-white' },
+            ].map((item) => (
+              <div key={item.label} className="bg-slate-800/50 rounded-xl p-3">
+                <div className={`font-bold text-sm ${item.color}`}>{item.val}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">{item.label}</div>
               </div>
             ))}
-            {dashboard.activities.length === 0 && <p className="py-6 text-center text-xs text-slate-500">Aucun revenu réel n’a encore été synchronisé.</p>}
           </div>
         </Card>
 
-        <Card>
-          <h2 className="font-semibold text-white text-sm mb-3">Répartition par période</h2>
-          <div className="space-y-2">{Object.entries(byMonth).map(([month, value]) => <div key={month} className="flex justify-between text-xs"><span className="text-slate-400 capitalize">{month}</span><span className="font-semibold text-white">{money(value)}</span></div>)}{Object.keys(byMonth).length === 0 && <p className="text-xs text-slate-500">Aucune période disponible.</p>}</div>
+        {/* Breakdown par type */}
+        <Card className="p-4">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Par type d'activité</div>
+          <div className="space-y-3">
+            {[
+              { label: 'Taxi (taximètre)', val: taxiG,     icon: '🚕', color: 'bg-qc-blue/20' },
+              { label: 'Covoiturage',      val: rideshareG, icon: '🚗', color: 'bg-purple-500/20' },
+              { label: 'Livraison',        val: deliveryG,  icon: '📦', color: 'bg-amber-500/20' },
+            ].map((item) => (
+              <div key={item.label} className={`flex items-center gap-3 p-3 rounded-xl ${item.color}`}>
+                <span className="text-xl">{item.icon}</span>
+                <div className="flex-1">
+                  <div className="text-xs font-semibold text-white">{item.label}</div>
+                  <div className="w-full bg-slate-700 rounded-full h-1 mt-1">
+                    <div
+                      className="bg-qc-blue h-1 rounded-full"
+                      style={{ width: gross > 0 ? `${Math.min((item.val / gross) * 100, 100)}%` : '0%' }}
+                    />
+                  </div>
+                </div>
+                <div className="font-bold text-white text-sm">{money(item.val)}</div>
+              </div>
+            ))}
+          </div>
         </Card>
+
+        {/* Détail par provider */}
+        {revenue.breakdown.length > 0 && (
+          <Card className="p-4">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Par plateforme</div>
+            <div className="space-y-2">
+              {revenue.breakdown.map((src) => (
+                <div key={src.source_type} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
+                  <span className="text-xl">{sourceIcon[src.source_type] ?? '📦'}</span>
+                  <div className="flex-1">
+                    <div className="text-xs font-semibold text-white">{src.source_type}</div>
+                    <div className="text-[10px] text-slate-500">{src.count} activité(s) · {money(parseFloat(src.tips))} pourboires</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-white text-sm">{money(parseFloat(src.gross))}</div>
+                    <div className="text-[10px] text-green-400">net {money(parseFloat(src.net))}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        <button onClick={() => void refresh()} className="w-full py-3 rounded-xl bg-slate-800 text-slate-400 text-xs font-semibold flex items-center justify-center gap-2">
+          <RefreshCw size={14} /> Actualiser les données
+        </button>
       </div>
     </AppShell>
   )
