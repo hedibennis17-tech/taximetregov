@@ -33,7 +33,7 @@ export default function ActivitiesPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Mes activités" subtitle="Courses et livraisons enregistrées dans votre dossier" />
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mes activités</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
       <div className="px-4">
         <div className="flex gap-2 overflow-x-auto pb-1 mb-5">
           {types.map((type) => (

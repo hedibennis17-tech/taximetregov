@@ -15,8 +15,8 @@ function iconForType(type: string) {
 export default function ProfilePage() {
   const { dashboard, loading, error, refresh } = useDriverDashboard()
 
-  if (loading) return <AppShell><PageHeader title="Mon profil" subtitle="Identité et accès sécurisés" /><div className="py-16 text-center text-sm text-slate-500">Chargement de votre dossier…</div></AppShell>
-  if (!dashboard) return <AppShell><PageHeader title="Mon profil" subtitle="Identité et accès sécurisés" /><div className="px-4 py-16 text-center"><p className="text-sm text-red-300 mb-4">{error ?? 'Dossier indisponible.'}</p><button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">Réessayer</button></div></AppShell>
+  if (loading) return <AppShell><div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mon profil</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div><div className="py-16 text-center text-sm text-slate-500">Chargement de votre dossier…</div></AppShell>
+  if (!dashboard) return <AppShell><div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mon profil</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div><div className="px-4 py-16 text-center"><p className="text-sm text-red-300 mb-4">{error ?? 'Dossier indisponible.'}</p><button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">Réessayer</button></div></AppShell>
 
   const activityTypes = [...new Set(dashboard.activities.map((activity) => activity.type))]
 

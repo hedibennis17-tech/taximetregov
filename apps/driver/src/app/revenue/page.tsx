@@ -31,7 +31,7 @@ export default function RevenuePage() {
   if (loading) {
     return (
       <AppShell>
-        <PageHeader title="Mes revenus" subtitle="Chargement en cours" />
+        <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mes revenus</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
         <div className="py-16 text-center">
           <RefreshCw className="mx-auto text-qc-blue animate-spin" size={24} />
         </div>
@@ -42,7 +42,7 @@ export default function RevenuePage() {
   if (!revenue) {
     return (
       <AppShell>
-        <PageHeader title="Mes revenus" subtitle="Erreur" />
+        <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mes revenus</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
         <div className="px-4 py-16 text-center">
           <p className="text-sm text-red-300 mb-4">{error ?? 'Données indisponibles.'}</p>
           <button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">

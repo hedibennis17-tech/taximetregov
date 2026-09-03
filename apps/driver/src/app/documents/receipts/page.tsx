@@ -16,7 +16,7 @@ export default function ReceiptsPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Mes reçus" subtitle="Dépenses professionnelles · OCR · Fiscal" />
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mes reçus</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
       <div className="px-4">
         <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-5 text-xs text-amber-200">
           <AlertCircle size={13} className="mt-0.5 shrink-0" />

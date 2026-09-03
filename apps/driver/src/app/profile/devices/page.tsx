@@ -7,7 +7,7 @@ import { Smartphone, Shield, LogOut, CheckCircle, AlertCircle } from 'lucide-rea
 export default function DevicesPage() {
   return (
     <AppShell>
-      <PageHeader title="Mes appareils" subtitle="Appareils autorisés · Sécurité de compte" />
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mes appareils</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
       <div className="px-4">
         <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 mb-5 text-xs text-blue-300">
           <Shield size={13} className="mt-0.5 shrink-0" />

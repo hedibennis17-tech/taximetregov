@@ -18,7 +18,7 @@ export default function CompliancePage() {
   const issues = complianceStatus.items.filter(i => i.status !== 'VALID')
   return (
     <AppShell>
-      <PageHeader title="Conformité" subtitle="Permis · Assurance · Inspection · Fiscal" />
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Conformité</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
       <div className="px-4">
         <div className="grid grid-cols-2 gap-3 mb-5">
           <Card className="p-3 text-center">

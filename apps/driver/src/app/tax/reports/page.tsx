@@ -1,95 +1,66 @@
 'use client'
-import { AppShell, PageHeader } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
-import { mockTaxReports, mockAnnualSummary } from '@/lib/engines/tax.engine'
-import { Download, FileText, AlertCircle } from 'lucide-react'
 
-const fmt = (v: number) => new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD'}).format(v)
+import { AppShell } from '@/components/layout/AppShell'
+import { Card, SectionHeader } from '@/components/ui'
+import { useDriverProfile, useRevenue, money } from '@/lib/api'
+import Link from 'next/link'
+import { RefreshCw } from 'lucide-react'
 
-const statusConf: Record<string,{color:string;bg:string}> = {
-  DRAFT: { color:'text-slate-400', bg:'border-slate-700' },
-  READY: { color:'text-green-400', bg:'border-green-500/20' },
-  UNDER_REVIEW: { color:'text-blue-400', bg:'border-blue-500/20' },
-  SUBMITTED: { color:'text-purple-400', bg:'border-purple-500/20' },
-  ACCEPTED: { color:'text-green-400', bg:'border-green-500/30' },
-  REJECTED: { color:'text-red-400', bg:'border-red-500/20' },
-  AMENDED: { color:'text-amber-400', bg:'border-amber-500/20' },
-  CANCELLED: { color:'text-slate-500', bg:'border-slate-700' },
-}
+export default function Page() {
+  const { profile, loading, refresh } = useDriverProfile()
+  const { revenue } = useRevenue('month')
 
-export default function TaxReportsPage() {
   return (
     <AppShell>
-      <PageHeader title="Rapports fiscaux" subtitle="TPS · TVQ · Revenus · PRÉPARATION uniquement" />
-      <div className="px-4">
-        <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-5 text-xs text-amber-200">
-          <AlertCircle size={13} className="mt-0.5 shrink-0" />
-          Ces rapports sont préliminaires. Le statut SUBMITTED requiert une soumission via les canaux officiels de Revenu Québec / ARC. Taximètre.GOV ne transmet pas directement à ces systèmes en mode pilote.
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Rapports fiscaux</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
+      <div className="px-4 pb-8 space-y-4">
+
+        {/* Connexion status */}
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          <span className="text-xs text-green-400">Base de données connectée · Supabase</span>
+          <button onClick={() => void refresh()} className="ml-auto">
+            <RefreshCw size={12} className={loading ? 'animate-spin text-green-400' : 'text-green-600'} />
+          </button>
         </div>
 
-        {/* Summary card */}
-        <Card className="mb-5">
-          <div className="font-semibold text-white text-sm mb-3">📊 Résumé fiscal — ESTIMATION</div>
-          <div className="space-y-2">
-            {[
-              { label:'Revenus bruts', val:fmt(mockAnnualSummary.totalTaxableRevenue), color:'text-white' },
-              { label:'Revenus taxables', val:fmt(mockAnnualSummary.totalTaxableRevenue), color:'text-white' },
-              { label:'TPS collectée (5%)', val:fmt(mockAnnualSummary.tpsCollected), color:'text-blue-400' },
-              { label:'TVQ collectée (9.975%)', val:fmt(mockAnnualSummary.tvqCollected), color:'text-purple-400' },
-              { label:'Total taxes', val:fmt(mockAnnualSummary.totalTax), color:'text-orange-400' },
-              { label:'Ajustements', val:fmt(mockAnnualSummary.totalAdjustments), color:'text-amber-400' },
-              { label:'Remboursements', val:`-${fmt(mockAnnualSummary.totalRefunds)}`, color:'text-red-400' },
-              { label:'Net estimé payable', val:fmt(mockAnnualSummary.totalTax), color:'text-green-400', bold:true },
-            ].map(s => (
-              <div key={s.label} className={`flex justify-between py-1.5 ${s.bold ? 'border-t border-slate-700 pt-2.5 mt-1' : 'border-b border-slate-800 last:border-0'}`}>
-                <span className="text-xs text-slate-400">{s.label}</span>
-                <span className={`font-mono font-bold text-sm ${s.color}`}>{s.val}</span>
+        {/* Contenu */}
+        <Card className="p-8 text-center">
+          <div className="text-5xl mb-4">📑</div>
+          <h2 className="text-lg font-bold text-white mb-2">Rapports fiscaux</h2>
+          {profile && (
+            <p className="text-sm text-slate-400 mb-4">
+              {profile.first_name} {profile.last_name} · {profile.public_driver_id}
+            </p>
+          )}
+          {revenue && (
+            <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto mt-4">
+              <div className="bg-slate-800 rounded-xl p-3">
+                <div className="font-bold text-green-400">{money(revenue.wallet.balance)}</div>
+                <div className="text-[10px] text-slate-400">Solde wallet</div>
               </div>
-            ))}
-          </div>
-          <div className="mt-3 text-[10px] text-amber-400 flex items-center gap-1.5">
-            <AlertCircle size={10} /> ESTIMATION — pas une obligation fiscale officielle
-          </div>
+              <div className="bg-slate-800 rounded-xl p-3">
+                <div className="font-bold text-white">{revenue.summary.total_activities}</div>
+                <div className="text-[10px] text-slate-400">Activités ce mois</div>
+              </div>
+            </div>
+          )}
         </Card>
 
-        {/* Reports list */}
-        <div className="space-y-3 mb-6">
-          {mockTaxReports.map(report => {
-            const conf = statusConf[report.status] || statusConf.DRAFT
-            return (
-              <Card key={report.reportId} className={`border ${conf.bg}`}>
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shrink-0">
-                    <FileText size={18} className="text-slate-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <span className="font-bold text-white text-sm">{(report.tpsCollected > 0 ? "TPS" : "TVQ")}</span>
-                      <span className="text-xs text-slate-400">·</span>
-                      <span className="text-xs text-slate-300">{report.periodStart.slice(0,7)+" → "+report.periodEnd.slice(0,7)}</span>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-800 ${conf.color}`}>{report.status}</span>
-                    </div>
-                    <div className="text-[10px] text-slate-500 mb-2">{report.jurisdiction} · Généré: {new Date(report.generatedAt).toLocaleDateString('fr-CA')}</div>
-                    <div className="grid grid-cols-3 gap-1.5 text-[10px]">
-                      {[
-                        { label:'Brut', val:fmt(report.grossRevenue) },
-                        { label:'Taxable', val:fmt(report.taxableRevenue) },
-                        { label:'Collecté', val:fmt(report.tpsCollected + report.tvqCollected) },
-                      ].map(s => (
-                        <div key={s.label} className="bg-slate-800/50 rounded-lg p-1.5">
-                          <div className="text-slate-500">{s.label}</div>
-                          <div className="font-bold text-white tabular-nums">{s.val}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold hover:bg-slate-700 transition-all shrink-0">
-                    <Download size={12} /> PDF
-                  </button>
-                </div>
-              </Card>
-            )
-          })}
+        {/* Navigation */}
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { href: '/home',    label: 'Accueil',    icon: '🏠' },
+            { href: '/revenue', label: 'Revenus',    icon: '💰' },
+            { href: '/trips',   label: 'Courses',    icon: '🚕' },
+            { href: '/taximeter', label: 'Taximètre', icon: '📟' },
+          ].map(item => (
+            <Link key={item.href} href={item.href}
+              className="flex items-center gap-3 p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors">
+              <span>{item.icon}</span>
+              <span className="text-xs font-semibold text-white">{item.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </AppShell>

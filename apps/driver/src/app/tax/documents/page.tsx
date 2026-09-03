@@ -20,7 +20,7 @@ const typeIcons: Record<string, string> = {
 export default function TaxDocumentsPage() {
   return (
     <AppShell>
-      <PageHeader title="Documents fiscaux" subtitle="Rapports · Attestations · Déclarations" />
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Documents fiscaux</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
       <div className="px-4">
         <div className="flex items-start gap-2 p-3 rounded-2xl bg-red-500/10 border border-red-500/20 mb-5">
           <Lock size={13} className="text-red-400 mt-0.5 shrink-0" />

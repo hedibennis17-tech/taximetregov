@@ -221,7 +221,7 @@ export default function ProductionReadinessPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Master Blueprint" subtitle="Étape 30/30 — Consolidation finale · Inventaire complet" />
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Master Blueprint</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
       <div className="px-4">
         {/* Hero */}
         <div className="bg-gradient-to-br from-qc-blue/20 to-slate-900 rounded-3xl border border-qc-blue/30 p-5 mb-5">

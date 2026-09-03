@@ -128,7 +128,7 @@ export default function ActivitySwitcherPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Mes activités" subtitle="Sélectionner l'activité active · Règle Taximètre.GOV" />
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mes activités</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
       <div className="px-4">
         {/* Active mode banner */}
         {active && activeActivity && (

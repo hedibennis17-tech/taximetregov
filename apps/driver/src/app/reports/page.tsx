@@ -18,7 +18,7 @@ export default function ReportsPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Rapports fiscaux" subtitle="Préparation · Réconciliation · Dossiers · ESTIMATION" />
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Rapports fiscaux</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
       <div className="px-4">
         {/* Critical disclaimer */}
         <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 mb-5">

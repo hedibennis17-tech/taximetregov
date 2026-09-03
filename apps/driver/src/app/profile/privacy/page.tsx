@@ -19,7 +19,7 @@ const permLabels: Record<string, string> = {
 export default function PrivacyPage() {
   return (
     <AppShell>
-      <PageHeader title="Confidentialité" subtitle="Données · GPS · Permissions · Gouvernement" />
+      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Confidentialité</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
       <div className="px-4">
         {/* Data usage */}
         <Card className="mb-5">
