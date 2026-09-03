@@ -1,525 +1,545 @@
 'use client'
+
+// ================================================================
+// TAXIMÈTRE.GOV — PAGE TAXIMÈTRE
+// Phase 4 — Données réelles · API Backend · GPS téléphone
+// RÈGLE: Taximètre UNIQUEMENT pour TAXI — jamais DELIVERY
+// ================================================================
+
 import { AppShell } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui'
 import {
-  TAXIMETER_BY_SERVICE, ACTIVE_TARIFF, calculateTariffFare,
-  runPreRideValidation, mockDevice, mockPreRideCheck,
-  mockCompletedSession, mockEvents, mockGPSSamples,
-  classifyGPSQuality, generateTripId, fmt,
-  type ServiceMode, type TaximeterState, type TaximeterEvent
-} from '@/lib/engines/smart-taximeter.engine'
-import { useState, useEffect, useRef } from 'react'
-import { Shield, AlertCircle, CheckCircle, Lock, Zap, MapPin, Clock, Gauge, Navigation } from 'lucide-react'
+  useState, useEffect, useRef, useCallback
+} from 'react'
+import {
+  Shield, AlertCircle, CheckCircle, MapPin,
+  Clock, Gauge, Navigation, ArrowLeft, Pause, Play, Square
+} from 'lucide-react'
+import { getToken } from '@/lib/api'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
-// ─── SERVICE CONFIG ───────────────────────────────────────────
+// ─── TYPES ───────────────────────────────────────────────────
+
+type ServiceMode = 'TAXI' | 'RIDESHARE' | 'DELIVERY' | 'PERSONAL'
+type TripStatus = 'IDLE' | 'STARTING' | 'ACTIVE' | 'PAUSED' | 'STOPPING' | 'COMPLETED' | 'ERROR'
+
+const TAXIMETER_BY_SERVICE: Record<ServiceMode, boolean> = {
+  TAXI:      true,
+  RIDESHARE: false,
+  DELIVERY:  false,
+  PERSONAL:  false,
+}
+
 const SERVICE_CONF: Record<ServiceMode, { icon: string; label: string; color: string; bg: string }> = {
-  TAXI:      { icon:'🚕', label:'Taxi',      color:'text-qc-blue-light', bg:'bg-qc-blue/20' },
-  RIDESHARE: { icon:'🚗', label:'Rideshare', color:'text-slate-300',     bg:'bg-slate-700' },
-  DELIVERY:  { icon:'📦', label:'Livraison', color:'text-red-400',       bg:'bg-red-500/10' },
-  PERSONAL:  { icon:'🏠', label:'Personnel', color:'text-slate-500',     bg:'bg-slate-800' },
+  TAXI:      { icon: '🚕', label: 'Taxi',      color: 'text-blue-400',   bg: 'bg-blue-500/20'  },
+  RIDESHARE: { icon: '🚗', label: 'Rideshare', color: 'text-slate-300',  bg: 'bg-slate-700'    },
+  DELIVERY:  { icon: '📦', label: 'Livraison', color: 'text-red-400',    bg: 'bg-red-500/10'   },
+  PERSONAL:  { icon: '🏠', label: 'Personnel', color: 'text-slate-500',  bg: 'bg-slate-800'    },
 }
 
-const STATE_CONF: Record<TaximeterState, { label: string; color: string; dot: string }> = {
-  OFF:       { label:'Éteint',         color:'text-slate-500',  dot:'bg-slate-600' },
-  READY:     { label:'Prêt',           color:'text-blue-400',   dot:'bg-blue-500 animate-pulse' },
-  AVAILABLE: { label:'Disponible',     color:'text-green-400',  dot:'bg-green-500 animate-pulse' },
-  HIRED:     { label:'Pris en charge', color:'text-amber-400',  dot:'bg-amber-500' },
-  RUNNING:   { label:'En course',      color:'text-green-400',  dot:'bg-green-500' },
-  PAUSED:    { label:'En pause',       color:'text-amber-400',  dot:'bg-amber-500 animate-pulse' },
-  COMPLETED: { label:'Terminé',        color:'text-blue-400',   dot:'bg-blue-500' },
-  CANCELLED: { label:'Annulé',         color:'text-red-400',    dot:'bg-red-500' },
-  ERROR:     { label:'Erreur',         color:'text-red-400',    dot:'bg-red-500 animate-pulse' },
-  LOCKED:    { label:'Verrouillé',     color:'text-red-400',    dot:'bg-red-600' },
+function fmt(n: number, decimals = 2) {
+  return n.toFixed(decimals)
 }
+
+function formatDuration(sec: number) {
+  const h = Math.floor(sec / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  const s = sec % 60
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+}
+
+// ─── API CALLS ────────────────────────────────────────────────
+
+async function apiCall(path: string, body?: unknown) {
+  const token = getToken()
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const json = await res.json() as { success: boolean; data: unknown; error?: string }
+  if (!res.ok || !json.success) throw new Error(json.error ?? `Erreur ${res.status}`)
+  return json.data
+}
+
+async function apiGet(path: string) {
+  const token = getToken()
+  const res = await fetch(path, {
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  })
+  const json = await res.json() as { success: boolean; data: unknown; error?: string }
+  if (!res.ok || !json.success) throw new Error(json.error ?? `Erreur ${res.status}`)
+  return json.data
+}
+
+// ─── COMPOSANT PRINCIPAL ──────────────────────────────────────
 
 export default function TaxiPage() {
+  const router = useRouter()
+
+  // Service mode
   const [serviceMode, setServiceMode] = useState<ServiceMode>('TAXI')
-  const [state, setState] = useState<TaximeterState>('AVAILABLE')
-  const [tab, setTab] = useState<'meter' | 'preride' | 'tariff' | 'session' | 'events'>('meter')
-  const [distanceKm, setDistanceKm] = useState(0)
-  const [durationSec, setDurationSec] = useState(0)
-  const [waitingSec, setWaitingSec] = useState(0)
-  const [isWaiting, setIsWaiting] = useState(false)
-  const [tipPct, setTipPct] = useState(0)
-  const [paymentMethod, setPaymentMethod] = useState<'CARD'|'CASH'|'INTERAC'>('CARD')
-  const [showConfirmStart, setShowConfirmStart] = useState(false)
-  const [showConfirmStop, setShowConfirmStop] = useState(false)
-  const [tripId] = useState(generateTripId)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Trip state
+  const [tripStatus, setTripStatus]       = useState<TripStatus>('IDLE')
+  const [tripReference, setTripReference] = useState<string | null>(null)
+  const [tripId, setTripId]               = useState<string | null>(null)
+  const [fareVersion, setFareVersion]     = useState<string | null>(null)
+  const [fareSnapshot, setFareSnapshot]   = useState<Record<string, string> | null>(null)
+  const [isPilot, setIsPilot]             = useState(true)
+
+  // Compteurs
+  const [elapsedSec, setElapsedSec]   = useState(0)
+  const [distanceM, setDistanceM]     = useState(0)
+  const [waitingSec, setWaitingSec]   = useState(0)
+  const [isWaiting, setIsWaiting]     = useState(false)
+
+  // Fare calculé localement depuis fareSnapshot (affichage seulement — final par serveur)
+  const [displayFare, setDisplayFare] = useState(0)
+
+  // GPS
+  const [gpsStatus, setGpsStatus]       = useState<'unknown' | 'ok' | 'denied' | 'error'>('unknown')
+  const [lastPosition, setLastPosition] = useState<GeolocationPosition | null>(null)
+
+  // UI
+  const [error, setError]                 = useState<string | null>(null)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [completedTrip, setCompletedTrip] = useState<{
+    tripReference: string; finalAmount: number
+    distanceMeters: number; elapsedSeconds: number
+  } | null>(null)
+
+  // Refs
+  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null)
+  const gpsWatchRef = useRef<number | null>(null)
+  const prevPosRef  = useRef<{ lat: number; lng: number } | null>(null)
 
   const taximeterOn = TAXIMETER_BY_SERVICE[serviceMode]
-  const validation = runPreRideValidation(mockPreRideCheck)
 
-  // Live timer when RUNNING
+  // ─── Fare display calculation ─────────────────────────────
+
   useEffect(() => {
-    if (state === 'RUNNING') {
-      timerRef.current = setInterval(() => {
-        setDurationSec(d => d + 1)
-        if (!isWaiting) setDistanceKm(d => Math.round((d + 0.003) * 1000) / 1000)
-        else setWaitingSec(w => w + 1)
-      }, 1000)
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current)
+    if (!fareSnapshot || !taximeterOn) { setDisplayFare(0); return }
+    const base     = parseFloat(fareSnapshot.baseFare      ?? '4.10')
+    const distRate = parseFloat(fareSnapshot.distanceRatePer100m ?? '0.185')
+    const timeRate = parseFloat(fareSnapshot.timeRatePerMinute   ?? '0.55')
+    const waitRate = parseFloat(fareSnapshot.waitingRatePerMinute ?? '0.55')
+    const minFare  = parseFloat(fareSnapshot.minimumFare    ?? '4.10')
+    const computed = base
+      + (distanceM / 100) * distRate
+      + (elapsedSec / 60) * timeRate
+      + (waitingSec / 60) * waitRate
+    setDisplayFare(Math.max(computed, minFare))
+  }, [fareSnapshot, distanceM, elapsedSec, waitingSec, taximeterOn])
+
+  // ─── Timer ───────────────────────────────────────────────
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setElapsedSec(s => s + 1)
+      if (isWaiting) setWaitingSec(w => w + 1)
+    }, 1000)
+  }, [isWaiting])
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
+  }, [])
+
+  // ─── GPS ─────────────────────────────────────────────────
+
+  function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371000
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLng = (lng2 - lng1) * Math.PI / 180
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  }
+
+  const startGPS = useCallback((currentTripId: string) => {
+    if (!navigator.geolocation) { setGpsStatus('error'); return }
+    gpsWatchRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        setGpsStatus('ok')
+        setLastPosition(pos)
+        const { latitude: lat, longitude: lng } = pos.coords
+        if (prevPosRef.current && !isWaiting) {
+          const delta = haversineDistance(prevPosRef.current.lat, prevPosRef.current.lng, lat, lng)
+          if (delta > 5 && delta < 200) {
+            setDistanceM(d => d + delta)
+            void apiCall('/api/taximeter/gps', {
+              tripId: currentTripId, latitude: lat, longitude: lng,
+              accuracy: pos.coords.accuracy, speedKmh: (pos.coords.speed ?? 0) * 3.6,
+              distanceDelta: Math.round(delta), elapsedDelta: 1,
+            }).catch(() => null)
+          }
+        }
+        prevPosRef.current = { lat, lng }
+      },
+      () => setGpsStatus('denied'),
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    )
+  }, [isWaiting])
+
+  const stopGPS = useCallback(() => {
+    if (gpsWatchRef.current !== null) {
+      navigator.geolocation.clearWatch(gpsWatchRef.current)
+      gpsWatchRef.current = null
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [state, isWaiting])
+  }, [])
 
-  const fare = calculateTariffFare(ACTIVE_TARIFF, distanceKm, durationSec, waitingSec)
-  const tpsAmt = Math.round(fare.finalFare * 0.05 * 100) / 100
-  const tvqAmt = Math.round(fare.finalFare * 0.09975 * 100) / 100
-  const tipAmt = Math.round(fare.finalFare * tipPct / 100 * 100) / 100
-  const totalAmt = Math.round((fare.finalFare + tpsAmt + tvqAmt + tipAmt) * 100) / 100
+  useEffect(() => () => { stopTimer(); stopGPS() }, [stopTimer, stopGPS])
 
-  const handleStart = () => {
-    setState('RUNNING')
-    setShowConfirmStart(false)
-    setDistanceKm(0); setDurationSec(0); setWaitingSec(0)
+  // ─── Check status on mount ────────────────────────────────
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const data = await apiGet('/api/taximeter/status') as {
+          hasActiveMeter: boolean
+          taximeter: { active_trip: { id: string; publicTripId: string; tripReference: string; status: string; distanceMeters: number; elapsedSeconds: number } | null } | null
+        }
+        if (data.hasActiveMeter && data.taximeter?.active_trip) {
+          const t = data.taximeter.active_trip
+          setTripReference(t.tripReference)
+          setTripId(t.id)
+          setDistanceM(t.distanceMeters)
+          setElapsedSec(t.elapsedSeconds)
+          setTripStatus(t.status === 'PAUSED' ? 'PAUSED' : 'ACTIVE')
+          if (t.status !== 'PAUSED') { startTimer(); startGPS(t.id) }
+        }
+      } catch { /* pas de course active */ }
+    })()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ─── Start trip ───────────────────────────────────────────
+
+  async function startTrip() {
+    if (tripStatus !== 'IDLE') return
+    setError(null)
+    setTripStatus('STARTING')
+    try {
+      const data = await apiCall('/api/taximeter/start') as {
+        tripReference: string; publicTripId: string; fareVersion: string
+        fareSnapshot: Record<string, string>; isPilot: boolean
+      }
+      setTripReference(data.tripReference)
+      setFareVersion(data.fareVersion)
+      setFareSnapshot(data.fareSnapshot)
+      setIsPilot(data.isPilot)
+      setElapsedSec(0); setDistanceM(0); setWaitingSec(0)
+      setTripStatus('ACTIVE')
+      startTimer()
+      startGPS(data.tripReference)
+    } catch (e) {
+      setError((e as Error).message)
+      setTripStatus('IDLE')
+    }
   }
-  const handleStop = () => {
-    setState('COMPLETED')
-    setShowConfirmStop(false)
-  }
-  const handleReset = () => {
-    setState('AVAILABLE')
-    setDistanceKm(0); setDurationSec(0); setWaitingSec(0)
-    setTipPct(0); setIsWaiting(false)
+
+  // ─── Pause / Resume ───────────────────────────────────────
+
+  async function togglePause() {
+    if (!tripReference) return
+    try {
+      if (tripStatus === 'ACTIVE') {
+        await apiCall('/api/taximeter/pause', { tripReference })
+        setIsWaiting(true); setTripStatus('PAUSED'); stopTimer()
+        if (gpsWatchRef.current !== null) { navigator.geolocation.clearWatch(gpsWatchRef.current); gpsWatchRef.current = null }
+      } else if (tripStatus === 'PAUSED') {
+        await apiCall('/api/taximeter/resume', { tripReference })
+        setIsWaiting(false); setTripStatus('ACTIVE'); startTimer()
+        if (tripId) startGPS(tripId)
+      }
+    } catch (e) { setError((e as Error).message) }
   }
 
-  const formatTime = (sec: number) => `${Math.floor(sec/60).toString().padStart(2,'0')}:${(sec%60).toString().padStart(2,'0')}`
+  // ─── Stop trip ────────────────────────────────────────────
 
-  // GPS quality simulation
-  const gpsAccuracy = 8
-  const gpsQuality = classifyGPSQuality(gpsAccuracy)
-  const gpsColor = gpsQuality === 'EXCELLENT' ? 'text-green-400' : gpsQuality === 'GOOD' ? 'text-blue-400' : gpsQuality === 'FAIR' ? 'text-amber-400' : 'text-red-400'
+  async function stopTrip() {
+    if (!tripReference || tripStatus === 'IDLE' || tripStatus === 'STOPPING') return
+    setTripStatus('STOPPING'); stopTimer(); stopGPS()
+    try {
+      const data = await apiCall('/api/taximeter/stop', {
+        tripReference,
+        distanceMeters: Math.round(distanceM),
+        elapsedSeconds: elapsedSec,
+        waitingSeconds: waitingSec,
+        isAirportTrip:  false,
+      }) as { tripReference: string; finalAmount: number; distanceMeters: number; elapsedSeconds: number }
+      setCompletedTrip(data)
+      setTripStatus('COMPLETED')
+      setTripReference(null); setFareSnapshot(null)
+    } catch (e) {
+      setError((e as Error).message)
+      setTripStatus('ACTIVE'); startTimer()
+    }
+  }
+
+  // ─── Leave guard ─────────────────────────────────────────
+
+  function handleBack() {
+    if (tripStatus === 'ACTIVE' || tripStatus === 'PAUSED') {
+      setShowLeaveConfirm(true)
+    } else {
+      router.push('/home')
+    }
+  }
+
+  // ─── COMPLETED screen ─────────────────────────────────────
+
+  if (tripStatus === 'COMPLETED' && completedTrip) {
+    return (
+      <AppShell>
+        <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
+            <CheckCircle size={32} className="text-green-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">Course terminée</h1>
+          <div className="text-5xl font-black text-green-400 mb-2">
+            {new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(completedTrip.finalAmount)}
+          </div>
+          <p className="text-xs text-slate-400 mb-1">Calcul officiel côté serveur</p>
+          <div className="font-mono text-xs text-slate-500 mb-8">{completedTrip.tripReference}</div>
+
+          <div className="grid grid-cols-2 gap-3 w-full max-w-xs mb-8">
+            <div className="bg-slate-800 rounded-2xl p-4 text-center">
+              <div className="font-bold text-white">{(completedTrip.distanceMeters / 1000).toFixed(2)} km</div>
+              <div className="text-[10px] text-slate-400">Distance</div>
+            </div>
+            <div className="bg-slate-800 rounded-2xl p-4 text-center">
+              <div className="font-bold text-white">{formatDuration(completedTrip.elapsedSeconds)}</div>
+              <div className="text-[10px] text-slate-400">Durée</div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => { setTripStatus('IDLE'); setCompletedTrip(null); setElapsedSec(0); setDistanceM(0); setWaitingSec(0) }}
+            className="w-full max-w-xs py-4 rounded-2xl bg-qc-blue text-white font-bold text-lg mb-3"
+          >
+            Nouvelle course
+          </button>
+          <Link href="/home" className="text-sm text-slate-400 hover:text-white">
+            ← Retour à l'accueil
+          </Link>
+        </div>
+      </AppShell>
+    )
+  }
+
+  // ─── MAIN SCREEN ──────────────────────────────────────────
+
+  const isActive   = tripStatus === 'ACTIVE' || tripStatus === 'PAUSED'
+  const statusConf = {
+    IDLE:     { label: 'Disponible',    dot: 'bg-green-500 animate-pulse' },
+    STARTING: { label: 'Démarrage…',   dot: 'bg-amber-500 animate-pulse' },
+    ACTIVE:   { label: 'En course',     dot: 'bg-green-500' },
+    PAUSED:   { label: 'En attente',    dot: 'bg-amber-500 animate-pulse' },
+    STOPPING: { label: 'Terminaison…', dot: 'bg-red-500 animate-pulse' },
+    COMPLETED:{ label: 'Terminée',     dot: 'bg-blue-500' },
+    ERROR:    { label: 'Erreur',        dot: 'bg-red-500' },
+  }[tripStatus]
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      {/* Tabs bar */}
-      <div className="flex gap-1 px-3 pt-3 pb-2 overflow-x-auto border-b border-slate-800 bg-slate-950 sticky top-0 z-10">
-        {[['meter','⚙️ Compteur'],['preride','✅ Pré-course'],['tariff','📋 Tarif'],['session','📊 Session'],['events','📝 Événements']].map(([k,l]) => (
-          <button key={k} onClick={() => setTab(k as any)}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${tab===k?'bg-qc-blue text-white':'bg-slate-800 text-slate-400'}`}>
-            {l}
-          </button>
-        ))}
+    <AppShell>
+      {/* Leave confirmation modal */}
+      {showLeaveConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6">
+          <Card className="p-6 max-w-sm w-full text-center">
+            <AlertCircle size={32} className="mx-auto text-amber-400 mb-4" />
+            <h2 className="text-lg font-bold text-white mb-2">⚠️ Course en cours</h2>
+            <p className="text-sm text-slate-400 mb-6">Voulez-vous quitter le taximètre ? La course reste active et sécurisée côté serveur.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowLeaveConfirm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-white text-sm font-semibold">Annuler</button>
+              <button onClick={() => router.push('/home')} className="flex-1 py-3 rounded-xl bg-amber-500/20 border border-amber-500/50 text-amber-300 text-sm font-semibold">Quitter</button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+        <button onClick={handleBack} className="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors">
+          <ArrowLeft size={18} /> Accueil
+        </button>
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${statusConf.dot}`} />
+          <span className="text-sm text-slate-300">{statusConf.label}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {gpsStatus === 'ok'
+            ? <Navigation size={16} className="text-green-400" />
+            : <MapPin size={16} className="text-slate-500" />}
+          {isPilot && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold">PILOTE</span>}
+        </div>
       </div>
 
-      <div className="px-4 pt-4 pb-32">
-
-        {/* ─── METER TAB ─────────────────────────────────── */}
-        {tab === 'meter' && (
-          <div>
-            {/* Pilot notice */}
-            <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-5 text-xs text-amber-200">
-              <AlertCircle size={13} className="mt-0.5 shrink-0"/>
-              SIMULATION PILOTE — Taximètre.GOV n'est pas officiellement homologué. Certification réglementaire requise avant déploiement commercial.
-            </div>
-
-            {/* Service selector */}
-            <div className="grid grid-cols-4 gap-2 mb-5">
-              {(Object.keys(SERVICE_CONF) as ServiceMode[]).map(mode => {
-                const conf = SERVICE_CONF[mode]
-                const active = serviceMode === mode
-                const txEnabled = TAXIMETER_BY_SERVICE[mode]
-                return (
-                  <button key={mode} onClick={() => { if (state !== 'RUNNING') setServiceMode(mode) }}
-                    disabled={state === 'RUNNING'}
-                    className={`p-3 rounded-2xl text-center transition-all border ${active ? 'border-qc-blue/50 bg-qc-blue/10' : 'border-slate-800 bg-slate-900 hover:border-slate-700'} ${state === 'RUNNING' ? 'opacity-50' : ''}`}>
-                    <div className="text-xl">{conf.icon}</div>
-                    <div className="text-[9px] text-slate-400 mt-0.5">{conf.label}</div>
-                    <div className={`text-[8px] font-bold mt-0.5 ${txEnabled ? 'text-qc-blue-light' : 'text-slate-600'}`}>
-                      {txEnabled ? 'Txm ✓' : 'Txm ✗'}
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Delivery blocked UI */}
-            {serviceMode === 'DELIVERY' && (
-              <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 text-center mb-5">
-                <div className="text-5xl mb-3">📦</div>
-                <div className="font-bold text-white text-lg mb-1">Mode Livraison</div>
-                <div className="flex items-center justify-center gap-2 text-red-400 font-bold mb-2">
-                  <Lock size={16}/> Taximètre: DÉSACTIVÉ
-                </div>
-                <p className="text-xs text-slate-400">Le revenu provient du fournisseur (DoorDash / Instacart / Uber Eats / Skip). Le taximètre ne peut jamais être activé en mode livraison.</p>
-              </div>
-            )}
-
-            {/* Rideshare provider note */}
-            {serviceMode === 'RIDESHARE' && (
-              <div className="p-4 rounded-3xl bg-slate-900 border border-slate-800 text-center mb-5">
-                <div className="text-3xl mb-2">🚗</div>
-                <div className="font-bold text-white mb-1">Mode Rideshare</div>
-                <p className="text-xs text-slate-400 mb-2">Le prix final est fourni par Uber/Lyft. Taximètre.GOV enregistre l'activité GPS, le kilométrage et le contexte — mais ne remplace jamais le tarif fournisseur.</p>
-                <div className="text-[10px] text-slate-600">Prix fournisseur → Webhook → Ledger (jamais recalculé)</div>
-              </div>
-            )}
-
-            {/* Main taximeter display */}
-            {(serviceMode === 'TAXI' || serviceMode === 'PERSONAL') && (
-              <div>
-                {/* State indicator */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${STATE_CONF[state].dot}`} />
-                    <span className={`font-bold text-sm ${STATE_CONF[state].color}`}>{STATE_CONF[state].label}</span>
-                  </div>
-                  <div className={`text-xs ${gpsColor} flex items-center gap-1`}>
-                    <Navigation size={12}/> GPS {gpsQuality} ({gpsAccuracy}m)
-                  </div>
-                </div>
-
-                {/* Big fare display */}
-                <div className={`relative rounded-3xl border p-8 text-center mb-5 transition-all ${state === 'RUNNING' ? 'bg-qc-blue/10 border-qc-blue/40' : 'bg-slate-900 border-slate-800'}`}>
-                  <div className="text-xs text-slate-500 mb-2 uppercase tracking-widest">
-                    {state === 'RUNNING' ? '● COURSE EN COURS' : state === 'COMPLETED' ? '✓ COURSE TERMINÉE' : 'TAXIMÈTRE'}
-                  </div>
-                  <div className={`text-7xl font-black tabular-nums mb-4 transition-all ${state === 'RUNNING' ? 'text-white' : 'text-slate-500'}`}>
-                    {state === 'RUNNING' || state === 'COMPLETED' ? fmt(fare.finalFare) : '$0.00'}
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="bg-slate-900/60 rounded-2xl p-2">
-                      <MapPin size={14} className="text-qc-blue-light mx-auto mb-1"/>
-                      <div className="font-bold text-white tabular-nums">{distanceKm.toFixed(2)} km</div>
-                      <div className="text-[9px] text-slate-500">Distance</div>
-                    </div>
-                    <div className="bg-slate-900/60 rounded-2xl p-2">
-                      <Clock size={14} className="text-qc-blue-light mx-auto mb-1"/>
-                      <div className="font-bold text-white tabular-nums">{formatTime(durationSec)}</div>
-                      <div className="text-[9px] text-slate-500">Durée</div>
-                    </div>
-                    <div className="bg-slate-900/60 rounded-2xl p-2">
-                      <Gauge size={14} className={`mx-auto mb-1 ${isWaiting ? 'text-amber-400' : 'text-slate-600'}`}/>
-                      <div className={`font-bold tabular-nums ${isWaiting ? 'text-amber-400' : 'text-slate-600'}`}>{formatTime(waitingSec)}</div>
-                      <div className="text-[9px] text-slate-500">Attente</div>
-                    </div>
-                  </div>
-                  <div className="text-[9px] text-slate-600 mt-2">Tarif: {ACTIVE_TARIFF.version} · {ACTIVE_TARIFF.isPilot ? 'PILOTE' : 'Officiel'}</div>
-                </div>
-
-                {/* Fare breakdown (during/after) */}
-                {(state === 'RUNNING' || state === 'COMPLETED') && (
-                  <div className="grid grid-cols-4 gap-1.5 mb-4 text-[10px]">
-                    {[
-                      { label:'Base', val:fare.baseFare, color:'text-white' },
-                      { label:'Distance', val:fare.distanceFare, color:'text-blue-400' },
-                      { label:'Temps', val:fare.timeFare, color:'text-purple-400' },
-                      { label:'Attente', val:fare.waitingFare, color:'text-amber-400' },
-                    ].map(s => (
-                      <div key={s.label} className="bg-slate-900 rounded-xl p-2 text-center border border-slate-800">
-                        <div className={`font-bold tabular-nums ${s.color}`}>{fmt(s.val)}</div>
-                        <div className="text-slate-600">{s.label}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Waiting toggle */}
-                {state === 'RUNNING' && (
-                  <button onClick={() => setIsWaiting(w => !w)}
-                    className={`w-full py-3.5 rounded-2xl font-bold text-sm mb-3 transition-all border ${isWaiting ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'}`}>
-                    {isWaiting ? '▶ Reprendre la course' : '⏸ Arrêt (Compteur attente)'}
-                  </button>
-                )}
-
-                {/* Final fare summary */}
-                {state === 'COMPLETED' && (
-                  <div className="driver-card p-4 mb-4 space-y-2 border-green-500/20">
-                    <div className="font-semibold text-white text-sm mb-2">Course terminée — {tripId}</div>
-                    {[
-                      { label:'Tarif', val:fmt(fare.finalFare), color:'text-white' },
-                      { label:'TPS (5%)', val:fmt(tpsAmt), color:'text-blue-400' },
-                      { label:'TVQ (9.975%)', val:fmt(tvqAmt), color:'text-purple-400' },
-                    ].map(s => (
-                      <div key={s.label} className="flex justify-between text-xs">
-                        <span className="text-slate-400">{s.label}</span>
-                        <span className={`font-bold ${s.color}`}>{s.val}</span>
-                      </div>
-                    ))}
-                    {/* Tip selector */}
-                    <div className="border-t border-slate-800 pt-2 mt-1">
-                      <div className="text-[10px] text-slate-500 mb-2">Pourboire</div>
-                      <div className="flex gap-2">
-                        {[0,10,15,20].map(pct => (
-                          <button key={pct} onClick={() => setTipPct(pct)}
-                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${tipPct===pct?'bg-green-600 text-white':'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>
-                            {pct === 0 ? 'Non' : `${pct}%`}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="border-t border-slate-800 pt-2">
-                      <div className="flex justify-between font-black text-lg">
-                        <span className="text-white">TOTAL</span>
-                        <span className="text-green-400 tabular-nums">{fmt(totalAmt)}</span>
-                      </div>
-                    </div>
-                    {/* Payment method */}
-                    <div className="flex gap-2 pt-1">
-                      {(['CARD','CASH','INTERAC'] as const).map(m => (
-                        <button key={m} onClick={() => setPaymentMethod(m)}
-                          className={`flex-1 py-2 rounded-xl text-[10px] font-bold transition-all ${paymentMethod===m?'bg-qc-blue text-white':'bg-slate-800 text-slate-400'}`}>
-                          {m}
-                        </button>
-                      ))}
-                    </div>
-                    <button onClick={handleReset}
-                      className="w-full py-3.5 rounded-2xl bg-green-600 text-white font-bold hover:bg-green-500 transition-all shadow-lg shadow-green-900/30">
-                      ✓ Confirmer paiement {fmt(totalAmt)} · {paymentMethod}
-                    </button>
-                  </div>
-                )}
-
-                {/* Control buttons */}
-                {state === 'AVAILABLE' && (
-                  <button onClick={() => setShowConfirmStart(true)}
-                    className="w-full py-5 rounded-3xl bg-qc-blue text-white font-black text-xl hover:bg-qc-blue-dark active:scale-98 transition-all shadow-2xl shadow-blue-900/50">
-                    🚕 Commencer la course
-                  </button>
-                )}
-                {state === 'RUNNING' && (
-                  <button onClick={() => setShowConfirmStop(true)}
-                    className="w-full py-5 rounded-3xl bg-red-600 text-white font-black text-xl hover:bg-red-500 transition-all shadow-2xl shadow-red-900/50">
-                    ⬛ Terminer la course
-                  </button>
-                )}
-
-                {/* Emergency button */}
-                <button className="w-full py-3 rounded-2xl bg-red-900/30 border border-red-800/50 text-red-400 font-bold text-sm mt-3 flex items-center justify-center gap-2 hover:bg-red-900/40 transition-all">
-                  🆘 SOS — Urgence
+      {/* Service mode selector */}
+      {!isActive && (
+        <div className="px-4 mb-4">
+          <div className="flex gap-2 p-1 bg-slate-900 rounded-2xl border border-slate-800">
+            {(Object.keys(SERVICE_CONF) as ServiceMode[]).map(mode => {
+              const conf = SERVICE_CONF[mode]
+              const isSelected = serviceMode === mode
+              return (
+                <button
+                  key={mode}
+                  onClick={() => setServiceMode(mode)}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex flex-col items-center gap-1
+                    ${isSelected ? `${conf.bg} ${conf.color} border border-current/30` : 'text-slate-500'}`}
+                >
+                  <span className="text-base">{conf.icon}</span>
+                  <span>{conf.label}</span>
                 </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Main meter display */}
+      <div className="px-4 mb-4">
+        <div className={`rounded-3xl p-6 border-2 transition-all ${
+          isActive
+            ? tripStatus === 'PAUSED'
+              ? 'bg-amber-500/5 border-amber-500/40'
+              : 'bg-green-500/5 border-green-500/40'
+            : 'bg-slate-900 border-slate-700'
+        }`}>
+
+          {/* Fare display */}
+          <div className="text-center mb-6">
+            {taximeterOn ? (
+              <>
+                <div className="text-xs text-slate-400 mb-1">
+                  {isActive ? 'Tarif en cours — calcul final côté serveur' : 'Tarif — prêt à démarrer'}
+                </div>
+                <div className={`font-black tabular-nums transition-all ${isActive ? 'text-6xl text-green-400' : 'text-5xl text-slate-500'}`}>
+                  {new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(displayFare)}
+                </div>
+                {fareVersion && (
+                  <div className="text-[9px] text-slate-600 mt-1">Tarif: {fareVersion}</div>
+                )}
+              </>
+            ) : (
+              <div className="py-4">
+                <div className="text-4xl mb-2">{SERVICE_CONF[serviceMode].icon}</div>
+                <div className="text-sm font-semibold text-slate-400">Mode {SERVICE_CONF[serviceMode].label}</div>
+                <div className="text-xs text-slate-500 mt-1">Taximètre désactivé · Montant fourni par la plateforme</div>
               </div>
             )}
           </div>
-        )}
 
-        {/* ─── PRE-RIDE TAB ──────────────────────────────── */}
-        {tab === 'preride' && (
-          <div className="space-y-4 mb-6">
-            <div className={`p-4 rounded-2xl border ${validation.canStart ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-              <div className="flex items-center gap-2 mb-1">
-                {validation.canStart ? <CheckCircle size={18} className="text-green-400"/> : <AlertCircle size={18} className="text-red-400"/>}
-                <span className={`font-bold ${validation.canStart ? 'text-green-400' : 'text-red-400'}`}>
-                  {validation.canStart ? 'Prêt à démarrer' : `${validation.blockers.length} blocage(s) détecté(s)`}
-                </span>
-              </div>
-            </div>
-
-            <Card>
-              <div className="font-semibold text-white text-sm mb-3">Validation pré-course</div>
-              <div className="space-y-2">
-                {[
-                  { label:'Identité chauffeur', ok:mockPreRideCheck.driverVerified },
-                  { label:'Véhicule vérifié', ok:mockPreRideCheck.vehicleVerified },
-                  { label:'Permis taxi valide', ok:mockPreRideCheck.permitValid },
-                  { label:'GPS disponible', ok:mockPreRideCheck.gpsAvailable },
-                  { label:'Précision GPS acceptable', ok:mockPreRideCheck.gpsAcceptable },
-                  { label:'Tarif disponible', ok:mockPreRideCheck.tariffAvailable },
-                  { label:'Horloge valide', ok:mockPreRideCheck.deviceTimeValid },
-                  { label:'Appareil fiable', ok:mockPreRideCheck.deviceTrusted },
-                  { label:'Service autorisé', ok:mockPreRideCheck.serviceAuthorized },
-                ].map(c => (
-                  <div key={c.label} className="flex items-center gap-2 py-1.5 border-b border-slate-800 last:border-0">
-                    {c.ok ? <CheckCircle size={14} className="text-green-400 shrink-0"/> : <AlertCircle size={14} className="text-red-400 shrink-0"/>}
-                    <span className="text-xs text-slate-300 flex-1">{c.label}</span>
-                    <span className={`text-xs font-bold ${c.ok ? 'text-green-400' : 'text-red-400'}`}>{c.ok ? 'OK' : 'FAIL'}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            <Card>
-              <div className="font-semibold text-white text-sm mb-3">🔒 Appareil</div>
+          {/* Counters */}
+          {taximeterOn && (
+            <div className="grid grid-cols-3 gap-3 mb-6">
               {[
-                { label:'Device ID', val:mockDevice.deviceId, mono:true },
-                { label:'Plateforme', val:mockDevice.platform },
-                { label:'Version app', val:mockDevice.appVersion },
-                { label:'Statut sécurité', val:mockDevice.securityStatus, color:mockDevice.securityStatus==='TRUSTED'?'text-green-400':'text-red-400' },
-                { label:'Root détecté', val:mockDevice.rootDetected ? '⚠ OUI' : '✅ Non' },
-                { label:'Tampering', val:mockDevice.tamperingDetected ? '⚠ OUI' : '✅ Non' },
-              ].map(s => (
-                <div key={s.label} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0 text-xs">
-                  <span className="text-slate-400">{s.label}</span>
-                  <span className={`font-medium ${'color' in s ? s.color : ''} ${'mono' in s ? 'font-mono text-qc-blue-light text-[10px]' : 'text-white'}`}>{s.val}</span>
-                </div>
-              ))}
-              <div className="text-[9px] text-slate-500 mt-2">Détection best-effort — pas une garantie parfaite</div>
-            </Card>
-          </div>
-        )}
-
-        {/* ─── TARIFF TAB ────────────────────────────────── */}
-        {tab === 'tariff' && (
-          <div className="space-y-4 mb-6">
-            <Card>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="font-semibold text-white text-sm">Tarif actif — {ACTIVE_TARIFF.version}</span>
-                {ACTIVE_TARIFF.isPilot && <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold">PILOTE</span>}
-              </div>
-              <div className="space-y-2">
-                {[
-                  { label:'Juridiction', val:ACTIVE_TARIFF.jurisdiction },
-                  { label:'En vigueur depuis', val:ACTIVE_TARIFF.effectiveFrom },
-                  { label:'Source', val:ACTIVE_TARIFF.sourceRef },
-                  { label:'Publié par', val:ACTIVE_TARIFF.publishedBy, mono:true },
-                  { label:'Statut', val:ACTIVE_TARIFF.status, color:'text-green-400' },
-                ].map(s => (
-                  <div key={s.label} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0 text-xs">
-                    <span className="text-slate-400">{s.label}</span>
-                    <span className={`${'color' in s ? s.color : 'text-white'} ${'mono' in s ? 'font-mono text-[10px] text-qc-blue-light' : ''}`}>{s.val}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            <Card>
-              <div className="font-semibold text-white text-sm mb-3">Règles tarifaires (chargées depuis config gouvernementale)</div>
-              <div className="space-y-2">
-                {ACTIVE_TARIFF.rules.map(r => (
-                  <div key={r.component} className="flex items-center justify-between py-1.5 border-b border-slate-800 last:border-0">
-                    <div>
-                      <div className="text-xs font-semibold text-white">{r.component}</div>
-                      <div className="text-[10px] text-slate-500">{r.unit.replace(/_/g,' ')}</div>
-                    </div>
-                    <div className="font-mono font-black text-qc-blue-light">{fmt(r.value)}</div>
-                  </div>
-                ))}
-                <div className="flex justify-between pt-1 text-xs">
-                  <span className="text-slate-400">Tarif minimum</span>
-                  <span className="font-mono font-bold text-white">{fmt(ACTIVE_TARIFF.minimumFare)}</span>
-                </div>
-              </div>
-              <div className="text-[9px] text-amber-400 mt-3">Tarifs configurés par l'administration gouvernementale — JAMAIS hardcodés dans le frontend</div>
-            </Card>
-          </div>
-        )}
-
-        {/* ─── SESSION TAB ───────────────────────────────── */}
-        {tab === 'session' && (
-          <div className="space-y-4 mb-6">
-            <Card className="border-green-500/20">
-              <div className="font-semibold text-white text-sm mb-3">Session complétée — {mockCompletedSession.tripId}</div>
-              <div className="space-y-2">
-                {[
-                  { label:'Trip ID', val:mockCompletedSession.tripId, mono:true },
-                  { label:'Service', val:mockCompletedSession.serviceMode + (mockCompletedSession.taximeterEnabled ? ' (Txm ✓)' : '') },
-                  { label:'Tarif version', val:mockCompletedSession.tariffVersionId, mono:true },
-                  { label:'Distance', val:`${mockCompletedSession.distanceKm} km` },
-                  { label:'Durée', val:`${Math.floor(mockCompletedSession.durationSec/60)} min` },
-                  { label:'Attente', val:`${Math.floor(mockCompletedSession.waitingSec/60)} min` },
-                  { label:'Tarif final', val:fmt(mockCompletedSession.finalFare), color:'text-white' },
-                  { label:'TPS', val:fmt(mockCompletedSession.tpsAmount) },
-                  { label:'TVQ', val:fmt(mockCompletedSession.tvqAmount) },
-                  { label:'Pourboire', val:fmt(mockCompletedSession.tipAmount) },
-                  { label:'TOTAL', val:fmt(mockCompletedSession.totalAmount), color:'text-green-400', bold:true },
-                  { label:'Paiement', val:`${mockCompletedSession.paymentMethod} · ${mockCompletedSession.paymentStatus}` },
-                  { label:'Statut session', val:mockCompletedSession.state },
-                  { label:'Immuable', val:mockCompletedSession.isLocked ? `🔒 OUI — ${mockCompletedSession.lockReason}` : 'Non', color:mockCompletedSession.isLocked ? 'text-purple-400' : 'text-slate-400' },
-                  { label:'Échantillons GPS', val:`${mockCompletedSession.gpsSamples} (${mockCompletedSession.anomalyCount} filtrés)` },
-                  { label:'Sync', val:mockCompletedSession.syncStatus, color:'text-green-400' },
-                  { label:'Source horloge', val:mockCompletedSession.timeSource },
-                ].map(s => (
-                  <div key={s.label} className={`flex justify-between py-1.5 border-b border-slate-800 last:border-0 ${s.bold ? 'font-bold' : ''}`}>
-                    <span className="text-xs text-slate-400">{s.label}</span>
-                    <span className={`text-xs ${'color' in s ? s.color : 'text-white'} ${'mono' in s ? 'font-mono text-[10px] text-qc-blue-light' : ''} text-right max-w-[55%]`}>{s.val}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* GPS samples */}
-            <Card>
-              <div className="font-semibold text-white text-sm mb-3">Échantillons GPS</div>
-              <div className="space-y-1.5">
-                {mockGPSSamples.map(s => (
-                  <div key={s.id} className={`flex items-start gap-2 text-[10px] py-1.5 border-b border-slate-800 last:border-0 ${s.filtered ? 'opacity-50' : ''}`}>
-                    <span className={s.filtered ? 'text-red-400' : s.quality === 'EXCELLENT' ? 'text-green-400' : 'text-amber-400'}>
-                      {s.filtered ? '✗' : '✓'}
-                    </span>
-                    <div className="flex-1">
-                      <div className="font-mono text-slate-400">{s.latitude.toFixed(4)}, {s.longitude.toFixed(4)}</div>
-                      <div className="text-slate-500">±{s.accuracy}m · {(s.speed*3.6).toFixed(0)} km/h · {s.quality}</div>
-                      {s.filterReason && <div className="text-red-400 mt-0.5">{s.filterReason}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="text-[9px] text-slate-500 mt-2">Coordonnées conservées selon politique de rétention GPS · Agrégation après N jours</div>
-            </Card>
-          </div>
-        )}
-
-        {/* ─── EVENTS TAB ────────────────────────────────── */}
-        {tab === 'events' && (
-          <div className="mb-6">
-            <div className="text-[10px] text-slate-500 mb-3">Journal d'événements — idempotent (event_id unique · duplicates ignorés)</div>
-            <div className="driver-card divide-y divide-slate-800">
-              {mockEvents.map((evt, i) => (
-                <div key={i} className={`p-3.5 flex items-start gap-3 ${evt.duplicate ? 'opacity-40' : ''}`}>
-                  <span className={`text-lg shrink-0 ${evt.duplicate ? 'text-amber-400' : evt.processed ? 'text-green-400' : 'text-slate-500'}`}>
-                    {evt.duplicate ? '⚠' : evt.processed ? '✅' : '⏳'}
-                  </span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                      <span className="font-bold text-white text-sm">{evt.eventType}</span>
-                      {evt.duplicate && <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold">DUPLICATE IGNORED</span>}
-                      {!evt.duplicate && <span className={`text-[9px] font-bold ${evt.processed ? 'text-green-400' : 'text-slate-500'}`}>{evt.processed ? 'TRAITÉ' : 'EN ATTENTE'}</span>}
-                    </div>
-                    <div className="font-mono text-[9px] text-slate-500">{evt.eventId}</div>
-                    {Object.keys(evt.metadata).length > 0 && (
-                      <div className="text-[9px] text-slate-600 mt-0.5">{JSON.stringify(evt.metadata)}</div>
-                    )}
-                  </div>
-                  <div className="text-[9px] text-slate-600 shrink-0">{new Date(evt.timestamp).toLocaleTimeString('fr-CA')}</div>
+                { icon: <Clock size={14} />,    label: 'Durée',    val: formatDuration(elapsedSec) },
+                { icon: <Gauge size={14} />,    label: 'Distance', val: distanceM >= 1000 ? `${fmt(distanceM/1000,1)} km` : `${Math.round(distanceM)} m` },
+                { icon: <Navigation size={14} />, label: 'Attente', val: formatDuration(waitingSec) },
+              ].map(item => (
+                <div key={item.label} className="bg-slate-800/60 rounded-2xl p-3 text-center">
+                  <div className="flex items-center justify-center gap-1 text-slate-400 mb-1">{item.icon}</div>
+                  <div className="font-bold text-white text-sm tabular-nums">{item.val}</div>
+                  <div className="text-[10px] text-slate-500">{item.label}</div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Breakdown */}
+          {isActive && taximeterOn && fareSnapshot && (
+            <div className="space-y-1.5 mb-6">
+              {[
+                { label: 'Prise en charge', val: parseFloat(fareSnapshot.baseFare ?? '4.10') },
+                { label: 'Distance',        val: (distanceM / 100) * parseFloat(fareSnapshot.distanceRatePer100m ?? '0.185') },
+                { label: 'Temps',           val: (elapsedSec / 60) * parseFloat(fareSnapshot.timeRatePerMinute ?? '0.55') },
+                ...(waitingSec > 0 ? [{ label: 'Attente', val: (waitingSec / 60) * parseFloat(fareSnapshot.waitingRatePerMinute ?? '0.55') }] : []),
+              ].map(item => (
+                <div key={item.label} className="flex justify-between text-xs">
+                  <span className="text-slate-400">{item.label}</span>
+                  <span className="text-white font-mono">{new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(item.val)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
+              <div className="flex items-center gap-2 text-red-400 text-xs">
+                <AlertCircle size={14} /> {error}
+              </div>
+            </div>
+          )}
+
+          {/* Controls */}
+          {!isActive ? (
+            <button
+              onClick={() => void startTrip()}
+              disabled={tripStatus === 'STARTING' || !taximeterOn}
+              className={`w-full py-5 rounded-2xl font-bold text-xl transition-all active:scale-98 disabled:opacity-50
+                ${taximeterOn
+                  ? 'bg-qc-blue text-white shadow-lg shadow-blue-900/30 hover:bg-qc-blue/90'
+                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
+            >
+              {tripStatus === 'STARTING' ? '⏳ Démarrage…' : taximeterOn ? '▶ DÉMARRER LA COURSE' : 'Taximètre non applicable'}
+            </button>
+          ) : (
+            <div className="flex gap-3">
+              <button
+                onClick={() => void togglePause()}
+                className={`flex-1 py-4 rounded-2xl font-bold transition-all active:scale-98 flex items-center justify-center gap-2
+                  ${tripStatus === 'PAUSED'
+                    ? 'bg-green-500/20 border border-green-500/50 text-green-400'
+                    : 'bg-amber-500/20 border border-amber-500/50 text-amber-400'}`}
+              >
+                {tripStatus === 'PAUSED' ? <><Play size={18} /> Reprendre</> : <><Pause size={18} /> Pause</>}
+              </button>
+              <button
+                onClick={() => void stopTrip()}
+                disabled={tripStatus === ('STOPPING' as TripStatus)}
+                className="flex-1 py-4 rounded-2xl font-bold bg-red-500/20 border border-red-500/50 text-red-400 transition-all active:scale-98 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <Square size={18} /> {(tripStatus as string) === 'STOPPING' ? 'Envoi…' : 'Terminer'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Confirm start modal */}
-      {showConfirmStart && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end p-4">
-          <div className="w-full bg-slate-900 rounded-3xl border border-slate-700 p-6">
-            <h3 className="font-bold text-white text-xl text-center mb-4">Démarrer le taximètre ?</h3>
-            <div className="space-y-2 mb-5">
-              {[
-                { label:'Service', val:`${SERVICE_CONF[serviceMode].icon} ${serviceMode}` },
-                { label:'Tarif', val:ACTIVE_TARIFF.version },
-                { label:'GPS', val:`● ${gpsQuality} (${gpsAccuracy}m)` },
-                { label:'Trip ID', val:tripId },
-                { label:'Taximètre', val:taximeterOn ? '🟢 ACTIF' : '🔴 DÉSACTIVÉ' },
-              ].map(s => (
-                <div key={s.label} className="flex justify-between text-xs">
-                  <span className="text-slate-400">{s.label}</span>
-                  <span className="text-white font-semibold">{s.val}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setShowConfirmStart(false)} className="flex-1 py-3.5 rounded-2xl bg-slate-800 border border-slate-700 text-slate-300 font-semibold">Annuler</button>
-              <button onClick={handleStart} className="flex-1 py-3.5 rounded-2xl bg-qc-blue text-white font-bold hover:bg-qc-blue-dark transition-all">🚕 Commencer</button>
-            </div>
+      {/* Status bar */}
+      <div className="px-4 mb-4">
+        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="flex items-center gap-2">
+            <Shield size={14} className="text-qc-blue" />
+            <span className="text-[10px] text-slate-400">Calcul certifié côté serveur</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {gpsStatus === 'ok'
+              ? <><Navigation size={12} className="text-green-400" /><span className="text-[10px] text-green-400">GPS actif</span></>
+              : gpsStatus === 'denied'
+              ? <><MapPin size={12} className="text-red-400" /><span className="text-[10px] text-red-400">GPS refusé</span></>
+              : <><MapPin size={12} className="text-slate-500" /><span className="text-[10px] text-slate-500">GPS inactif</span></>}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Confirm stop modal */}
-      {showConfirmStop && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end p-4">
-          <div className="w-full bg-slate-900 rounded-3xl border border-slate-700 p-6">
-            <h3 className="font-bold text-white text-xl text-center mb-2">Terminer la course ?</h3>
-            <div className="text-3xl font-black text-green-400 tabular-nums text-center mb-4">{fmt(fare.finalFare)}</div>
-            <div className="flex gap-3">
-              <button onClick={() => setShowConfirmStop(false)} className="flex-1 py-3.5 rounded-2xl bg-slate-800 border border-slate-700 text-slate-300 font-semibold">Continuer</button>
-              <button onClick={handleStop} className="flex-1 py-3.5 rounded-2xl bg-red-600 text-white font-bold hover:bg-red-500 transition-all">⬛ Terminer</button>
-            </div>
+      {/* Trip reference */}
+      {tripReference && (
+        <div className="px-4 mb-4">
+          <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
+            <div className="text-[9px] text-slate-500 uppercase tracking-wider mb-1">Référence officielle</div>
+            <div className="font-mono text-sm text-white font-bold">{tripReference}</div>
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   )
 }
