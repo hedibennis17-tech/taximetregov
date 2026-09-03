@@ -16,7 +16,7 @@ import {
   Scale, FileText, ShieldAlert, ArrowRight,
   Activity, BarChart2, Zap, Eye, ArrowLeftRight,
 } from 'lucide-react'
-import { getToken } from '@/lib/api'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -76,7 +76,8 @@ const SEVERITY_CONF: Record<string, { color: string; bg: string }> = {
 }
 
 async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> {
-  const token = getToken()
+  const { data } = await getSupabaseBrowserClient().auth.getSession()
+  const token = data.session?.access_token
   const res = await fetch(path, {
     ...opts,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...opts?.headers },
