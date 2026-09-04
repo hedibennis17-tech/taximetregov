@@ -86,6 +86,7 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
 }
 
 async function apiFetch(path: string, body?: unknown) {
+  // getToken() lit localStorage (notre token) ET le token Supabase
   const token = getToken()
   const res = await fetch(path, {
     method: body !== undefined ? 'POST' : 'GET',

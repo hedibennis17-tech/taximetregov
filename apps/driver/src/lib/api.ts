@@ -11,7 +11,19 @@ import { useState, useEffect, useCallback } from 'react'
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null
-  return localStorage.getItem('taximetregov_token')
+  // 1. Notre token custom
+  const customToken = localStorage.getItem('taximetregov_token')
+  if (customToken) return customToken
+  // 2. Token Supabase (stocké par @supabase/supabase-js)
+  try {
+    const keys = Object.keys(localStorage)
+    const sbKey = keys.find(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+    if (sbKey) {
+      const sbData = JSON.parse(localStorage.getItem(sbKey) ?? '{}') as { access_token?: string }
+      if (sbData.access_token) return sbData.access_token
+    }
+  } catch { /* ignore */ }
+  return null
 }
 
 export function setToken(token: string): void {
