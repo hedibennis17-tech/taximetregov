@@ -1,11 +1,23 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { Bell, ChevronRight, Clock, MapPin, RefreshCw } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { Amount, Card, SectionHeader, StatusDot } from '@/components/ui'
-import { useDriverProfile, useRevenue, useTrips, money } from '@/lib/api'
+import { useDriverProfile, useRevenue, useTrips, money, getToken } from '@/lib/api'
+import { useEffect } from 'react'
+
+// Auto-setup: crée le profil driver si nouveau compte Supabase
+async function setupDriverProfile() {
+  const token = getToken()
+  if (!token) return
+  try {
+    await fetch('/api/auth/setup', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  } catch { /* silencieux */ }
+}
 
 function activityIcon(source: string) {
   if (source === 'TAXI')      return '🚕'
@@ -29,6 +41,7 @@ function platformStatus(status: string) {
 }
 
 export default function HomePage() {
+  useEffect(() => { void setupDriverProfile() }, [])
   const { profile, loading: pLoading, error: pError, refresh: pRefresh } = useDriverProfile()
   const { revenue, loading: rLoading, refresh: rRefresh } = useRevenue('month')
   const { trips, loading: tLoading } = useTrips('COMPLETED')
