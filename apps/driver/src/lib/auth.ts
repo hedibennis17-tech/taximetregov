@@ -18,7 +18,6 @@ export interface AuthContext {
 export async function requireAuth(req: NextRequest): Promise<AuthContext | Response> {
   const token = req.headers.get('authorization')?.replace('Bearer ', '')
     || req.cookies.get('session_token')?.value
-    || req.cookies.get('sb-access-token')?.value
 
   if (!token) return apiError('Non authentifié', 401)
 
@@ -30,34 +29,27 @@ export async function requireAuth(req: NextRequest): Promise<AuthContext | Respo
   if (supabaseUrl && supabaseKey) {
     try {
       const supabase = createClient(supabaseUrl, supabaseKey)
-      const { data: { user }, error } = await supabase.auth.getUser(token)
+      const { data: { user } } = await supabase.auth.getUser(token)
+      if (user) {
+        // Chercher le driver_profile lié
+        const db = getDb()
+        const profiles = await db.execute(sql`
+          SELECT dp.id
+          FROM driver_profiles dp
+          JOIN users u ON u.id = dp.user_id
+          WHERE u.email = ${user.email ?? ''}
+          LIMIT 1
+        `).catch(() => [] as unknown[])
 
-      if (user && !error) {
-        // Chercher le profil chauffeur lié à cet utilisateur Supabase
-        try {
-          const db = getDb()
-          const profiles = await db.execute(sql`
-            SELECT dp.id, dp.public_driver_id
-            FROM driver_profiles dp
-            JOIN users u ON u.id = dp.user_id
-            WHERE u.email = ${user.email ?? ''}
-            LIMIT 1
-          `)
-          const profile = profiles[0] as { id: string } | undefined
+        const driverId = profiles.length
+          ? (profiles[0] as { id: string }).id
+          : null
 
-          return {
-            userId:   user.id,
-            email:    user.email ?? '',
-            role:     'DRIVER',
-            driverId: profile?.id ?? null,
-          }
-        } catch {
-          return {
-            userId:   user.id,
-            email:    user.email ?? '',
-            role:     'DRIVER',
-            driverId: null,
-          }
+        return {
+          userId:   user.id,
+          email:    user.email ?? '',
+          role:     'DRIVER',
+          driverId,
         }
       }
     } catch { /* continuer */ }
