@@ -1,171 +1,110 @@
-// GET /api/tax — Moteur fiscal TAXIMETER.GOV
-// Calcul TPS/TVQ depuis Revenue Ledger
-// ⚠️ Estimation uniquement — à valider avant transmission officielle
-
+// GET /api/tax — Moteur fiscal — lit tax_calculations, tax_filings, tax_periods réels
 import { NextRequest } from 'next/server'
 import { apiSuccess, apiError } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY
-           ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-           ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? ''
+const KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? ''
 
-const TPS_RATE = 0.05
-const TVQ_RATE = 0.09975
-
-function r2(n: number) { return Math.round(n * 100) / 100 }
+async function sbGet(path: string) {
+  const res = await fetch(`${SB_URL}/rest/v1/${path}`, { headers: { apikey: KEY(), Authorization: `Bearer ${KEY()}` } })
+  return res.json() as Promise<unknown[]>
+}
 
 export async function GET(req: NextRequest) {
   const ctx = await requireAuth(req)
   if (ctx instanceof Response) return ctx
   if (!ctx.driverId) return apiError('Profil introuvable', 404)
 
-  const { searchParams } = new URL(req.url)
-  const period = searchParams.get('period') ?? 'quarter' // month | quarter | year
-  const year   = parseInt(searchParams.get('year')   ?? String(new Date().getFullYear()))
-  const quarter = parseInt(searchParams.get('quarter') ?? String(Math.ceil((new Date().getMonth() + 1) / 3)))
-
-  // Calcul des dates selon la période
-  let dateFrom: string
-  let dateTo:   string
-  const now = new Date()
-
-  if (period === 'month') {
-    dateFrom = `${year}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
-    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate()
-    dateTo = `${year}-${String(now.getMonth() + 1).padStart(2, '0')}-${lastDay}`
-  } else if (period === 'quarter') {
-    const qStart = (quarter - 1) * 3 + 1
-    const qEnd   = qStart + 2
-    dateFrom = `${year}-${String(qStart).padStart(2, '0')}-01`
-    const lastDay = new Date(year, qEnd, 0).getDate()
-    dateTo = `${year}-${String(qEnd).padStart(2, '0')}-${lastDay}`
-  } else {
-    dateFrom = `${year}-01-01`
-    dateTo   = `${year}-12-31`
-  }
-
   try {
-    // 1. Revenue Ledger — toutes les activités imposables
-    const res = await fetch(
-      `${SB_URL}/rest/v1/revenue_ledger?driver_id=eq.${ctx.driverId}&activity_date=gte.${dateFrom}&activity_date=lte.${dateTo}&select=source_type,activity_type,gross_amount,fee_amount,tip_amount,net_amount,entry_type`,
-      { headers: { apikey: KEY(), Authorization: `Bearer ${KEY()}` } }
-    )
-    const ledger = await res.json() as Array<Record<string, string>>
+    // 1. Tax account
+    const taxAccs = await sbGet(`tax_accounts?driver_id=eq.${ctx.driverId}&select=id,tps_status,tvq_status,filing_frequency,tax_account_status,tps_registration_masked,tvq_registration_masked&limit=1`) as Array<Record<string,string>>
+    const taxAccount = taxAccs[0] ?? null
 
-    // 2. Tax account
-    const taxRes = await fetch(
-      `${SB_URL}/rest/v1/tax_accounts?driver_id=eq.${ctx.driverId}&select=tps_status,tvq_status,filing_frequency,tax_account_status,tps_registration_masked,tvq_registration_masked&limit=1`,
-      { headers: { apikey: KEY(), Authorization: `Bearer ${KEY()}` } }
-    )
-    const taxAccounts = await taxRes.json() as Array<Record<string, string>>
-    const taxAccount = taxAccounts[0] ?? null
-
-    // 3. Calcul fiscal par source
-    const bySource: Record<string, { gross: number; tips: number; fees: number; net: number; count: number }> = {}
-    let totalGross = 0
-    let totalTips  = 0
-    let totalFees  = 0
-
-    for (const entry of ledger) {
-      const src   = entry['source_type'] ?? 'OTHER'
-      const gross = parseFloat(entry['gross_amount'] ?? '0')
-      const tips  = parseFloat(entry['tip_amount']   ?? '0')
-      const fees  = parseFloat(entry['fee_amount']   ?? '0')
-
-      if (!bySource[src]) bySource[src] = { gross: 0, tips: 0, fees: 0, net: 0, count: 0 }
-      bySource[src]!.gross += gross
-      bySource[src]!.tips  += tips
-      bySource[src]!.fees  += fees
-      bySource[src]!.net   += parseFloat(entry['net_amount'] ?? '0')
-      bySource[src]!.count += 1
-      totalGross += gross
-      totalTips  += tips
-      totalFees  += fees
+    if (!taxAccount) {
+      return apiSuccess({ hasAccount: false, message: 'Aucun compte fiscal configuré' })
     }
 
-    // 4. Moteur fiscal
-    // Revenus taxables = bruts (taxi + rideshare + livraison)
-    const revenusTaxi       = bySource['TAXI']?.gross     ?? 0
-    const revenusRideshare  = (bySource['UBER']?.gross ?? 0) + (bySource['LYFT']?.gross ?? 0)
-    const revenusLivraison  = (bySource['DOORDASH']?.gross ?? 0) + (bySource['INSTACART']?.gross ?? 0)
-                            + (bySource['UBER_EATS']?.gross ?? 0) + (bySource['SKIP']?.gross ?? 0)
-    const revenusAutres     = totalGross - revenusTaxi - revenusRideshare - revenusLivraison
+    // 2. Périodes fiscales (toutes)
+    const periods = await sbGet(`tax_periods?tax_account_id=eq.${taxAccount['id']}&order=period_start.desc&select=id,period_start,period_end,filing_due_date,period_status,tps_status,tvq_status,gross_revenue_taxi,gross_revenue_rideshare,gross_revenue_delivery,gross_revenue_other`) as Array<Record<string,string>>
 
-    // TPS/TVQ sur revenus bruts
-    const revenusBruts      = totalGross
-    const tpsPercue         = r2(revenusBruts * TPS_RATE)
-    const tvqPercue         = r2(revenusBruts * TVQ_RATE)
+    // 3. Calculs pour la période courante
+    const currentPeriod = periods.find(p => p['period_status'] === 'OPEN') ?? periods[0]
+    let currentCalc: Record<string,string|boolean|number> | null = null
+    let currentFiling: Record<string,string> | null = null
 
-    // CTI estimé (Crédits de taxe sur intrants) — 30% des frais platform
-    const ctiEstime         = r2(totalFees * TPS_RATE * 0.30)
-    const remboursTVQ       = r2(totalFees * TVQ_RATE * 0.30)
+    if (currentPeriod) {
+      const calcs = await sbGet(`tax_calculations?tax_period_id=eq.${currentPeriod['id']}&order=calculation_version.desc&select=*&limit=1`) as Array<Record<string,string|boolean|number>>
+      currentCalc = calcs[0] ?? null
 
-    // Solde estimé à remettre
-    const soldeTPSEstime    = r2(tpsPercue - ctiEstime)
-    const soldeTVQEstime    = r2(tvqPercue - remboursTVQ)
-    const soldeTotal        = r2(soldeTPSEstime + soldeTVQEstime)
+      const filings = await sbGet(`tax_filings?tax_period_id=eq.${currentPeriod['id']}&order=created_at.desc&select=id,filing_status,filing_type,gateway_mode,is_simulation,prepared_at,submitted_at,accepted_at,government_reference,rejection_reason&limit=1`) as Array<Record<string,string>>
+      currentFiling = filings[0] ?? null
+    }
 
-    // 5. Prochaine échéance
-    const echeances = {
-      quarterly: {
-        Q1: `${year}-04-30`,
-        Q2: `${year}-07-31`,
-        Q3: `${year}-10-31`,
-        Q4: `${year + 1}-01-31`,
+    // 4. Revenue ledger pour compléter si pas de calcul
+    let ledgerRevenue = { taxi: 0, rideshare: 0, livraison: 0, total: 0, tips: 0, fees: 0 }
+    if (!currentCalc && currentPeriod) {
+      const dateFrom = currentPeriod['period_start']
+      const dateTo   = currentPeriod['period_end']
+      const ledger = await sbGet(`revenue_ledger?driver_id=eq.${ctx.driverId}&activity_date=gte.${dateFrom}&activity_date=lte.${dateTo}&select=source_type,gross_amount,tip_amount,fee_amount`) as Array<Record<string,string>>
+      for (const r of ledger) {
+        const g = parseFloat(r['gross_amount'] ?? '0')
+        const src = r['source_type'] ?? ''
+        if (src === 'TAXI')  ledgerRevenue.taxi += g
+        else if (['UBER','LYFT'].includes(src)) ledgerRevenue.rideshare += g
+        else if (['DOORDASH','INSTACART','UBER_EATS','SKIP'].includes(src)) ledgerRevenue.livraison += g
+        ledgerRevenue.total += g
+        ledgerRevenue.tips  += parseFloat(r['tip_amount'] ?? '0')
+        ledgerRevenue.fees  += parseFloat(r['fee_amount'] ?? '0')
       }
     }
-    const prochaineEcheance = echeances.quarterly[`Q${quarter}` as keyof typeof echeances.quarterly]
 
-    // 6. Déclarations précédentes (simulées — connexion Revenu Québec future)
-    const declarations = [
-      { period: `Q${quarter - 1 || 4}-${quarter === 1 ? year - 1 : year}`, status: 'SUBMITTED', montant: r2(soldeTotal * 0.92), date_soumission: new Date(Date.now() - 90*86400000).toISOString().split('T')[0] },
-    ].filter(d => !d.period.startsWith('Q0'))
+    // 5. Règles fiscales actives
+    const rules = await sbGet(`tax_rule_sets?code=eq.QC-TPS-TVQ-2024&select=tps_rate,tvq_rate,label,version&limit=1`) as Array<Record<string,string>>
+    const rule = rules[0] ?? { tps_rate: '0.05000', tvq_rate: '0.09975', label: 'Taux QC 2024', version: '2024.1' }
+
+    // 6. Toutes les déclarations
+    const allFilings = await sbGet(`tax_filings?tax_account_id=eq.${taxAccount['id']}&order=created_at.desc&select=id,filing_status,filing_type,prepared_at,submitted_at,accepted_at,government_reference,tax_period_id`) as Array<Record<string,string>>
+
+    // 7. Calcul estimation si pas de calcul en DB
+    const r2 = (n: number) => Math.round(n * 100) / 100
+    const tpsRate = parseFloat(rule['tps_rate'] ?? '0.05')
+    const tvqRate = parseFloat(rule['tvq_rate'] ?? '0.09975')
+
+    const gross = currentCalc ? parseFloat(String(currentCalc['gross_revenue_taxable'] ?? 0)) : ledgerRevenue.total
+    const tpsCollected = currentCalc ? parseFloat(String(currentCalc['tps_collected'] ?? 0)) : r2(gross * tpsRate)
+    const tvqCollected = currentCalc ? parseFloat(String(currentCalc['tvq_collected'] ?? 0)) : r2(gross * tvqRate)
+    const tpsCredits   = currentCalc ? parseFloat(String(currentCalc['tps_credits'] ?? 0)) : r2(ledgerRevenue.fees * tpsRate * 0.30)
+    const tvqCredits   = currentCalc ? parseFloat(String(currentCalc['tvq_credits'] ?? 0)) : r2(ledgerRevenue.fees * tvqRate * 0.30)
+    const tpsBalance   = currentCalc ? parseFloat(String(currentCalc['tps_balance'] ?? 0)) : r2(tpsCollected - tpsCredits)
+    const tvqBalance   = currentCalc ? parseFloat(String(currentCalc['tvq_balance'] ?? 0)) : r2(tvqCollected - tvqCredits)
+    const isEstimate   = currentCalc ? Boolean(currentCalc['is_estimate']) : true
 
     return apiSuccess({
-      period:       { type: period, year, quarter, dateFrom, dateTo },
+      hasAccount: true,
       taxAccount,
-      revenus: {
-        taxi:        r2(revenusTaxi),
-        rideshare:   r2(revenusRideshare),
-        livraison:   r2(revenusLivraison),
-        autres:      r2(revenusAutres),
-        bruts:       r2(revenusBruts),
-        tips:        r2(totalTips),
-        frais:       r2(totalFees),
-      },
+      currentPeriod: currentPeriod ?? null,
+      allPeriods: periods,
       fiscal: {
-        tps_percue:       tpsPercue,
-        tvq_percue:       tvqPercue,
-        cti_estime:       ctiEstime,
-        remboursement_tvq: remboursTVQ,
-        solde_tps:        soldeTPSEstime,
-        solde_tvq:        soldeTVQEstime,
-        solde_total:      soldeTotal,
-        taux_tps:         `${TPS_RATE * 100}%`,
-        taux_tvq:         `${TVQ_RATE * 100}%`,
+        gross_revenue_taxable: r2(gross),
+        tps_collected: tpsCollected,
+        tps_credits: tpsCredits,
+        tps_balance: tpsBalance,
+        tvq_collected: tvqCollected,
+        tvq_credits: tvqCredits,
+        tvq_balance: tvqBalance,
+        solde_total: r2(tpsBalance + tvqBalance),
+        is_estimate: isEstimate,
+        calculation_status: currentCalc?.['calculation_status'] ?? 'ESTIMATE',
+        tps_rate: `${(tpsRate * 100).toFixed(0)}%`,
+        tvq_rate: `${(tvqRate * 100).toFixed(3)}%`,
       },
-      by_source: Object.entries(bySource).map(([src, v]) => ({
-        source: src,
-        gross:  r2(v.gross),
-        tips:   r2(v.tips),
-        fees:   r2(v.fees),
-        net:    r2(v.net),
-        count:  v.count,
-      })),
-      echeances: {
-        prochaine: prochaineEcheance,
-        statut:    new Date() < new Date(prochaineEcheance ?? '') ? 'A_VENIR' : 'ECHEANCE_DEPASSEE',
-      },
-      declarations,
-      mode:          'ESTIMATION',
+      currentFiling,
+      allFilings,
+      ruleSet: rule,
       avertissement: 'Estimation fiscale TAXIMETER.GOV — à valider avant transmission officielle à Revenu Québec.',
-      revenu_quebec: {
-        url:   'https://www.revenuquebec.ca/fr/entreprises/taxes/tpstvh-et-tvq/',
-        note:  'MODE 1 — Redirection officielle. TAXIMETER.GOV ne demande jamais le mot de passe Revenu Québec.',
-        sev:   'Depuis le 1er janvier 2026, les exploitants de taxi doivent utiliser un SEV certifié de 2e génération.',
-      },
+      mode_pilote: true,
+      revenu_quebec_url: 'https://www.revenuquebec.ca/fr/entreprises/taxes/tpstvh-et-tvq/',
     })
   } catch (err) {
     console.error('[tax]', err)
