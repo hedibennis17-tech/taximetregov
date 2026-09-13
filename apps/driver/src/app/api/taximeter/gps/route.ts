@@ -1,38 +1,25 @@
-// POST /api/taximeter/gps — Enregistrer une position GPS
 import { NextRequest } from 'next/server'
-import { getDb, apiSuccess, apiError } from '@/lib/db'
+import { apiSuccess, apiError } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
-import { sql } from 'drizzle-orm'
+
+const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? ''
 
 export async function POST(req: NextRequest) {
   const ctx = await requireAuth(req)
   if (ctx instanceof Response) return ctx
-  if (!ctx.driverId) return apiError('Profil chauffeur introuvable', 404)
-
+  if (!ctx.driverId) return apiError('Profil introuvable', 404)
   try {
-    const db = getDb()
-    const { tripId, latitude, longitude, accuracy, speedKmh, distanceDelta, elapsedDelta } = await req.json()
-    if (!tripId || !latitude || !longitude) return apiError('tripId, latitude, longitude requis', 400)
-
-    // Insérer le point GPS
-    await db.execute(sql`
-      INSERT INTO trip_gps_points (id, trip_id, latitude, longitude, accuracy_meters, speed_kmh, recorded_at, created_at)
-      VALUES (gen_random_uuid(), ${tripId}, ${latitude}, ${longitude}, ${accuracy ?? null}, ${speedKmh ?? null}, now(), now())
-    `)
-
-    // Mettre à jour la distance et la durée de la course
-    if (distanceDelta || elapsedDelta) {
-      await db.execute(sql`
-        UPDATE taxi_trips SET
-          distance_meters  = distance_meters  + ${distanceDelta  ?? 0},
-          elapsed_seconds  = elapsed_seconds  + ${elapsedDelta   ?? 0},
-          updated_at       = now()
-        WHERE id = ${tripId} AND driver_id = ${ctx.driverId}
-      `)
+    const { tripId, latitude, longitude, accuracy, speedKmh, distanceDelta } = await req.json() as Record<string, unknown>
+    // GPS points
+    await fetch(`${SB_URL}/rest/v1/trip_gps_points`, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: KEY(), Authorization: `Bearer ${KEY()}`, Prefer: 'return=minimal' }, body: JSON.stringify({ trip_id: tripId, latitude, longitude, accuracy_meters: accuracy, speed_kmh: speedKmh, recorded_at: new Date().toISOString() }) })
+    // Update distance
+    if (distanceDelta && Number(distanceDelta) > 0) {
+      const trips = await (await fetch(`${SB_URL}/rest/v1/taxi_trips?id=eq.${tripId}&select=distance_meters`, { headers: { apikey: KEY(), Authorization: `Bearer ${KEY()}` } })).json() as Array<{distance_meters: number}>
+      if (trips[0]) {
+        await fetch(`${SB_URL}/rest/v1/taxi_trips?id=eq.${tripId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', apikey: KEY(), Authorization: `Bearer ${KEY()}`, Prefer: 'return=minimal' }, body: JSON.stringify({ distance_meters: (trips[0].distance_meters ?? 0) + Number(distanceDelta), updated_at: new Date().toISOString() }) })
+      }
     }
-
-    return apiSuccess({ recorded: true, at: new Date().toISOString() })
-  } catch {
-    return apiError('Erreur serveur', 500)
-  }
+    return apiSuccess({ recorded: true })
+  } catch (err) { return apiError('Erreur GPS: ' + String(err), 500) }
 }
