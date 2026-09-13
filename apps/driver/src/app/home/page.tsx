@@ -80,7 +80,7 @@ export default function HomePage() {
   const totalGross    = parseFloat(revenue?.summary.total_gross ?? '0')
   const totalTips     = parseFloat(revenue?.summary.total_tips ?? '0')
   const totalNet      = parseFloat(revenue?.summary.total_net ?? '0')
-  const platforms     = profile.connected_platforms ?? []
+  const platforms: {name:string;status:string;code:string;provider:string}[] = []
 
   return (
     <AppShell>
