@@ -1,8 +1,3 @@
-// ================================================================
-// TAXIMÈTRE.GOV — DATABASE CLIENT
-// Connexion Supabase PostgreSQL — lazy initialized
-// ================================================================
-
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
@@ -11,7 +6,7 @@ let _db: PostgresJsDatabase | null = null
 export function getDb(): PostgresJsDatabase {
   if (_db) return _db
   const url = process.env.DATABASE_URL
-  if (!url) throw new Error('DATABASE_URL manquante — configurer dans Vercel Environment Variables')
+  if (!url) throw new Error('DATABASE_URL manquante')
   const client = postgres(url, {
     max: 1,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,

@@ -5,6 +5,9 @@ import { sql } from 'drizzle-orm'
 async function runSeed() {
   const db = getDb()
 
+  // Bypass RLS pour les opérations de seed
+  await db.execute(sql`SET row_security = off`)
+
   // ── 1. User Hedi Bennis (lié à son compte Supabase Auth hedibennis70@gmail.com)
   await db.execute(sql`
     INSERT INTO users (public_id, user_type, status, email, email_verified_at, created_at, updated_at)
