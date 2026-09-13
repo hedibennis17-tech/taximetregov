@@ -5,6 +5,8 @@ import { apiSuccess, apiError } from '@/lib/db'
 async function supabaseRest(path: string, body: unknown) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   if (!url || !key) throw new Error('Config Supabase manquante')
   
   const res = await fetch(`${url}/rest/v1/${path}`, {
@@ -28,6 +30,8 @@ async function supabaseRest(path: string, body: unknown) {
 async function supabaseQuery(query: string) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   if (!url || !key) throw new Error('Config Supabase manquante')
   
   const res = await fetch(`${url}/rest/v1/rpc/exec_sql`, {
@@ -51,9 +55,11 @@ async function supabaseQuery(query: string) {
 async function runSeed() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
   if (!url || !key) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant dans Vercel')
+    return apiError('Config manquante. Variables présentes: ' + Object.keys(process.env).filter(k => k.includes('SUPA')).join(', '), 503)
   }
 
   // Utiliser le DB connection directe avec postgres role via fetch
