@@ -13,7 +13,7 @@ import {
   RotateCcw, Sun, Moon, ArrowLeft,
   Pause, Play, Square, Zap, AlertTriangle, CheckCircle
 } from 'lucide-react'
-import { getToken } from '@/lib/api'
+
 
 // ─── TYPES ───────────────────────────────────────────────────
 
@@ -86,12 +86,22 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
 }
 
 async function apiFetch(path: string, body?: unknown) {
-  // getToken() lit localStorage (notre token) ET le token Supabase
-  const token = getToken()
+  // Récupérer le token Supabase directement
+  let token: string | null = null
+  try {
+    const { getSupabaseBrowserClient } = await import('@/lib/supabase/client')
+    const supabase = getSupabaseBrowserClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    token = session?.access_token ?? null
+  } catch { /* ignore */ }
+
   const res = await fetch(path, {
     method: body !== undefined ? 'POST' : 'GET',
-    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    body: body ? JSON.stringify(body) : undefined,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   })
   const json = await res.json() as { success: boolean; data: unknown; error?: string }
   if (!res.ok || !json.success) throw new Error(json.error ?? `Erreur ${res.status}`)
@@ -279,9 +289,11 @@ export default function TaxiMeterPage() {
   useEffect(() => {
     void (async () => {
       try {
-        const token = getToken()
-        if (!token) return  // Pas de session — ne pas appeler l'API
-        // Si erreur 401/404, rester en IDLE silencieusement
+        // Vérifier session Supabase
+        const { getSupabaseBrowserClient: getSB } = await import('@/lib/supabase/client')
+        const sb = getSB()
+        const { data: { session: sess } } = await sb.auth.getSession()
+        if (!sess?.access_token) return  // Pas de session
         const data = await apiFetch('/api/taximeter/status') as {
           hasActiveMeter: boolean
           taximeter: { active_trip: { id: string; tripReference: string; status: string; distanceMeters: number; elapsedSeconds: number } | null; fare_version: string } | null

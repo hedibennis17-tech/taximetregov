@@ -1,49 +1,143 @@
 'use client'
 
-import Link from 'next/link'
-import { CheckCircle, ChevronRight, RefreshCw, Shield } from 'lucide-react'
-import { AppShell, PageHeader } from '@/components/layout/AppShell'
+import { AppShell } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui'
-import { useDriverDashboard } from '@/lib/supabase/useDriverDashboard'
+import { useDriverProfile, money } from '@/lib/api'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import {
+  User, LogOut, RefreshCw, Shield, CheckCircle,
+  Clock, AlertCircle, ChevronRight
+} from 'lucide-react'
 
-function iconForType(type: string) {
-  if (type === 'TAXI_TRIP') return '🚕'
-  if (type === 'RIDESHARE_TRIP') return '🚗'
-  return '📦'
+const STATUS_CONF: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
+  VERIFIED:      { label: 'Vérifié',      color: 'text-green-400',  icon: CheckCircle  },
+  PENDING:       { label: 'En attente',   color: 'text-amber-400',  icon: Clock        },
+  UNDER_REVIEW:  { label: 'En révision',  color: 'text-blue-400',   icon: Clock        },
+  SUSPENDED:     { label: 'Suspendu',     color: 'text-red-400',    icon: AlertCircle  },
+  REJECTED:      { label: 'Rejeté',       color: 'text-red-400',    icon: AlertCircle  },
 }
 
 export default function ProfilePage() {
-  const { dashboard, loading, error, refresh } = useDriverDashboard()
+  const { profile, loading, error, refresh } = useDriverProfile()
+  const router = useRouter()
+  const [signingOut, setSigningOut] = useState(false)
 
-  if (loading) return <AppShell><div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mon profil</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div><div className="py-16 text-center text-sm text-slate-500">Chargement de votre dossier…</div></AppShell>
-  if (!dashboard) return <AppShell><div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mon profil</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div><div className="px-4 py-16 text-center"><p className="text-sm text-red-300 mb-4">{error ?? 'Dossier indisponible.'}</p><button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">Réessayer</button></div></AppShell>
+  async function handleSignOut() {
+    setSigningOut(true)
+    try {
+      const supabase = getSupabaseBrowserClient()
+      await supabase.auth.signOut()
+      router.replace('/auth/login')
+    } catch {
+      setSigningOut(false)
+    }
+  }
 
-  const activityTypes = [...new Set(dashboard.activities.map((activity) => activity.type))]
+  if (loading) return (
+    <AppShell>
+      <div className="flex items-center justify-center py-20">
+        <RefreshCw className="animate-spin text-qc-blue" size={24} />
+      </div>
+    </AppShell>
+  )
+
+  const status = profile ? (STATUS_CONF[profile.verification_status] ?? STATUS_CONF['PENDING']!) : null
 
   return (
     <AppShell>
-      <PageHeader title="Mon profil" subtitle="Identité · Activités · Connexions sécurisées" action={<button onClick={() => void refresh()} aria-label="Actualiser"><RefreshCw size={18} className="text-slate-400" /></button>} />
-      <div className="px-4">
-        <div className="flex items-center gap-4 p-5 driver-card mb-5">
-          <div className="w-16 h-16 rounded-full bg-qc-blue/20 border-2 border-qc-blue/40 flex items-center justify-center text-3xl shrink-0">👤</div>
-          <div className="flex-1 min-w-0"><div className="font-black text-white text-xl truncate">{dashboard.profile.firstName} {dashboard.profile.lastName}</div><div className="font-mono text-[10px] text-qc-blue-light">{dashboard.profile.driverNumber}</div><div className="text-xs text-slate-400 truncate">{dashboard.profile.email}</div></div>
-          <div className="text-right"><div className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${dashboard.profile.status === 'ACTIVE' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>{dashboard.profile.status}</div><div className="text-[9px] text-slate-500 mt-1">{dashboard.profile.province} · {dashboard.profile.language.toUpperCase()}</div></div>
-        </div>
+      <div className="px-4 pt-6 pb-4">
+        <h1 className="text-xl font-bold text-white">Mon profil</h1>
+        <p className="text-xs text-slate-400 mt-0.5">TAXIMÈTRE.GOV — Espace chauffeur</p>
+      </div>
 
-        <div className={`flex items-center gap-3 p-4 rounded-2xl border mb-5 ${dashboard.profile.status === 'ACTIVE' ? 'bg-green-500/10 border-green-500/30' : 'bg-amber-500/10 border-amber-500/30'}`}><span className="text-2xl">{dashboard.profile.status === 'ACTIVE' ? '✅' : '⚠️'}</span><div className="flex-1"><div className="font-bold text-white text-sm">{dashboard.profile.status === 'ACTIVE' ? 'Dossier chauffeur actif' : 'Dossier en cours de vérification'}</div><div className="text-[10px] text-slate-400">Statut lu directement depuis Supabase</div></div><CheckCircle size={16} className={dashboard.profile.status === 'ACTIVE' ? 'text-green-400' : 'text-amber-400'} /></div>
+      <div className="px-4 space-y-4 pb-8">
 
-        <Card className="mb-4"><div className="font-semibold text-white text-sm mb-3">Activités enregistrées</div>{activityTypes.length === 0 ? <p className="text-xs text-slate-500 py-2">Aucune activité n’est encore liée à votre dossier.</p> : <div className="space-y-2">{activityTypes.map((type) => <div key={type} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0"><span className="text-xl">{iconForType(type)}</span><span className="text-xs text-slate-200 flex-1">{type.replaceAll('_', ' ')}</span><span className="text-[9px] font-bold text-green-400">ENREGISTRÉE</span></div>)}</div>}<Link href="/activities" className="block text-center text-xs text-qc-blue-light mt-3 font-bold">Voir mes activités →</Link></Card>
+        {/* Erreur */}
+        {error && (
+          <Card className="p-4 border-red-500/30 bg-red-500/5">
+            <p className="text-sm text-red-400 text-center">{error}</p>
+            <button onClick={() => void refresh()}
+              className="mt-3 w-full py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">
+              Réessayer
+            </button>
+          </Card>
+        )}
 
-        <Card className="mb-4"><div className="font-semibold text-white text-sm mb-3">Connexions fournisseurs</div><div className="flex items-start gap-2 p-2 rounded-xl bg-slate-800/50 border border-slate-700 mb-3 text-[10px] text-slate-400"><Shield size={12} className="mt-0.5 shrink-0" />Les identifiants des fournisseurs restent protégés. Seuls vos comptes autorisés sont affichés.</div>{dashboard.platforms.length === 0 ? <p className="text-xs text-slate-500 py-2">Aucun compte fournisseur relié.</p> : <div className="grid grid-cols-2 gap-2">{dashboard.platforms.map((platform) => <div key={platform.id} className="bg-slate-800/50 rounded-xl p-2"><div className="text-xs font-semibold text-white truncate">{platform.name}</div><div className={`text-[9px] mt-1 font-bold ${platform.status === 'ACTIVE' ? 'text-green-400' : 'text-amber-400'}`}>{platform.status === 'ACTIVE' ? 'CONNECTÉE' : platform.status}</div></div>)}</div>}<Link href="/platforms" className="block text-center text-xs text-qc-blue-light mt-3 font-bold">Gérer les connexions →</Link></Card>
+        {/* Carte identité */}
+        {profile && (
+          <>
+            <Card className="p-5">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-qc-blue flex items-center justify-center text-white font-bold text-2xl shrink-0">
+                  {profile.first_name?.[0]?.toUpperCase() ?? '?'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-white text-lg leading-tight">
+                    {profile.first_name} {profile.last_name}
+                  </div>
+                  <div className="text-xs text-slate-400 truncate">{profile.email}</div>
+                  {status && (
+                    <div className={`flex items-center gap-1 mt-1 text-xs font-semibold ${status.color}`}>
+                      <status.icon size={12} />
+                      {status.label}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-        <div className="space-y-2 mb-6">{[
-          { href: '/activities', icon: '🛣️', label: 'Mes activités' },
-          { href: '/revenue', icon: '💰', label: 'Mes revenus' },
-          { href: '/platforms', icon: '🔗', label: 'Mes plateformes' },
-          { href: '/documents', icon: '📑', label: 'Mes documents' },
-          { href: '/profile/privacy', icon: '🔒', label: 'Confidentialité' },
-          { href: '/security', icon: '🛡️', label: 'Sécurité du compte' },
-        ].map((item) => <Link key={item.href} href={item.href}><div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all"><span className="text-xl">{item.icon}</span><span className="text-sm text-slate-200 font-medium flex-1">{item.label}</span><ChevronRight size={14} className="text-slate-600" /></div></Link>)}</div>
+              <div className="space-y-2 border-t border-slate-800 pt-4">
+                {[
+                  { label: 'ID Gouvernemental', val: profile.public_driver_id },
+                  { label: 'Statut dossier',    val: profile.onboarding_status?.replace(/_/g, ' ') },
+                  { label: 'Langue préférée',   val: profile.preferred_language === 'fr' ? 'Français' : 'English' },
+                  ...(profile.phone_number_masked ? [{ label: 'Téléphone', val: profile.phone_number_masked }] : []),
+                ].map(row => (
+                  <div key={row.label} className="flex justify-between items-center">
+                    <span className="text-xs text-slate-400">{row.label}</span>
+                    <span className="text-xs font-semibold text-white">{row.val}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Liens rapides */}
+            <Card className="p-0 overflow-hidden">
+              {[
+                { label: 'Mes documents',   href: '/documents',  icon: Shield },
+                { label: 'Mon véhicule',    href: '/vehicle',    icon: User   },
+                { label: 'Mes plateformes', href: '/platforms',  icon: Shield },
+                { label: 'Sécurité',        href: '/security',   icon: Shield },
+              ].map((item, i, arr) => (
+                <button key={item.href}
+                  onClick={() => router.push(item.href)}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-slate-800 transition-colors ${i < arr.length - 1 ? 'border-b border-slate-800' : ''}`}>
+                  <div className="flex items-center gap-3">
+                    <item.icon size={16} className="text-qc-blue" />
+                    <span className="text-sm text-white">{item.label}</span>
+                  </div>
+                  <ChevronRight size={16} className="text-slate-600" />
+                </button>
+              ))}
+            </Card>
+          </>
+        )}
+
+        {/* Bouton déconnexion */}
+        <button
+          onClick={() => void handleSignOut()}
+          disabled={signingOut}
+          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 font-semibold text-sm disabled:opacity-50 active:scale-95 transition-all"
+        >
+          {signingOut
+            ? <><RefreshCw size={16} className="animate-spin" /> Déconnexion…</>
+            : <><LogOut size={16} /> Se déconnecter</>}
+        </button>
+
+        <p className="text-center text-[10px] text-slate-600">
+          TAXIMÈTRE.GOV · Mode pilote · Gouvernement du Québec
+        </p>
       </div>
     </AppShell>
   )
