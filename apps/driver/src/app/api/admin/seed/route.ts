@@ -4,29 +4,159 @@ import { sql } from 'drizzle-orm'
 
 async function runSeed() {
   const db = getDb()
-  await db.execute(sql`INSERT INTO jurisdictions (id,code,name,name_fr,name_en,country,currency,is_pilot,is_active,created_at,updated_at) VALUES (gen_random_uuid(),'QC','Québec','Québec','Quebec','CA','CAD',true,true,now(),now()) ON CONFLICT (code) DO NOTHING`)
-  await db.execute(sql`INSERT INTO roles (id,code,name,is_system,created_at,updated_at) VALUES (gen_random_uuid(),'SUPER_ADMIN','Super Admin',true,now(),now()),(gen_random_uuid(),'GOV_ADMIN','Admin Gov',true,now(),now()),(gen_random_uuid(),'DRIVER','Chauffeur',true,now(),now()) ON CONFLICT (code) DO NOTHING`)
-  await db.execute(sql`INSERT INTO providers (id,provider_code,display_name,provider_type,status,integration_status,created_at,updated_at) VALUES (gen_random_uuid(),'UBER','Uber','RIDESHARE','ACTIVE','NOT_CONFIGURED',now(),now()),(gen_random_uuid(),'LYFT','Lyft','RIDESHARE','ACTIVE','NOT_CONFIGURED',now(),now()),(gen_random_uuid(),'DOORDASH','DoorDash','DELIVERY','ACTIVE','NOT_CONFIGURED',now(),now()),(gen_random_uuid(),'UBER_EATS','Uber Eats','FOOD_DELIVERY','ACTIVE','NOT_CONFIGURED',now(),now()),(gen_random_uuid(),'INSTACART','Instacart','GROCERY_DELIVERY','ACTIVE','NOT_CONFIGURED',now(),now()),(gen_random_uuid(),'SKIP','SkipTheDishes','FOOD_DELIVERY','ACTIVE','NOT_CONFIGURED',now(),now()) ON CONFLICT (provider_code) DO NOTHING`)
-  await db.execute(sql`INSERT INTO fare_configurations (id,version,jurisdiction,currency,label,base_fare,distance_rate_per_100m,time_rate_per_minute,waiting_rate_per_minute,minimum_fare,airport_surcharge,is_active,is_pilot,effective_from,created_at,updated_at) VALUES (gen_random_uuid(),'QC-TAXI-PILOT-2026','QC','CAD','Tarif taxi Quebec 2026',4.10,0.185,0.55,0.55,4.10,1.50,true,true,'2026-01-01',now(),now()) ON CONFLICT (version) DO NOTHING`)
-  await db.execute(sql`INSERT INTO activity_types (id,code,label,label_fr,label_en,taximeter_eligible,is_active,created_at) VALUES (gen_random_uuid(),'TAXI_TRIP','Course taxi','Course taxi','Taxi Trip',true,true,now()),(gen_random_uuid(),'RIDESHARE_TRIP','Rideshare','Rideshare','Rideshare',false,true,now()),(gen_random_uuid(),'FOOD_DELIVERY','Livraison','Livraison','Delivery',false,true,now()),(gen_random_uuid(),'GROCERY_DELIVERY','Epicerie','Epicerie','Grocery',false,true,now()) ON CONFLICT (code) DO NOTHING`)
-  await db.execute(sql`INSERT INTO document_types (id,code,label,owner_type,has_expiry,requires_verification,requires_manual_review,renewal_notice_days,created_at) VALUES (gen_random_uuid(),'DRIVER_LICENSE','Permis de conduire','DRIVER',true,true,false,60,now()),(gen_random_uuid(),'TAXI_PERMIT','Permis taxi','DRIVER',true,true,true,30,now()),(gen_random_uuid(),'VEHICLE_INSURANCE','Assurance vehicule','VEHICLE',true,true,false,30,now()),(gen_random_uuid(),'BACKGROUND_CHECK','Verification antecedents','DRIVER',true,true,true,30,now()) ON CONFLICT (code) DO NOTHING`)
-  await db.execute(sql`INSERT INTO users (id,email,password_hash,status,email_verified,created_at,updated_at) VALUES (gen_random_uuid(),'hedibennis70@gmail.com','SUPABASE_AUTH','ACTIVE',true,now(),now()),(gen_random_uuid(),'ahmed.benali@demo.taximetregov.ca','SUPABASE_AUTH','ACTIVE',true,now(),now()),(gen_random_uuid(),'sophie.tremblay@demo.taximetregov.ca','SUPABASE_AUTH','ACTIVE',true,now(),now()),(gen_random_uuid(),'marco.lepine@demo.taximetregov.ca','SUPABASE_AUTH','ACTIVE',true,now(),now()) ON CONFLICT (email) DO UPDATE SET status='ACTIVE',updated_at=now()`)
-  await db.execute(sql`INSERT INTO user_roles (id,user_id,role_id,created_at) SELECT gen_random_uuid(),u.id,r.id,now() FROM users u,roles r WHERE u.email IN ('hedibennis70@gmail.com','ahmed.benali@demo.taximetregov.ca','sophie.tremblay@demo.taximetregov.ca','marco.lepine@demo.taximetregov.ca') AND r.code='DRIVER' ON CONFLICT DO NOTHING`)
-  await db.execute(sql`INSERT INTO driver_profiles (id,user_id,public_driver_id,government_driver_id,first_name,last_name,preferred_language,verification_status,onboarding_status,jurisdiction_id,created_at,updated_at) SELECT gen_random_uuid(),u.id, CASE u.email WHEN 'hedibennis70@gmail.com' THEN 'DRV-QC-00000010' WHEN 'ahmed.benali@demo.taximetregov.ca' THEN 'DRV-QC-00000001' WHEN 'sophie.tremblay@demo.taximetregov.ca' THEN 'DRV-QC-00000002' ELSE 'DRV-QC-00000003' END, CASE u.email WHEN 'hedibennis70@gmail.com' THEN 'DRV-QC-00000010' WHEN 'ahmed.benali@demo.taximetregov.ca' THEN 'DRV-QC-00000001' WHEN 'sophie.tremblay@demo.taximetregov.ca' THEN 'DRV-QC-00000002' ELSE 'DRV-QC-00000003' END, CASE u.email WHEN 'hedibennis70@gmail.com' THEN 'Hedi' WHEN 'ahmed.benali@demo.taximetregov.ca' THEN 'Ahmed' WHEN 'sophie.tremblay@demo.taximetregov.ca' THEN 'Sophie' ELSE 'Marco' END, CASE u.email WHEN 'hedibennis70@gmail.com' THEN 'Bennis' WHEN 'ahmed.benali@demo.taximetregov.ca' THEN 'Benali' WHEN 'sophie.tremblay@demo.taximetregov.ca' THEN 'Tremblay' ELSE 'Lepine' END, 'fr', CASE u.email WHEN 'marco.lepine@demo.taximetregov.ca' THEN 'PENDING' ELSE 'VERIFIED' END, CASE u.email WHEN 'marco.lepine@demo.taximetregov.ca' THEN 'IN_PROGRESS' ELSE 'COMPLETED' END, j.id,now(),now() FROM users u,jurisdictions j WHERE u.email IN ('hedibennis70@gmail.com','ahmed.benali@demo.taximetregov.ca','sophie.tremblay@demo.taximetregov.ca','marco.lepine@demo.taximetregov.ca') AND j.code='QC' ON CONFLICT (user_id) DO UPDATE SET verification_status=EXCLUDED.verification_status,updated_at=now()`)
-  await db.execute(sql`INSERT INTO wallet_accounts (id,driver_id,currency,status,created_at,updated_at) SELECT gen_random_uuid(),dp.id,'CAD','ACTIVE',now(),now() FROM driver_profiles dp ON CONFLICT (driver_id) DO NOTHING`)
-  await db.execute(sql`INSERT INTO tax_accounts (id,driver_id,jurisdiction_id,status,tps_status,tvq_status,filing_frequency,created_at,updated_at) SELECT gen_random_uuid(),dp.id,j.id,CASE dp.public_driver_id WHEN 'DRV-QC-00000003' THEN 'PENDING' ELSE 'ACTIVE' END,CASE dp.public_driver_id WHEN 'DRV-QC-00000003' THEN 'NOT_REGISTERED' ELSE 'REGISTERED' END,CASE dp.public_driver_id WHEN 'DRV-QC-00000003' THEN 'NOT_REGISTERED' ELSE 'REGISTERED' END,'QUARTERLY',now(),now() FROM driver_profiles dp,jurisdictions j WHERE j.code='QC' ON CONFLICT (driver_id) DO NOTHING`)
-  await db.execute(sql`INSERT INTO revenue_ledger (id,driver_id,source_type,activity_type,entry_type,gross_amount,fee_amount,tip_amount,adjustment_amount,net_amount,currency,jurisdiction,activity_date,source_reference,is_settled,created_at) SELECT gen_random_uuid(),dp.id,t.src,t.act,'CREDIT',t.gross,t.fee,t.tip,0,t.gross-t.fee,'CAD','QC',CURRENT_DATE-(t.d||' days')::interval,t.ref,true,now() FROM driver_profiles dp CROSS JOIN (VALUES ('DRV-QC-00000010','TAXI','TAXI_TRIP',52.50,0,4.00,1,'TXG-2026-HEDI-001'),('DRV-QC-00000010','TAXI','TAXI_TRIP',38.75,0,3.00,3,'TXG-2026-HEDI-002'),('DRV-QC-00000010','TAXI','TAXI_TRIP',67.00,0,8.00,5,'TXG-2026-HEDI-003'),('DRV-QC-00000010','UBER','RIDESHARE_TRIP',45.00,9.00,5.00,2,'UBR-HEDI-001'),('DRV-QC-00000010','LYFT','RIDESHARE_TRIP',33.50,6.70,3.00,4,'LYF-HEDI-001'),('DRV-QC-00000010','DOORDASH','FOOD_DELIVERY',24.00,4.80,0,6,'DOOR-HEDI-001'),('DRV-QC-00000001','TAXI','TAXI_TRIP',50.25,0,5.00,1,'TXG-2026-AHMED-001'),('DRV-QC-00000001','UBER','RIDESHARE_TRIP',42.00,8.40,4.00,5,'UBR-AHMED-001'),('DRV-QC-00000002','TAXI','TAXI_TRIP',67.00,0,8.00,2,'TXG-2026-SOPHIE-001'),('DRV-QC-00000002','LYFT','RIDESHARE_TRIP',55.00,11.00,6.00,4,'LYF-SOPHIE-001')) AS t(pid,src,act,gross,fee,tip,d,ref) WHERE dp.public_driver_id=t.pid`)
-  await db.execute(sql`INSERT INTO driver_provider_accounts (id,driver_id,provider_id,connection_status,connection_type,provider_driver_id_masked,connected_at,created_at,updated_at) SELECT gen_random_uuid(),dp.id,p.id,'CONNECTED','OAUTH_MOCK','DEMO01',now()-'5 days'::interval,now(),now() FROM driver_profiles dp,providers p WHERE dp.public_driver_id IN ('DRV-QC-00000010','DRV-QC-00000001','DRV-QC-00000002') AND p.provider_code IN ('UBER','LYFT','DOORDASH') ON CONFLICT DO NOTHING`)
-  await db.execute(sql`INSERT INTO vehicles (id,driver_id,make,model,year,color,license_plate_masked,vin_masked,vehicle_type,status,created_at,updated_at) SELECT gen_random_uuid(),dp.id,'Toyota','Camry Hybrid',2024,CASE dp.public_driver_id WHEN 'DRV-QC-00000010' THEN 'Noir' ELSE 'Blanc' END,'DEMO-0000','VIN-DEMO','SEDAN','ACTIVE',now(),now() FROM driver_profiles dp WHERE dp.public_driver_id IN ('DRV-QC-00000010','DRV-QC-00000001','DRV-QC-00000002') ON CONFLICT DO NOTHING`)
-  await db.execute(sql`INSERT INTO documents (id,driver_id,document_type_id,status,uploaded_at,verified_at,expires_at,created_at,updated_at) SELECT gen_random_uuid(),dp.id,dt.id,'VERIFIED',now()-'5 days'::interval,now()-'4 days'::interval,now()+'365 days'::interval,now(),now() FROM driver_profiles dp,document_types dt WHERE dp.public_driver_id IN ('DRV-QC-00000010','DRV-QC-00000001','DRV-QC-00000002') AND dt.code IN ('DRIVER_LICENSE','TAXI_PERMIT','VEHICLE_INSURANCE') ON CONFLICT DO NOTHING`)
-  await db.execute(sql`INSERT INTO audit_logs (id,action,module,severity,result,resource_type,actor_type,actor_public_id,actor_role,occurred_at,created_at) VALUES (gen_random_uuid(),'SEED_EXECUTED','SYSTEM','INFO','SUCCESS','database','SYSTEM','SYS-SEED','SYSTEM',now(),now()) ON CONFLICT DO NOTHING`)
-  await db.execute(sql`INSERT INTO notifications (id,driver_id,notification_type,channel,title,body,status,priority,created_at,updated_at) SELECT gen_random_uuid(),dp.id,n.ntype,'IN_APP',n.title,n.body,'UNREAD','NORMAL',now()-(n.h||' hours')::interval,now() FROM driver_profiles dp CROSS JOIN (VALUES ('WELCOME','Bienvenue TAXIMETER.GOV','Dossier DRV-QC-00000010 active.',1),('TRIP_COMPLETED','Course enregistree','TXG-2026-HEDI-001 — 52.50 CAD',2),('PAYMENT_RECEIVED','Revenus disponibles','280.25 CAD dans votre wallet.',24)) AS n(ntype,title,body,h) WHERE dp.public_driver_id='DRV-QC-00000010'`)
-  return apiSuccess({ ok: true, message: 'Donnees installees avec succes', drivers: ['Hedi Bennis DRV-QC-00000010','Ahmed Benali DRV-QC-00000001','Sophie Tremblay DRV-QC-00000002','Marco Lepine DRV-QC-00000003'] })
+
+  // Base data (already seeded by migrations usually)
+  await db.execute(sql`
+    INSERT INTO jurisdictions (code, name, name_fr, name_en, country, currency, is_pilot, is_active)
+    VALUES ('QC', 'Québec', 'Québec', 'Quebec', 'CA', 'CAD', true, true)
+    ON CONFLICT (code) DO NOTHING
+  `)
+
+  await db.execute(sql`
+    INSERT INTO roles (name, label, description, requires_mfa, is_system)
+    VALUES
+      ('SUPER_ADMIN', 'Super Admin', 'Acces global', true, true),
+      ('GOV_ADMIN', 'Admin Gov', 'Administration', true, true),
+      ('DRIVER', 'Chauffeur', 'Acces chauffeur', false, true)
+    ON CONFLICT (name) DO NOTHING
+  `)
+
+  await db.execute(sql`
+    INSERT INTO providers (provider_code, display_name, provider_type, provider_status, integration_status)
+    VALUES
+      ('UBER',      'Uber',          'RIDESHARE',        'ACTIVE', 'NOT_CONFIGURED'),
+      ('LYFT',      'Lyft',          'RIDESHARE',        'ACTIVE', 'NOT_CONFIGURED'),
+      ('DOORDASH',  'DoorDash',      'DELIVERY',         'ACTIVE', 'NOT_CONFIGURED'),
+      ('UBER_EATS', 'Uber Eats',     'FOOD_DELIVERY',    'ACTIVE', 'NOT_CONFIGURED'),
+      ('INSTACART', 'Instacart',     'GROCERY_DELIVERY', 'ACTIVE', 'NOT_CONFIGURED'),
+      ('SKIP',      'SkipTheDishes', 'FOOD_DELIVERY',    'ACTIVE', 'NOT_CONFIGURED')
+    ON CONFLICT (provider_code) DO NOTHING
+  `)
+
+  await db.execute(sql`
+    INSERT INTO fare_configurations (version, jurisdiction, currency, label, base_fare, distance_rate_per_100m, time_rate_per_minute, waiting_rate_per_minute, minimum_fare, airport_surcharge, is_active, is_pilot, effective_from)
+    VALUES ('QC-TAXI-PILOT-2026', 'QC', 'CAD', 'Tarif taxi Quebec 2026', 4.10, 0.185, 0.55, 0.55, 4.10, 1.50, true, true, '2026-01-01')
+    ON CONFLICT (version) DO NOTHING
+  `)
+
+  // Create users with exact schema (public_id, user_type enum)
+  await db.execute(sql`
+    INSERT INTO users (id, public_id, user_type, status, email, email_verified_at, password_hash)
+    VALUES
+      (gen_random_uuid(), 'DRV-HEDI0001', 'DRIVER', 'ACTIVE', 'hedibennis70@gmail.com',          now(), NULL),
+      (gen_random_uuid(), 'DRV-AHME0001', 'DRIVER', 'ACTIVE', 'ahmed.benali@demo.taximetregov.ca',   now(), NULL),
+      (gen_random_uuid(), 'DRV-SOPH0001', 'DRIVER', 'ACTIVE', 'sophie.tremblay@demo.taximetregov.ca',now(), NULL),
+      (gen_random_uuid(), 'DRV-MARC0001', 'DRIVER', 'PENDING','marco.lepine@demo.taximetregov.ca',   NULL, NULL)
+    ON CONFLICT (email) DO UPDATE SET
+      status = EXCLUDED.status,
+      email_verified_at = COALESCE(users.email_verified_at, EXCLUDED.email_verified_at),
+      updated_at = now()
+  `)
+
+  // Driver profiles with exact schema
+  await db.execute(sql`
+    INSERT INTO driver_profiles (user_id, driver_number, status, first_name, last_name, province, country, language)
+    SELECT u.id,
+      CASE u.email
+        WHEN 'hedibennis70@gmail.com'               THEN 'DR-HEDI0001'
+        WHEN 'ahmed.benali@demo.taximetregov.ca'    THEN 'DR-AHME0001'
+        WHEN 'sophie.tremblay@demo.taximetregov.ca' THEN 'DR-SOPH0001'
+        ELSE                                             'DR-MARC0001'
+      END,
+      CASE u.email WHEN 'marco.lepine@demo.taximetregov.ca' THEN 'PENDING' ELSE 'ACTIVE' END,
+      CASE u.email
+        WHEN 'hedibennis70@gmail.com'               THEN 'Hedi'
+        WHEN 'ahmed.benali@demo.taximetregov.ca'    THEN 'Ahmed'
+        WHEN 'sophie.tremblay@demo.taximetregov.ca' THEN 'Sophie'
+        ELSE 'Marco'
+      END,
+      CASE u.email
+        WHEN 'hedibennis70@gmail.com'               THEN 'Bennis'
+        WHEN 'ahmed.benali@demo.taximetregov.ca'    THEN 'Benali'
+        WHEN 'sophie.tremblay@demo.taximetregov.ca' THEN 'Tremblay'
+        ELSE 'Lepine'
+      END,
+      'QC', 'CA', 'fr'
+    FROM users u
+    WHERE u.email IN (
+      'hedibennis70@gmail.com',
+      'ahmed.benali@demo.taximetregov.ca',
+      'sophie.tremblay@demo.taximetregov.ca',
+      'marco.lepine@demo.taximetregov.ca'
+    )
+    ON CONFLICT (user_id) DO UPDATE SET
+      status = EXCLUDED.status,
+      updated_at = now()
+  `)
+
+  // User roles
+  await db.execute(sql`
+    INSERT INTO user_roles (user_id, role_id)
+    SELECT u.id, r.id
+    FROM users u, roles r
+    WHERE u.email IN ('hedibennis70@gmail.com','ahmed.benali@demo.taximetregov.ca','sophie.tremblay@demo.taximetregov.ca','marco.lepine@demo.taximetregov.ca')
+      AND r.name = 'DRIVER'
+    ON CONFLICT (user_id, role_id) DO NOTHING
+  `)
+
+  // Wallet accounts
+  await db.execute(sql`
+    INSERT INTO wallet_accounts (driver_id, currency, jurisdiction, is_active)
+    SELECT dp.id, 'CAD', 'QC', true
+    FROM driver_profiles dp
+    JOIN users u ON u.id = dp.user_id
+    WHERE u.email IN ('hedibennis70@gmail.com','ahmed.benali@demo.taximetregov.ca','sophie.tremblay@demo.taximetregov.ca','marco.lepine@demo.taximetregov.ca')
+    ON CONFLICT (driver_id) DO NOTHING
+  `)
+
+  // Revenue ledger — source type is enum
+  await db.execute(sql`
+    INSERT INTO revenue_ledger (driver_id, source_type, activity_type, entry_type, gross_amount, fee_amount, tip_amount, adjustment_amount, net_amount, currency, jurisdiction, activity_date, source_reference, is_settled)
+    SELECT dp.id,
+      t.src::revenue_source,
+      t.act,
+      'CREDIT'::revenue_ledger_entry_type,
+      t.gross, t.fee, t.tip, 0, t.gross - t.fee,
+      'CAD', 'QC',
+      CURRENT_DATE - (t.d || ' days')::interval,
+      t.ref, true
+    FROM driver_profiles dp
+    JOIN users u ON u.id = dp.user_id
+    JOIN (VALUES
+      ('hedibennis70@gmail.com',               'TAXI',     'TAXI_TRIP',      52.50, 0,    4.00, 1, 'TXG-HEDI-001'),
+      ('hedibennis70@gmail.com',               'TAXI',     'TAXI_TRIP',      38.75, 0,    3.00, 3, 'TXG-HEDI-002'),
+      ('hedibennis70@gmail.com',               'TAXI',     'TAXI_TRIP',      67.00, 0,    8.00, 5, 'TXG-HEDI-003'),
+      ('hedibennis70@gmail.com',               'UBER',     'RIDESHARE_TRIP', 45.00, 9.00, 5.00, 2, 'UBR-HEDI-001'),
+      ('hedibennis70@gmail.com',               'LYFT',     'RIDESHARE_TRIP', 33.50, 6.70, 3.00, 4, 'LYF-HEDI-001'),
+      ('hedibennis70@gmail.com',               'DOORDASH', 'FOOD_DELIVERY',  24.00, 4.80, 0,   6, 'DOOR-HEDI-001'),
+      ('ahmed.benali@demo.taximetregov.ca',    'TAXI',     'TAXI_TRIP',      50.25, 0,    5.00, 1, 'TXG-AHME-001'),
+      ('ahmed.benali@demo.taximetregov.ca',    'UBER',     'RIDESHARE_TRIP', 42.00, 8.40, 4.00, 5, 'UBR-AHME-001'),
+      ('sophie.tremblay@demo.taximetregov.ca', 'TAXI',     'TAXI_TRIP',      67.00, 0,    8.00, 2, 'TXG-SOPH-001'),
+      ('sophie.tremblay@demo.taximetregov.ca', 'LYFT',     'RIDESHARE_TRIP', 55.00,11.00, 6.00, 4, 'LYF-SOPH-001')
+    ) AS t(email, src, act, gross, fee, tip, d, ref)
+    ON u.email = t.email
+  `)
+
+  // Provider accounts
+  await db.execute(sql`
+    INSERT INTO driver_provider_accounts (driver_id, provider_id, connection_status, driver_identifier_masked)
+    SELECT dp.id, p.id, 'CONNECTED', 'DEMO-MASKED'
+    FROM driver_profiles dp
+    JOIN users u ON u.id = dp.user_id
+    JOIN providers p ON p.provider_code IN ('UBER', 'LYFT', 'DOORDASH')
+    WHERE u.email IN ('hedibennis70@gmail.com','ahmed.benali@demo.taximetregov.ca','sophie.tremblay@demo.taximetregov.ca')
+    ON CONFLICT DO NOTHING
+  `)
+
+  return apiSuccess({
+    ok: true,
+    message: 'Donnees installees avec succes',
+    drivers: ['Hedi Bennis DR-HEDI0001','Ahmed Benali DR-AHME0001','Sophie Tremblay DR-SOPH0001','Marco Lepine DR-MARC0001']
+  })
 }
 
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url)
-  const secret = url.searchParams.get('secret') ?? ''
+  const secret = new URL(req.url).searchParams.get('secret') ?? ''
   if (secret !== 'TAXIMETREGOV_SEED_2026') return apiError('Non autorise', 403)
   try { return await runSeed() } catch (err) { return apiError('Erreur: ' + String(err), 500) }
 }
