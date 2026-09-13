@@ -1,67 +1,60 @@
 'use client'
-
 import { AppShell } from '@/components/layout/AppShell'
-import { Card, SectionHeader } from '@/components/ui'
-import { useDriverProfile, useRevenue, money } from '@/lib/api'
-import Link from 'next/link'
-import { RefreshCw } from 'lucide-react'
+import { Card } from '@/components/ui'
+import { useDriverProfile } from '@/lib/api'
+import { useState, useEffect } from 'react'
+import { Bell, RefreshCw } from 'lucide-react'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
-export default function Page() {
-  const { profile, loading, refresh } = useDriverProfile()
-  const { revenue } = useRevenue('month')
+interface Notif { id:string; notification_type:string; title:string; body:string; status:string; priority:string; created_at:string }
+
+export default function NotificationsPage() {
+  const { profile } = useDriverProfile()
+  const [notifs, setNotifs] = useState<Notif[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!profile?.id) return
+    void (async () => {
+      try {
+        const sb = getSupabaseBrowserClient()
+        const { data } = await sb.from('notifications').select('*').eq('driver_id', profile.id).order('created_at', { ascending: false }).limit(20)
+        setNotifs((data ?? []) as Notif[])
+      } finally { setLoading(false) }
+    })()
+  }, [profile?.id])
+
+  const ICONS: Record<string, string> = { WELCOME:'👋', TRIP_COMPLETED:'🚕', PAYMENT_RECEIVED:'💰', TAX_PERIOD_OPENED:'🧾', DOCUMENT_EXPIRING:'📄', PLATFORM_CONNECTED:'🔌' }
 
   return (
     <AppShell>
-      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Notifications</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
-      <div className="px-4 pb-8 space-y-4">
-
-        {/* Connexion status */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs text-green-400">Base de données connectée · Supabase</span>
-          <button onClick={() => void refresh()} className="ml-auto">
-            <RefreshCw size={12} className={loading ? 'animate-spin text-green-400' : 'text-green-600'} />
-          </button>
-        </div>
-
-        {/* Contenu */}
-        <Card className="p-8 text-center">
-          <div className="text-5xl mb-4">🔔</div>
-          <h2 className="text-lg font-bold text-white mb-2">Notifications</h2>
-          {profile && (
-            <p className="text-sm text-slate-400 mb-4">
-              {profile.first_name} {profile.last_name} · {profile.public_driver_id}
-            </p>
-          )}
-          {revenue && (
-            <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto mt-4">
-              <div className="bg-slate-800 rounded-xl p-3">
-                <div className="font-bold text-green-400">{money(revenue.wallet.balance)}</div>
-                <div className="text-[10px] text-slate-400">Solde wallet</div>
-              </div>
-              <div className="bg-slate-800 rounded-xl p-3">
-                <div className="font-bold text-white">{revenue.summary.total_activities}</div>
-                <div className="text-[10px] text-slate-400">Activités ce mois</div>
+      <div className="px-4 pt-6 pb-4">
+        <h1 className="text-xl font-bold text-white">Notifications</h1>
+        <p className="text-xs text-slate-400 mt-0.5">{notifs.filter(n => n.status === 'UNREAD').length} non lue(s)</p>
+      </div>
+      <div className="px-4 space-y-2 pb-8">
+        {loading && <div className="py-12 text-center"><RefreshCw className="mx-auto animate-spin text-qc-blue" size={24} /></div>}
+        {!loading && notifs.length === 0 && (
+          <Card className="p-8 text-center">
+            <Bell size={32} className="mx-auto text-slate-600 mb-3" />
+            <p className="text-sm text-slate-400">Aucune notification.</p>
+          </Card>
+        )}
+        {notifs.map(n => (
+          <Card key={n.id} className={`p-4 ${n.status === 'UNREAD' ? 'border-qc-blue/30' : ''}`}>
+            <div className="flex gap-3">
+              <span className="text-2xl">{ICONS[n.notification_type] ?? '🔔'}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-semibold text-white text-sm">{n.title}</span>
+                  {n.status === 'UNREAD' && <div className="w-2 h-2 rounded-full bg-qc-blue shrink-0 mt-1" />}
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">{n.body}</p>
+                <p className="text-[9px] text-slate-600 mt-1">{new Date(n.created_at).toLocaleString('fr-CA')}</p>
               </div>
             </div>
-          )}
-        </Card>
-
-        {/* Navigation */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { href: '/home',    label: 'Accueil',    icon: '🏠' },
-            { href: '/revenue', label: 'Revenus',    icon: '💰' },
-            { href: '/trips',   label: 'Courses',    icon: '🚕' },
-            { href: '/taximeter', label: 'Taximètre', icon: '📟' },
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors">
-              <span>{item.icon}</span>
-              <span className="text-xs font-semibold text-white">{item.label}</span>
-            </Link>
-          ))}
-        </div>
+          </Card>
+        ))}
       </div>
     </AppShell>
   )

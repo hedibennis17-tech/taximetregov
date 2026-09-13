@@ -1,66 +1,64 @@
 'use client'
-
 import { AppShell } from '@/components/layout/AppShell'
-import { Card, SectionHeader } from '@/components/ui'
-import { useDriverProfile, useRevenue, money } from '@/lib/api'
-import Link from 'next/link'
-import { RefreshCw } from 'lucide-react'
+import { Card } from '@/components/ui'
+import { useDriverProfile } from '@/lib/api'
+import { CheckCircle, AlertTriangle, Shield } from 'lucide-react'
 
-export default function Page() {
-  const { profile, loading, refresh } = useDriverProfile()
-  const { revenue } = useRevenue('month')
+export default function CompliancePage() {
+  const { profile, loading } = useDriverProfile()
+
+  const items = [
+    { label:'Identité vérifiée',      ok: profile?.verification_status === 'VERIFIED', icon:'🪪' },
+    { label:'Profil complété',        ok: profile?.status === 'ACTIVE',                         icon:'👤' },
+    { label:'Permis de conduire',     ok: true,                                                  icon:'🪪' },
+    { label:'Permis taxi',            ok: true,                                                  icon:'🏛️' },
+    { label:'Véhicule actif',         ok: true,                                                  icon:'🚗' },
+    { label:'Inspection à jour',      ok: true,                                                  icon:'🔧' },
+    { label:'Assurance valide',       ok: true,                                                  icon:'🛡️' },
+    { label:'Compte fiscal actif',    ok: true,                                                  icon:'🧾' },
+    { label:'TPS enregistrée',        ok: true,                                                  icon:'✅' },
+    { label:'TVQ enregistrée',        ok: true,                                                  icon:'✅' },
+  ]
+
+  const score = items.filter(i => i.ok).length
+  const pct   = Math.round((score / items.length) * 100)
 
   return (
     <AppShell>
-      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Conformité</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
-      <div className="px-4 pb-8 space-y-4">
+      <div className="px-4 pt-6 pb-4">
+        <h1 className="text-xl font-bold text-white">Ma conformité</h1>
+        <p className="text-xs text-slate-400 mt-0.5">Dossier réglementaire · TAXIMETER.GOV</p>
+      </div>
+      <div className="px-4 space-y-4 pb-8">
 
-        {/* Connexion status */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs text-green-400">Base de données connectée · Supabase</span>
-          <button onClick={() => void refresh()} className="ml-auto">
-            <RefreshCw size={12} className={loading ? 'animate-spin text-green-400' : 'text-green-600'} />
-          </button>
-        </div>
-
-        {/* Contenu */}
-        <Card className="p-8 text-center">
-          <div className="text-5xl mb-4">✅</div>
-          <h2 className="text-lg font-bold text-white mb-2">Conformité</h2>
-          {profile && (
-            <p className="text-sm text-slate-400 mb-4">
-              {profile.first_name} {profile.last_name} · {profile.public_driver_id}
-            </p>
-          )}
-          {revenue && (
-            <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto mt-4">
-              <div className="bg-slate-800 rounded-xl p-3">
-                <div className="font-bold text-green-400">{money(revenue.wallet.balance)}</div>
-                <div className="text-[10px] text-slate-400">Solde wallet</div>
-              </div>
-              <div className="bg-slate-800 rounded-xl p-3">
-                <div className="font-bold text-white">{revenue.summary.total_activities}</div>
-                <div className="text-[10px] text-slate-400">Activités ce mois</div>
-              </div>
-            </div>
-          )}
+        {/* Score */}
+        <Card className={`p-6 text-center ${pct === 100 ? 'bg-green-500/10 border-green-500/30' : 'bg-amber-500/10 border-amber-500/30'}`}>
+          <div className={`text-6xl font-black mb-1 ${pct === 100 ? 'text-green-400' : 'text-amber-400'}`}>{pct}%</div>
+          <div className="text-sm font-bold text-white">{pct === 100 ? '🟢 Dossier conforme' : '🟠 Action requise'}</div>
+          <div className="text-xs text-slate-400 mt-1">{score}/{items.length} éléments conformes</div>
         </Card>
 
-        {/* Navigation */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { href: '/home',    label: 'Accueil',    icon: '🏠' },
-            { href: '/revenue', label: 'Revenus',    icon: '💰' },
-            { href: '/trips',   label: 'Courses',    icon: '🚕' },
-            { href: '/taximeter', label: 'Taximètre', icon: '📟' },
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors">
-              <span>{item.icon}</span>
-              <span className="text-xs font-semibold text-white">{item.label}</span>
-            </Link>
-          ))}
+        {/* Checklist */}
+        <Card className="p-4">
+          <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Vérification dossier</div>
+          <div className="space-y-2">
+            {items.map(item => (
+              <div key={item.label} className="flex items-center gap-3 py-1.5">
+                <span className="text-base w-6">{item.icon}</span>
+                <span className="flex-1 text-sm text-white">{item.label}</span>
+                {item.ok
+                  ? <CheckCircle size={16} className="text-green-400 shrink-0" />
+                  : <AlertTriangle size={16} className="text-amber-400 shrink-0" />}
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <div className="p-3 rounded-xl bg-slate-800 border border-slate-700">
+          <div className="flex items-center gap-2">
+            <Shield size={12} className="text-slate-400" />
+            <p className="text-[10px] text-slate-400">Mode pilote · Données synthétiques · Non certifié par les autorités gouvernementales</p>
+          </div>
         </div>
       </div>
     </AppShell>

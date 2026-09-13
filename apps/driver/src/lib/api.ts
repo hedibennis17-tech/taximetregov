@@ -103,6 +103,15 @@ export interface DriverProfile {
   last_name: string
   email: string
   verification_status: string
+  identity_verification_status?: string
+  driver_number?: string
+  language?: string
+  business_status?: string
+  status?: string
+  phone?: string
+  province?: string
+  preferred_name?: string
+  onboarding_completed_at?: string
   onboarding_status: string
   preferred_language: string
   phone_number_masked: string | null

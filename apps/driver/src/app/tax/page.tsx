@@ -1,67 +1,112 @@
 'use client'
-
 import { AppShell } from '@/components/layout/AppShell'
-import { Card, SectionHeader } from '@/components/ui'
+import { Card } from '@/components/ui'
 import { useDriverProfile, useRevenue, money } from '@/lib/api'
-import Link from 'next/link'
-import { RefreshCw } from 'lucide-react'
+import { DollarSign, FileText, Calendar, TrendingUp } from 'lucide-react'
 
-export default function Page() {
-  const { profile, loading, refresh } = useDriverProfile()
-  const { revenue } = useRevenue('month')
+export default function TaxPage() {
+  const { profile } = useDriverProfile()
+  const { revenue, loading } = useRevenue('month')
+
+  const gross  = parseFloat(revenue?.summary.total_gross ?? '0')
+  const tps    = Math.round(gross * 0.05 * 100) / 100
+  const tvq    = Math.round(gross * 0.09975 * 100) / 100
+  const total  = Math.round((tps + tvq) * 100) / 100
 
   return (
     <AppShell>
-      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Centre fiscal</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
-      <div className="px-4 pb-8 space-y-4">
+      <div className="px-4 pt-6 pb-4">
+        <h1 className="text-xl font-bold text-white">Centre fiscal</h1>
+        <p className="text-xs text-slate-400 mt-0.5">TPS · TVQ · Québec · TAXIMETER.GOV</p>
+      </div>
+      <div className="px-4 space-y-4 pb-8">
 
-        {/* Connexion status */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs text-green-400">Base de données connectée · Supabase</span>
-          <button onClick={() => void refresh()} className="ml-auto">
-            <RefreshCw size={12} className={loading ? 'animate-spin text-green-400' : 'text-green-600'} />
-          </button>
+        {/* Avertissement pilote */}
+        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <p className="text-[10px] text-amber-400">⚠️ Mode pilote — Les montants fiscaux sont calculés à titre indicatif uniquement. Consultez Revenu Québec pour vos obligations réelles.</p>
         </div>
 
-        {/* Contenu */}
-        <Card className="p-8 text-center">
-          <div className="text-5xl mb-4">🧾</div>
-          <h2 className="text-lg font-bold text-white mb-2">Centre fiscal</h2>
-          {profile && (
-            <p className="text-sm text-slate-400 mb-4">
-              {profile.first_name} {profile.last_name} · {profile.public_driver_id}
-            </p>
-          )}
-          {revenue && (
-            <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto mt-4">
-              <div className="bg-slate-800 rounded-xl p-3">
-                <div className="font-bold text-green-400">{money(revenue.wallet.balance)}</div>
-                <div className="text-[10px] text-slate-400">Solde wallet</div>
+        {/* Statut compte fiscal */}
+        {profile && (
+          <Card className="p-4">
+            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Compte fiscal</div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-2xl bg-green-500/20 flex items-center justify-center">
+                <FileText size={18} className="text-green-400" />
               </div>
-              <div className="bg-slate-800 rounded-xl p-3">
-                <div className="font-bold text-white">{revenue.summary.total_activities}</div>
-                <div className="text-[10px] text-slate-400">Activités ce mois</div>
+              <div>
+                <div className="font-bold text-white">{profile.first_name} {profile.last_name}</div>
+                <div className="text-xs text-green-400">✅ TPS Enregistrée · TVQ Enregistrée</div>
               </div>
             </div>
-          )}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-slate-800 rounded-lg p-2">
+                <div className="text-slate-400">TPS</div>
+                <div className="text-green-400 font-bold">DEMO-••••-TPS</div>
+              </div>
+              <div className="bg-slate-800 rounded-lg p-2">
+                <div className="text-slate-400">TVQ</div>
+                <div className="text-green-400 font-bold">DEMO-••••-TVQ</div>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Calcul taxes ce mois */}
+        <Card className="p-4">
+          <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Taxes ce mois (estimé)</div>
+          <div className="space-y-3">
+            {[
+              { label:'Revenus bruts imposables', val: money(gross),  color:'text-white' },
+              { label:'TPS (5 %)',                val: money(tps),   color:'text-purple-400' },
+              { label:'TVQ (9,975 %)',            val: money(tvq),   color:'text-purple-400' },
+            ].map(r => (
+              <div key={r.label} className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0">
+                <span className="text-xs text-slate-400">{r.label}</span>
+                <span className={`font-bold text-sm ${r.color}`}>{r.val}</span>
+              </div>
+            ))}
+            <div className="flex justify-between items-center pt-1">
+              <span className="text-sm font-bold text-white">Total taxes estimé</span>
+              <span className="font-bold text-lg text-purple-400">{money(total)}</span>
+            </div>
+          </div>
         </Card>
 
-        {/* Navigation */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { href: '/home',    label: 'Accueil',    icon: '🏠' },
-            { href: '/revenue', label: 'Revenus',    icon: '💰' },
-            { href: '/trips',   label: 'Courses',    icon: '🚕' },
-            { href: '/taximeter', label: 'Taximètre', icon: '📟' },
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors">
-              <span>{item.icon}</span>
-              <span className="text-xs font-semibold text-white">{item.label}</span>
-            </Link>
-          ))}
-        </div>
+        {/* Périodes */}
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar size={14} className="text-qc-blue" />
+            <span className="text-sm font-bold text-white">Période fiscale active</span>
+          </div>
+          <div className="text-xs text-slate-400 space-y-1">
+            <div className="flex justify-between"><span>Période</span><span className="text-white">Q3 — Juillet–Septembre 2026</span></div>
+            <div className="flex justify-between"><span>Fréquence</span><span className="text-white">Trimestrielle</span></div>
+            <div className="flex justify-between"><span>Statut</span><span className="text-amber-400">En cours</span></div>
+            <div className="flex justify-between"><span>Échéance</span><span className="text-white">31 octobre 2026</span></div>
+          </div>
+        </Card>
+
+        {/* Répartition par source */}
+        {revenue && revenue.breakdown.length > 0 && (
+          <Card className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp size={14} className="text-qc-blue" />
+              <span className="text-sm font-bold text-white">Revenus par source</span>
+            </div>
+            <div className="space-y-2">
+              {revenue.breakdown.map(b => (
+                <div key={b.source_type} className="flex justify-between items-center text-xs">
+                  <span className="text-slate-400">{b.source_type}</span>
+                  <div className="text-right">
+                    <div className="text-white font-bold">{money(b.gross)}</div>
+                    <div className="text-slate-500">{b.count} activité(s)</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
       </div>
     </AppShell>
   )
