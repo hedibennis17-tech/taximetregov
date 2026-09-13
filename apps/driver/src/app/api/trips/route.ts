@@ -1,60 +1,22 @@
-// GET  /api/trips        — Historique des courses
-// POST /api/trips/start  — Démarrer une course
-// POST /api/trips/complete — Terminer une course
-
 import { NextRequest } from 'next/server'
-import { getDb, apiSuccess, apiError } from '@/lib/db'
-
+import { apiSuccess, apiError } from '@/lib/db'
 import { requireAuth } from '@/lib/auth'
-import { sql } from 'drizzle-orm'
 
-// GET — Historique des courses
+const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? ''
+
 export async function GET(req: NextRequest) {
-  const db = getDb()
   const ctx = await requireAuth(req)
   if (ctx instanceof Response) return ctx
-  if (!ctx.driverId) return apiError('Profil chauffeur introuvable', 404)
-
-  const { searchParams } = new URL(req.url)
-  const limit  = Math.min(parseInt(searchParams.get('limit')  ?? '20'), 100)
-  const offset = parseInt(searchParams.get('offset') ?? '0')
-  const status = searchParams.get('status')
+  if (!ctx.driverId) return apiError('Profil introuvable', 404)
 
   try {
-    const trips = await db.execute(sql`
-      SELECT
-        tt.id,
-        tt.public_trip_id,
-        tt.trip_reference,
-        tt.trip_status,
-        tt.distance_meters,
-        tt.elapsed_seconds,
-        tt.final_amount,
-        tt.estimated_amount,
-        tt.currency,
-        tt.started_at,
-        tt.completed_at,
-        tt.fare_version
-      FROM taxi_trips tt
-      WHERE tt.driver_id = ${ctx.driverId}
-        ${status ? sql`AND tt.trip_status = ${status}` : sql``}
-      ORDER BY tt.created_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `)
-
-    const total = await db.execute(sql`
-      SELECT COUNT(*) as count
-      FROM taxi_trips
-      WHERE driver_id = ${ctx.driverId}
-        ${status ? sql`AND trip_status = ${status}` : sql``}
-    `)
-
-    return apiSuccess({
-      trips,
-      total:  parseInt(String((total[0] as { count: string }).count)),
-      limit,
-      offset,
-    })
+    const res = await fetch(
+      `${SB_URL}/rest/v1/taxi_trips?driver_id=eq.${ctx.driverId}&select=id,public_trip_id,trip_reference,trip_status,distance_meters,elapsed_seconds,final_amount,estimated_amount,currency,started_at,completed_at&order=started_at.desc&limit=50`,
+      { headers: { apikey: KEY(), Authorization: `Bearer ${KEY()}` } }
+    )
+    const trips = await res.json() as unknown[]
+    return apiSuccess({ trips })
   } catch {
     return apiError('Erreur serveur', 500)
   }
