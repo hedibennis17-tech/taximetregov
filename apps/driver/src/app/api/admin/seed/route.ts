@@ -2,6 +2,10 @@ import { NextRequest } from 'next/server'
 import { getDb, apiSuccess, apiError } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 
+export async function GET(req: NextRequest) {
+  return POST(req)
+}
+
 export async function POST(req: NextRequest) {
   if (req.headers.get('x-seed-secret') !== 'TAXIMETREGOV_SEED_2026') return apiError('Non autorisé', 403)
   try {
