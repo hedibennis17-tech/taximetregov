@@ -268,7 +268,7 @@ function UploadModal({ t, dark, docTypes, onClose, token }: {
       }
     } catch {
       setter({ file, preview, url: '', uploading: false, uploaded: false })
-      setError('Erreur réseau lors de l'upload')
+      setError("Erreur réseau lors de l'upload")
     }
     // Reset input pour permettre re-sélection du même fichier
     if (ref.current) ref.current.value = ''
