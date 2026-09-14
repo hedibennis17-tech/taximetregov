@@ -4,38 +4,87 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-/* ── DARK (défaut) ─────────────────────────────────────────── */
-:root, [data-theme="dark"], html.dark {
-  --bg:        #050E1C;
-  --bg-card:   #0F1F38;
-  --bg-hover:  #142544;
-  --text:      #F0F4FF;
-  --text-2:    #8BA3CC;
-  --text-3:    #4A6285;
-  --border:    rgba(59,130,246,0.18);
-  --border-b:  rgba(59,130,246,0.35);
-  --header-bg: #001F5C;
-  --nav-bg:    #050E1C;
-  --nav-bdr:   rgba(59,130,246,0.2);
-  --input-bg:  rgba(5,14,28,0.8);
+/* ═══════════════════════════════════════════════════════════
+   TAXIMÈTRE.GOV — DESIGN SYSTEM
+   Palette québécoise premium
+   ─────────────────────────────────────────────────────────
+   BLEU ROYAL    #003DA5  (QC officiel — liens, actifs)
+   BLEU NUIT     #001F5C  (headers, accents forts)
+   BLEU PÉTROLE  #0B4F71  (cartes premium, accents secondaires)
+   BEURRE CHAUD  #FDF6E3  (fond chaud KPI)
+   CIEL QC       #EEF3FC  (fond page — lumière du nord)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── LIGHT — Québec Premium (DÉFAUT MASTER) ─────────────── */
+:root,
+[data-theme="light"],
+html.light {
+  --bg:            #EEF3FC;
+  --bg-card:       #FFFFFF;
+  --bg-card-2:     #F4F7FE;
+  --bg-hover:      #E4ECFA;
+  --bg-accent:     #003DA5;
+  --bg-premium:    #0B4F71;
+  --bg-beurre:     #FDF6E3;
+
+  --text:          #001433;
+  --text-2:        #1A3A6B;
+  --text-3:        #4A6A9A;
+  --text-inv:      #FFFFFF;
+  --text-gold:     #7A5C00;
+
+  --border:        #C5D4EE;
+  --border-b:      #7B9ED9;
+  --border-accent: #003DA5;
+
+  --header-bg:     #003DA5;
+  --header-text:   #FFFFFF;
+  --nav-bg:        #FFFFFF;
+  --nav-bdr:       #C5D4EE;
+  --nav-active:    #003DA5;
+
+  --input-bg:      #FFFFFF;
+  --input-bdr:     #C5D4EE;
+
+  --shadow-card:   0 2px 12px rgba(0,61,165,0.10);
+  --shadow-lg:     0 8px 32px rgba(0,61,165,0.16);
 }
 
-/* ── LIGHT ─────────────────────────────────────────────────── */
-[data-theme="light"], html.light {
-  --bg:        #F0F4FF;
-  --bg-card:   #FFFFFF;
-  --bg-hover:  #F8FAFF;
-  --text:      #0A1628;
-  --text-2:    #4A5568;
-  --text-3:    #8A96A8;
-  --border:    #DDE3EE;
-  --border-b:  #BDC8E0;
-  --header-bg: #FFFFFF;
-  --nav-bg:    #FFFFFF;
-  --nav-bdr:   #DDE3EE;
-  --input-bg:  #FFFFFF;
+/* ── DARK ───────────────────────────────────────────────── */
+[data-theme="dark"],
+html.dark {
+  --bg:            #050E1C;
+  --bg-card:       #0F1F38;
+  --bg-card-2:     #0A1628;
+  --bg-hover:      #142544;
+  --bg-accent:     #1A56C4;
+  --bg-premium:    #0B4F71;
+  --bg-beurre:     #1A1200;
+
+  --text:          #F0F4FF;
+  --text-2:        #8BA3CC;
+  --text-3:        #4A6285;
+  --text-inv:      #F0F4FF;
+  --text-gold:     #F5C842;
+
+  --border:        rgba(59,130,246,0.18);
+  --border-b:      rgba(59,130,246,0.35);
+  --border-accent: #3B82F6;
+
+  --header-bg:     #001F5C;
+  --header-text:   #FFFFFF;
+  --nav-bg:        #050E1C;
+  --nav-bdr:       rgba(59,130,246,0.2);
+  --nav-active:    #3B82F6;
+
+  --input-bg:      rgba(5,14,28,0.8);
+  --input-bdr:     rgba(59,130,246,0.25);
+
+  --shadow-card:   0 2px 12px rgba(0,0,0,0.4);
+  --shadow-lg:     0 8px 32px rgba(0,0,0,0.5);
 }
 
+/* ── Reset ──────────────────────────────────────────────── */
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
 html, body {
@@ -46,41 +95,56 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Cards */
+/* ── Cards ──────────────────────────────────────────────── */
 .t-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
+  box-shadow: var(--shadow-card);
 }
 
-/* Inputs */
+.t-card-accent {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-accent);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Inputs ─────────────────────────────────────────────── */
 .t-input {
   background: var(--input-bg);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--input-bdr);
   color: var(--text);
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 15px;
   width: 100%;
   outline: none;
+  transition: border-color 0.15s;
 }
-.t-input:focus { border-color: #3B82F6; }
+.t-input:focus { border-color: var(--border-accent); }
 
-/* Animations */
+/* ── Animations ─────────────────────────────────────────── */
 .taxi-display { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 @keyframes spin      { to { transform: rotate(360deg); } }
 @keyframes logo-spin { to { transform: rotate(360deg); } }
-@keyframes pulse-blue { 0%,100% { box-shadow:0 0 0 0 rgba(59,130,246,.4); } 70% { box-shadow:0 0 0 10px rgba(59,130,246,0); } }
-.pulse-blue { animation: pulse-blue 2s infinite; }
+@keyframes pulse-blue {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,61,165,0.4); }
+  70%      { box-shadow: 0 0 0 10px rgba(0,61,165,0); }
+}
+.pulse-blue  { animation: pulse-blue 2s infinite; }
 .pulse-green { animation: pulse-blue 2s infinite; }
-.pulse-red { animation: pulse-blue 1.5s infinite; }
+.pulse-red   { animation: pulse-blue 1.5s infinite; }
 
+/* ── Scrollbar ──────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: var(--border-b); border-radius: 2px; }
 
+/* ── Watermark ──────────────────────────────────────────── */
 .qc-watermark::after {
   content: '⚜';
-  position: fixed; bottom:90px; right:12px;
-  font-size: 80px; opacity: 0.03; pointer-events: none;
-  color: #3B82F6; z-index: 0;
+  position: fixed; bottom: 90px; right: 12px;
+  font-size: 80px; opacity: 0.04; pointer-events: none;
+  color: #003DA5; z-index: 0;
 }

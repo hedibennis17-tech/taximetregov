@@ -68,21 +68,21 @@ export function BottomNav() {
           </div>
         </div>
       )}
-      <nav style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:50, background:'var(--nav-bg)', borderTop:'1px solid var(--nav-bdr)', boxShadow:'0 -2px 12px rgba(0,0,0,.15)' }}>
+      <nav style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:50, background:'var(--nav-bg)', borderTop:'1px solid var(--nav-bdr)', boxShadow:'0 -2px 12px rgba(0,0,0,.08)' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-around', padding:'6px 2px 8px' }}>
           {navItems.map(item => {
             const active = pathname === item.href || (item.href !== '/home' && pathname.startsWith(item.href))
             const Icon = item.icon
             return (
-              <Link key={item.href} href={item.href} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:2, padding:'5px 10px', borderRadius:10, textDecoration:'none', background: active ? 'rgba(0,61,165,.2)' : 'transparent' }}>
-                <Icon size={20} strokeWidth={active ? 2.5 : 1.8} color={active ? '#3B82F6' : 'var(--text-3)'} />
-                <span style={{ fontSize:8.5, fontWeight: active ? 700 : 400, color: active ? '#3B82F6' : 'var(--text-3)' }}>{item.label}</span>
+              <Link key={item.href} href={item.href} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:2, padding:'5px 10px', borderRadius:10, textDecoration:'none', background: active ? 'rgba(0,61,165,0.12)' : 'transparent' }}>
+                <Icon size={20} strokeWidth={active ? 2.5 : 1.8} color={active ? 'var(--nav-active)' : 'var(--text-3)'} />
+                <span style={{ fontSize:8.5, fontWeight: active ? 700 : 400, color: active ? 'var(--nav-active)' : 'var(--text-3)' }}>{item.label}</span>
               </Link>
             )
           })}
-          <button onClick={() => setOpen(o => !o)} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:2, padding:'5px 10px', borderRadius:10, border:'none', cursor:'pointer', background: open ? 'rgba(0,61,165,.2)' : 'transparent' }}>
-            <Grid size={20} strokeWidth={open ? 2.5 : 1.8} color={open ? '#3B82F6' : 'var(--text-3)'} />
-            <span style={{ fontSize:8.5, fontWeight: open ? 700 : 400, color: open ? '#3B82F6' : 'var(--text-3)' }}>Menu</span>
+          <button onClick={() => setOpen(o => !o)} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:2, padding:'5px 10px', borderRadius:10, border:'none', cursor:'pointer', background: open ? 'rgba(0,61,165,0.12)' : 'transparent' }}>
+            <Grid size={20} strokeWidth={open ? 2.5 : 1.8} color={open ? 'var(--nav-active)' : 'var(--text-3)'} />
+            <span style={{ fontSize:8.5, fontWeight: open ? 700 : 400, color: open ? 'var(--nav-active)' : 'var(--text-3)' }}>Menu</span>
           </button>
         </div>
       </nav>

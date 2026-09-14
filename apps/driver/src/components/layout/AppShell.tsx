@@ -20,35 +20,84 @@ function useInitials() {
 export function AppShell({ children, showNav = true }: { children: React.ReactNode; showNav?: boolean }) {
   const { theme, toggle } = useTheme()
   const initials = useInitials()
-  const d = theme === 'dark'
+  const dark = theme === 'dark'
 
   return (
     <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'var(--bg)' }}>
-      <header style={{ background: d ? 'linear-gradient(180deg,#001F5C 0%,#0A1628 100%)' : 'white', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:30, boxShadow: d ? '0 2px 16px rgba(0,0,0,.4)' : '0 1px 4px rgba(0,0,0,.06)' }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 14px' }}>
+
+      {/* ── Top bar ── Bleu royal en light, bleu nuit en dark */}
+      <header style={{
+        background: dark
+          ? 'linear-gradient(180deg,#001F5C 0%,#0A1628 100%)'
+          : '#003DA5',
+        borderBottom: dark ? '1px solid rgba(59,130,246,0.2)' : 'none',
+        position:'sticky', top:0, zIndex:30,
+        boxShadow: dark
+          ? '0 2px 16px rgba(0,0,0,.5)'
+          : '0 2px 16px rgba(0,29,92,0.30)',
+      }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 14px' }}>
+
+          {/* Logo + wordmark */}
           <Link href="/home" style={{ display:'flex', alignItems:'center', gap:10, textDecoration:'none' }}>
             <TaximetreGovMark size={30} />
             <div>
-              <div style={{ fontSize:12, fontWeight:900, letterSpacing:'0.06em', color: d ? 'white' : '#003DA5', lineHeight:1.1 }}>
-                TAXIM<span style={{ color:'#3B82F6' }}>È</span>TRE<span style={{ color:'#3B82F6' }}>.GOV</span>
+              <div style={{ fontSize:12, fontWeight:900, letterSpacing:'0.06em', color:'#FFFFFF', lineHeight:1.1 }}>
+                TAXIM<span style={{ color:'#F5C842' }}>È</span>TRE<span style={{ color:'#F5C842' }}>.GOV</span>
               </div>
-              <div style={{ fontSize:8, color:'var(--text-2)' }}>Gouvernement du Québec</div>
+              <div style={{ fontSize:8, color:'rgba(255,255,255,0.65)', letterSpacing:'0.04em' }}>Gouvernement du Québec</div>
             </div>
           </Link>
 
+          {/* Actions */}
           <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <span style={{ fontSize:8, fontWeight:700, padding:'3px 7px', borderRadius:6, background:'rgba(245,158,11,.15)', color:'#F59E0B', border:'1px solid rgba(245,158,11,.3)' }}>PILOTE</span>
 
-            <button onClick={toggle} title={d ? 'Thème clair' : 'Thème sombre'}
-              style={{ width:30, height:30, borderRadius:8, background:'rgba(59,130,246,.1)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
-              {d ? <Sun size={14} color="#F59E0B" /> : <Moon size={14} color="#003DA5" />}
+            {/* Badge PILOTE — doré */}
+            <span style={{
+              fontSize:8, fontWeight:800, padding:'3px 8px', borderRadius:20,
+              background:'rgba(245,200,66,0.20)', color:'#F5C842',
+              border:'1px solid rgba(245,200,66,0.35)',
+              letterSpacing:'0.08em',
+            }}>PILOTE</span>
+
+            {/* Toggle thème */}
+            <button
+              onClick={toggle}
+              title={dark ? 'Thème clair' : 'Thème sombre'}
+              style={{
+                width:32, height:32, borderRadius:10,
+                background:'rgba(255,255,255,0.12)',
+                border:'1px solid rgba(255,255,255,0.20)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                cursor:'pointer', transition:'background 0.15s',
+              }}
+            >
+              {dark
+                ? <Sun size={15} color="#F5C842" />
+                : <Moon size={15} color="#E8F0FF" />
+              }
             </button>
 
-            <Link href="/notifications" style={{ width:30, height:30, borderRadius:8, background:'rgba(59,130,246,.08)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <Bell size={14} color={d ? '#3B82F6' : '#4A5568'} />
+            {/* Notifs */}
+            <Link href="/notifications" style={{
+              width:32, height:32, borderRadius:10,
+              background:'rgba(255,255,255,0.12)',
+              border:'1px solid rgba(255,255,255,0.20)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              textDecoration:'none',
+            }}>
+              <Bell size={15} color="#FFFFFF" />
             </Link>
 
-            <Link href="/profile" style={{ width:30, height:30, borderRadius:8, background:'#003DA5', color:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:800, textDecoration:'none' }}>
+            {/* Avatar */}
+            <Link href="/profile" style={{
+              width:32, height:32, borderRadius:10,
+              background:'#001F5C',
+              border:'2px solid rgba(255,255,255,0.30)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontSize:11, fontWeight:900, color:'white',
+              textDecoration:'none', letterSpacing:'0.03em',
+            }}>
               {initials}
             </Link>
           </div>
@@ -64,12 +113,14 @@ export function AppShell({ children, showNav = true }: { children: React.ReactNo
   )
 }
 
-export function PageHeader({ title, subtitle, action }: { title:string; subtitle?:string; action?: React.ReactNode }) {
+export function PageHeader({
+  title, subtitle, action
+}: { title:string; subtitle?:string; action?: React.ReactNode }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 16px 12px' }}>
       <div>
-        <h1 style={{ fontSize:20, fontWeight:800, color:'var(--text)', margin:0 }}>{title}</h1>
-        {subtitle && <p style={{ fontSize:11, color:'var(--text-2)', margin:'2px 0 0' }}>{subtitle}</p>}
+        <h1 style={{ fontSize:22, fontWeight:800, color:'var(--text)', margin:0, letterSpacing:'-0.01em' }}>{title}</h1>
+        {subtitle && <p style={{ fontSize:11, color:'var(--text-3)', margin:'3px 0 0', fontWeight:500 }}>{subtitle}</p>}
       </div>
       {action}
     </div>

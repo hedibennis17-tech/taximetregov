@@ -57,15 +57,18 @@ export function ActivityBadge({ type }: { type: string }) {
 export function Amount({ value, size = 'md', positive }: { value: number; size?: 'sm'|'md'|'lg'|'xl'; positive?: boolean }) {
   const sizes = { sm:'text-sm', md:'text-lg', lg:'text-2xl', xl:'text-4xl' }
   const formatted = new Intl.NumberFormat('fr-CA', { style:'currency', currency:'CAD', minimumFractionDigits:2 }).format(value)
-  return <span className={clsx('font-bold amount-display tabular-nums', sizes[size], positive !== undefined ? (positive ? 'text-driver-green' : 'text-driver-red') : 'text-white')}>{formatted}</span>
+  return <span className={clsx('font-bold amount-display tabular-nums', sizes[size], positive !== undefined ? (positive ? 'text-driver-green' : 'text-driver-red') : '')} style={{ color: positive !== undefined ? undefined : 'var(--text)' }}>{formatted}</span>
 }
 
 export function SectionHeader({ title, action, actionLabel }: { title:string; action?:()=>void; actionLabel?:string }) {
   return (
     <div className="flex items-center justify-between mb-3">
-      <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">{title}</span>
+      <div className="flex items-center gap-2">
+        <div style={{ width:3, height:14, borderRadius:2, background:'var(--border-accent, #003DA5)', flexShrink:0 }} />
+        <span style={{ fontSize:10, fontWeight:800, letterSpacing:'0.10em', textTransform:'uppercase', color:'var(--text-2)' }}>{title}</span>
+      </div>
       {action && actionLabel && (
-        <button onClick={action} className="text-xs text-qc-blue-light hover:text-blue-300 transition-colors font-medium">{actionLabel}</button>
+        <button onClick={action} style={{ fontSize:11, fontWeight:700, color:'#003DA5', background:'none', border:'none', cursor:'pointer' }}>{actionLabel} →</button>
       )}
     </div>
   )
