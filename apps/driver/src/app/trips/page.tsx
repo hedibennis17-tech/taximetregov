@@ -1,106 +1,104 @@
 'use client'
-
-import { AppShell, PageHeader } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
-import { RefreshCw } from 'lucide-react'
+import { AppShell } from '@/components/layout/AppShell'
+import { TaximetreGovLoader } from '@/components/brand/Logo'
 import { useTrips, money, formatDuration, formatDistance } from '@/lib/api'
+import { useTheme } from '@/lib/theme'
+import { getThemeTokens, cardStyle, SectionTitle, filterBtnStyle } from '@/lib/theme-helpers'
 import { useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 
-const statusColors: Record<string, string> = {
-  COMPLETED: 'text-green-400 bg-green-500/10',
-  CANCELLED: 'text-red-400 bg-red-500/10',
-  STARTED:   'text-blue-400 bg-blue-500/10',
-  DISPUTED:  'text-amber-400 bg-amber-500/10',
-}
+type Status = 'COMPLETED' | 'CANCELLED' | 'STARTED' | 'DISPUTED'
+const STATUSES: { key: Status; label: string; color: string; bg: string }[] = [
+  { key:'COMPLETED', label:'Terminées', color:'#059669', bg:'rgba(5,150,105,0.12)'  },
+  { key:'STARTED',   label:'En cours',  color:'#003DA5', bg:'rgba(0,61,165,0.12)'   },
+  { key:'CANCELLED', label:'Annulées',  color:'#DC2626', bg:'rgba(220,38,38,0.10)'  },
+  { key:'DISPUTED',  label:'En litige', color:'#B45309', bg:'rgba(180,83,9,0.10)'   },
+]
 
-const statusLabels: Record<string, string> = {
-  COMPLETED: 'Terminée',
-  CANCELLED: 'Annulée',
-  STARTED:   'En cours',
-  DISPUTED:  'En litige',
+function fmt(dateValue: string | null) {
+  if (!dateValue) return '—'
+  return new Intl.DateTimeFormat('fr-CA', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }).format(new Date(dateValue))
 }
 
 export default function TripsPage() {
-  const [filter, setFilter] = useState<string | undefined>('COMPLETED')
-  const { trips, total, loading, error, refresh } = useTrips(filter)
+  const [status, setStatus] = useState<Status>('COMPLETED')
+  const { trips, loading, refresh } = useTrips(status)
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+  const t = getThemeTokens(dark)
+  const conf = STATUSES.find(s => s.key === status)!
+
+  if (loading) return (
+    <AppShell>
+      <div style={{ minHeight:'70vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <TaximetreGovLoader message="Chargement des courses…" />
+      </div>
+    </AppShell>
+  )
 
   return (
     <AppShell>
-      <PageHeader title="Mes courses taxi" subtitle={`${total} course(s) · Source: Taximètre.GOV`} />
-      <div className="px-4 pb-8 space-y-4">
-
-        {/* Filtres */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {[
-            { val: 'COMPLETED', label: 'Terminées' },
-            { val: 'CANCELLED', label: 'Annulées' },
-            { val: undefined,   label: 'Toutes' },
-          ].map((f) => (
-            <button
-              key={f.label}
-              onClick={() => setFilter(f.val)}
-              className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                filter === f.val ? 'bg-qc-blue text-white' : 'bg-slate-800 text-slate-400'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 16px 12px' }}>
+        <div>
+          <h1 style={{ fontSize:22, fontWeight:800, color:t.text, margin:0, letterSpacing:'-0.01em' }}>Mes courses</h1>
+          <p style={{ fontSize:11, color:t.text3, margin:'3px 0 0' }}>{trips.length} course(s) · {STATUSES.find(s=>s.key===status)?.label}</p>
         </div>
+        <button onClick={refresh} style={{ width:38, height:38, borderRadius:12, background:t.card, border:`1.5px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:t.shadow }}>
+          <RefreshCw size={16} color={t.accent} />
+        </button>
+      </div>
 
-        {loading ? (
-          <div className="py-16 text-center">
-            <RefreshCw className="mx-auto text-qc-blue animate-spin" size={24} />
+      {/* Filtre statut */}
+      <div style={{ padding:'0 16px 16px', display:'flex', gap:6, overflowX:'auto' }}>
+        {STATUSES.map(s => (
+          <button key={s.key} onClick={() => setStatus(s.key)} style={{
+            padding:'8px 14px', borderRadius:20, fontSize:11, fontWeight:700,
+            border:'none', cursor:'pointer', whiteSpace:'nowrap', transition:'all 0.15s',
+            background: status === s.key ? s.color : (dark ? '#0F1F38' : '#FFFFFF'),
+            color: status === s.key ? '#FFFFFF' : t.text3,
+            boxShadow: status === s.key ? `0 4px 12px ${s.bg}` : 'none',
+          }}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Liste */}
+      <div style={{ padding:'0 16px 24px' }}>
+        {trips.length === 0 ? (
+          <div style={{ ...cardStyle(t), padding:'40px 0', textAlign:'center' }}>
+            <div style={{ fontSize:44, marginBottom:10 }}>🚕</div>
+            <div style={{ fontSize:14, color:t.text3 }}>Aucune course {STATUSES.find(s=>s.key===status)?.label.toLowerCase()}</div>
           </div>
-        ) : error ? (
-          <div className="py-8 text-center">
-            <p className="text-sm text-red-300 mb-4">{error}</p>
-            <button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs">Réessayer</button>
-          </div>
-        ) : trips.length === 0 ? (
-          <Card className="py-12 text-center">
-            <div className="text-3xl mb-3">🚕</div>
-            <p className="text-sm text-slate-400">Aucune course trouvée.</p>
-          </Card>
         ) : (
-          <div className="space-y-3">
-            {trips.map((trip) => (
-              <Card key={trip.id} className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <div className="text-xs text-slate-400 mb-0.5">Réf. officielle</div>
-                    <div className="font-bold text-white text-sm font-mono">{trip.trip_reference}</div>
-                  </div>
-                  <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${statusColors[trip.trip_status] ?? 'text-slate-400 bg-slate-800'}`}>
-                    {statusLabels[trip.trip_status] ?? trip.trip_status}
-                  </span>
+          <div style={{ ...cardStyle(t), overflow:'hidden' }}>
+            {trips.map((trip, idx) => (
+              <div key={trip.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 15px', borderTop: idx > 0 ? `1px solid ${t.border}` : 'none' }}>
+                <div style={{ width:40, height:40, borderRadius:12, background: dark ? 'rgba(0,61,165,0.18)' : 'rgba(0,61,165,0.07)', border:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>
+                  🚕
                 </div>
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                    <div className="font-bold text-white text-sm">{formatDistance(trip.distance_meters)}</div>
-                    <div className="text-[10px] text-slate-500">Distance</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:2 }}>
+                    <span style={{ fontSize:12, fontWeight:700, color:t.text }}>{trip.trip_reference}</span>
+                    <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:20, background:conf.bg, color:conf.color }}>
+                      {conf.label}
+                    </span>
                   </div>
-                  <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                    <div className="font-bold text-white text-sm">{formatDuration(trip.elapsed_seconds)}</div>
-                    <div className="text-[10px] text-slate-500">Durée</div>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                    <div className="font-bold text-green-400 text-sm">{money(trip.final_amount ?? trip.estimated_amount ?? '0')}</div>
-                    <div className="text-[10px] text-slate-500">{trip.final_amount ? 'Final' : 'Estimé'}</div>
+                  <div style={{ fontSize:10, color:t.text3 }}>
+                    {fmt(trip.started_at)} · {formatDistance(trip.distance_meters)} · {formatDuration(trip.duration_seconds ?? 0)}
                   </div>
                 </div>
-                <div className="flex justify-between text-[10px] text-slate-500">
-                  <span>Tarif: {trip.fare_version ?? '—'}</span>
-                  <span>{trip.started_at ? new Date(trip.started_at).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                <div style={{ textAlign:'right', flexShrink:0 }}>
+                  <div style={{ fontSize:15, fontWeight:800, color:t.text }}>{money(trip.final_amount ?? '0')}</div>
+                  {trip.tip_amount && parseFloat(trip.tip_amount) > 0 && (
+                    <div style={{ fontSize:10, color:t.green, marginTop:1 }}>+{money(trip.tip_amount)} tip</div>
+                  )}
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
-
-        <button onClick={() => void refresh()} className="w-full py-3 rounded-xl bg-slate-800 text-slate-400 text-xs font-semibold flex items-center justify-center gap-2">
-          <RefreshCw size={14} /> Actualiser
-        </button>
       </div>
     </AppShell>
   )

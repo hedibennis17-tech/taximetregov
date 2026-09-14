@@ -1,72 +1,77 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
-import { useRevenue, money } from '@/lib/api'
-import { useDriverProfile } from '@/lib/api'
-import { DollarSign, TrendingUp, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { TaximetreGovLoader } from '@/components/brand/Logo'
+import { useRevenue, useDriverProfile, money } from '@/lib/api'
+import { useTheme } from '@/lib/theme'
+import { getThemeTokens, cardStyle, cardAccentStyle, SectionTitle } from '@/lib/theme-helpers'
+import { ArrowUpRight, ArrowDownLeft, DollarSign, TrendingUp } from 'lucide-react'
 
 export default function WalletPage() {
   const { revenue, loading } = useRevenue('month')
   const { profile } = useDriverProfile()
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+  const t = getThemeTokens(dark)
 
   const net   = parseFloat(revenue?.summary.total_net   ?? '0')
   const gross = parseFloat(revenue?.summary.total_gross ?? '0')
   const tips  = parseFloat(revenue?.summary.total_tips  ?? '0')
+  const bal   = parseFloat(revenue?.wallet?.balance     ?? '0')
+
+  if (loading) return (
+    <AppShell>
+      <div style={{ minHeight:'70vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <TaximetreGovLoader message="Chargement du wallet…" />
+      </div>
+    </AppShell>
+  )
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 pb-4">
-        <h1 className="text-xl font-bold text-white">Wallet & Paiements</h1>
-        <p className="text-xs text-slate-400 mt-0.5">CAD · Québec · TAXIMETER.GOV</p>
+      <div style={{ padding:'18px 16px 10px' }}>
+        <h1 style={{ fontSize:22, fontWeight:800, color:t.text, margin:0, letterSpacing:'-0.01em' }}>Wallet & Paiements</h1>
+        <p style={{ fontSize:11, color:t.text3, margin:'3px 0 0' }}>CAD · Québec · TAXIMÈTRE.GOV</p>
       </div>
-      <div className="px-4 space-y-4 pb-8">
 
+      <div style={{ padding:'8px 16px', display:'flex', flexDirection:'column', gap:14, paddingBottom:32 }}>
         {/* Solde principal */}
-        <Card className="p-6 text-center bg-gradient-to-br from-qc-blue/20 to-slate-900 border-qc-blue/30">
-          <div className="text-xs text-slate-400 mb-1 tracking-widest uppercase">Revenus nets ce mois</div>
-          <div className="text-5xl font-black text-white mb-1">{money(net)}</div>
-          <div className="text-xs text-slate-400">CAD · Québec</div>
-        </Card>
-
-        {/* Résumé */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label:'Revenus bruts', val: money(gross), icon: ArrowUpRight, color:'text-green-400', bg:'bg-green-500/10' },
-            { label:'Pourboires',    val: money(tips),  icon: TrendingUp,   color:'text-purple-400', bg:'bg-purple-500/10' },
-          ].map(k => (
-            <Card key={k.label} className={`p-4 ${k.bg}`}>
-              <k.icon size={16} className={k.color} />
-              <div className={`text-xl font-bold ${k.color} mt-2`}>{k.val}</div>
-              <div className="text-[10px] text-slate-400">{k.label}</div>
-            </Card>
-          ))}
+        <div style={{ borderRadius:20, background:'linear-gradient(135deg,#003DA5 0%,#0B4F71 100%)', boxShadow:'0 8px 32px rgba(0,61,165,0.35)', padding:'22px 20px', position:'relative', overflow:'hidden' }}>
+          <div style={{ position:'absolute', top:-10, right:8, fontSize:100, color:'rgba(255,255,255,0.05)', pointerEvents:'none' }}>⚜</div>
+          <div style={{ fontSize:10, fontWeight:800, letterSpacing:'0.12em', color:'rgba(255,255,255,0.60)', textTransform:'uppercase', marginBottom:4 }}>💳 SOLDE DISPONIBLE</div>
+          <div style={{ fontSize:44, fontWeight:900, color:'#FFFFFF', letterSpacing:'-0.03em', lineHeight:1.1, marginBottom:8 }}>
+            {money(bal)}
+          </div>
+          {profile && <div style={{ fontSize:11, color:'rgba(255,255,255,0.55)' }}>{profile.first_name} {profile.last_name}</div>}
+          <button style={{ marginTop:16, padding:'11px 24px', borderRadius:12, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)', color:'white', fontWeight:700, fontSize:13, cursor:'pointer' }}>
+            💸 Demander un retrait
+          </button>
         </div>
 
-        {/* Transactions récentes */}
-        <Card className="p-4">
-          <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Activités récentes</div>
-          {(revenue?.breakdown ?? []).map(b => (
-            <div key={b.source_type} className="flex items-center gap-3 py-2.5 border-b border-slate-800 last:border-0">
-              <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-sm">
-                {b.source_type === 'TAXI' ? '🚕' : b.source_type === 'UBER' ? '⬛' : b.source_type === 'LYFT' ? '🟣' : b.source_type === 'DOORDASH' ? '🔴' : '📦'}
+        {/* Stats mois */}
+        <div>
+          <SectionTitle title="Ce mois-ci" t={t} />
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+            {[
+              { icon:<TrendingUp size={18} color={t.accent} />, label:'Brut',        val:money(gross), color:t.accent },
+              { icon:<DollarSign size={18} color={t.green}  />, label:'Net',         val:money(net),   color:t.green },
+              { icon:<ArrowDownLeft size={18} color="#F5C842"/>, label:'Pourboires',  val:money(tips),  color:'#B45309' },
+              { icon:<ArrowUpRight size={18} color={t.red}  />, label:'Commissions', val:money(gross-net), color:t.red },
+            ].map(s => (
+              <div key={s.label} style={{ ...cardStyle(t), padding:'14px 14px' }}>
+                <div style={{ marginBottom:8 }}>{s.icon}</div>
+                <div style={{ fontSize:17, fontWeight:800, color:s.color, letterSpacing:'-0.01em' }}>{s.val}</div>
+                <div style={{ fontSize:10, color:t.text3, fontWeight:600, marginTop:3, textTransform:'uppercase', letterSpacing:'0.06em' }}>{s.label}</div>
               </div>
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-white">{b.source_type}</div>
-                <div className="text-[10px] text-slate-400">{b.count} activité(s)</div>
-              </div>
-              <div className="text-right">
-                <div className="font-bold text-green-400">{money(b.gross)}</div>
-                {parseFloat(b.tips) > 0 && <div className="text-[10px] text-purple-400">+{money(b.tips)} tips</div>}
-              </div>
-            </div>
-          ))}
-          {(!revenue || revenue.breakdown.length === 0) && !loading && (
-            <p className="text-sm text-slate-400 text-center py-4">Aucune activité ce mois.</p>
-          )}
-        </Card>
+            ))}
+          </div>
+        </div>
 
-        <div className="p-3 rounded-xl bg-slate-800 border border-slate-700">
-          <p className="text-[10px] text-slate-400 text-center">Mode pilote · Données synthétiques · Aucun virement réel</p>
+        {/* Info paiement */}
+        <div style={{ ...cardAccentStyle(t,'#F5C842'), padding:'14px 16px' }}>
+          <div style={{ fontSize:11, fontWeight:700, color: dark ? '#F5C842' : '#B45309', marginBottom:6 }}>⚠ Mode Pilote</div>
+          <div style={{ fontSize:12, color:t.text2, lineHeight:1.5 }}>
+            Les retraits sont simulés en mode pilote. Vos données sont réelles mais aucun transfert bancaire ne sera effectué pendant cette phase.
+          </div>
         </div>
       </div>
     </AppShell>

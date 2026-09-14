@@ -1,76 +1,65 @@
 'use client'
-// ================================================================
-// TAXIMETER.GOV — FISCALITÉ & DÉCLARATIONS
-// Source unique: tax_calculations + tax_filings + tax_periods + revenue_ledger
-// Architecture: Activité → Transaction → Revenue Ledger → Fiscal Engine → Déclaration → RQ
-// ================================================================
-
 import { AppShell } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
+import { TaximetreGovLoader } from '@/components/brand/Logo'
 import { useDriverProfile, money } from '@/lib/api'
+import { useTheme } from '@/lib/theme'
+import { getThemeTokens, cardStyle, SectionTitle } from '@/lib/theme-helpers'
 import { useState, useEffect, useCallback } from 'react'
 import { RefreshCw, AlertTriangle, CheckCircle, Clock, ExternalLink, Shield } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 interface TaxData {
-  hasAccount: boolean
-  taxAccount: Record<string,string> | null
-  currentPeriod: Record<string,string> | null
-  allPeriods: Array<Record<string,string>>
-  fiscal: {
-    gross_revenue_taxable: number; tps_collected: number; tps_credits: number; tps_balance: number
-    tvq_collected: number; tvq_credits: number; tvq_balance: number; solde_total: number
-    is_estimate: boolean; calculation_status: string; tps_rate: string; tvq_rate: string
-  }
-  currentFiling: Record<string,string> | null
-  allFilings: Array<Record<string,string>>
-  ruleSet: Record<string,string>
-  avertissement: string
-  mode_pilote: boolean
-  revenu_quebec_url: string
+  hasAccount:boolean; taxAccount:Record<string,string>|null; currentPeriod:Record<string,string>|null
+  allPeriods:Array<Record<string,string>>
+  fiscal:{ gross_revenue_taxable:number;tps_collected:number;tps_credits:number;tps_balance:number;tvq_collected:number;tvq_credits:number;tvq_balance:number;solde_total:number;is_estimate:boolean;calculation_status:string;tps_rate:string;tvq_rate:string }
+  currentFiling:Record<string,string>|null; allFilings:Array<Record<string,string>>
+  ruleSet:Record<string,string>; avertissement:string; mode_pilote:boolean; revenu_quebec_url:string
 }
 
 const TABS = [
-  { key:'dashboard',   label:'Tableau de bord', emoji:'📊' },
-  { key:'calculator',  label:'Calculateur',     emoji:'🧮' },
-  { key:'declaration', label:'Déclaration',      emoji:'📋' },
-  { key:'pay',         label:'Paiement',         emoji:'💳' },
-  { key:'history',     label:'Historique',       emoji:'📜' },
-  { key:'obligations', label:'Obligations',      emoji:'⏱️' },
+  { key:'dashboard',   label:'Tableau',    emoji:'📊' },
+  { key:'calculator',  label:'Calcul',     emoji:'🧮' },
+  { key:'declaration', label:'Décla.',     emoji:'📋' },
+  { key:'pay',         label:'Paiement',   emoji:'💳' },
+  { key:'history',     label:'Historique', emoji:'📜' },
+  { key:'obligations', label:'Obligations',emoji:'⏱️' },
 ]
 
-const FILING_STATUS: Record<string, { label:string; color:string; bg:string; icon:string }> = {
-  DRAFT:    { label:'Brouillon',         color:'text-slate-400', bg:'bg-slate-800',         icon:'✏️' },
-  PREPARED: { label:'Préparée',          color:'text-blue-400',  bg:'bg-blue-500/10',        icon:'📋' },
-  SUBMITTED:{ label:'Soumise',           color:'text-purple-400',bg:'bg-purple-500/10',      icon:'📤' },
-  ACCEPTED: { label:'Acceptée ✓',        color:'text-green-400', bg:'bg-green-500/10',       icon:'✅' },
-  REJECTED: { label:'Rejetée',           color:'text-red-400',   bg:'bg-red-500/10',         icon:'❌' },
-  AMENDED:  { label:'Modifiée',          color:'text-amber-400', bg:'bg-amber-500/10',       icon:'🔄' },
+const FILING_STATUS: Record<string,{label:string;color:string;bg:string;icon:string}> = {
+  DRAFT:     { label:'Brouillon',  color:'#4A6A9A', bg:'rgba(74,106,154,0.10)',  icon:'✏️' },
+  PREPARED:  { label:'Préparée',   color:'#003DA5', bg:'rgba(0,61,165,0.10)',    icon:'📋' },
+  SUBMITTED: { label:'Soumise',    color:'#7C3AED', bg:'rgba(124,58,237,0.10)', icon:'📤' },
+  ACCEPTED:  { label:'Acceptée',   color:'#059669', bg:'rgba(5,150,105,0.10)',   icon:'✅' },
+  REJECTED:  { label:'Rejetée',    color:'#DC2626', bg:'rgba(220,38,38,0.10)',   icon:'❌' },
+  AMENDED:   { label:'Modifiée',   color:'#B45309', bg:'rgba(180,83,9,0.10)',    icon:'🔄' },
 }
 
-const PERIOD_STATUS: Record<string, { label:string; color:string }> = {
-  OPEN:          { label:'Ouverte',       color:'text-blue-400' },
-  FILED:         { label:'Déclarée',      color:'text-green-400' },
-  ACCEPTED:      { label:'Acceptée',      color:'text-green-400' },
-  CLOSED:        { label:'Fermée',        color:'text-slate-400' },
-  READY_TO_FILE: { label:'Prête',         color:'text-purple-400' },
+const PERIOD_STATUS: Record<string,{label:string;color:string}> = {
+  OPEN:'',FILED:'',ACCEPTED:'',CLOSED:'',READY_TO_FILE:'',
+}
+
+const P_COLOR: Record<string,string> = {
+  OPEN:'#003DA5', FILED:'#059669', ACCEPTED:'#059669', CLOSED:'#4A6A9A', READY_TO_FILE:'#7C3AED',
 }
 
 export default function TaxPage() {
   const { profile } = useDriverProfile()
   const [tab, setTab] = useState('dashboard')
-  const [data, setData] = useState<TaxData | null>(null)
+  const [data, setData] = useState<TaxData|null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string|null>(null)
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+  const t = getThemeTokens(dark)
 
   const load = useCallback(async () => {
     try {
       setLoading(true); setError(null)
       const sb = getSupabaseBrowserClient()
-      const { data: { session } } = await sb.auth.getSession()
+      const { data:{ session } } = await sb.auth.getSession()
       if (!session?.access_token) throw new Error('Non authentifié')
-      const res = await fetch('/api/tax', { headers: { Authorization: `Bearer ${session.access_token}` } })
-      const json = await res.json() as { success: boolean; data: TaxData; error?: string }
+      const res = await fetch('/api/tax', { headers:{ Authorization:`Bearer ${session.access_token}` } })
+      const json = await res.json() as { success:boolean; data:TaxData; error?:string }
       if (!json.success) throw new Error(json.error)
       setData(json.data)
     } catch (e) { setError((e as Error).message) }
@@ -79,406 +68,403 @@ export default function TaxPage() {
 
   useEffect(() => { void load() }, [load])
 
-  const f = data?.fiscal
+  const f      = data?.fiscal
   const period = data?.currentPeriod
   const filing = data?.currentFiling
-  const daysUntil = (d: string) => Math.ceil((new Date(d).getTime() - Date.now()) / 86400000)
-  const urgent = period ? daysUntil(period['filing_due_date'] ?? '') < 30 : false
+  const daysUntil = (d:string) => Math.ceil((new Date(d).getTime()-Date.now())/86400000)
+  const urgent    = period ? daysUntil(period['filing_due_date']??'') < 30 : false
+  const filingStatus = FILING_STATUS[filing?.['filing_status']??'DRAFT'] ?? FILING_STATUS['DRAFT']!
 
-  const filingStatus = FILING_STATUS[filing?.['filing_status'] ?? 'DRAFT'] ?? FILING_STATUS['DRAFT']!
+  // ── Shared card style helper ──────────────────────────────
+  const cs = cardStyle(t)
+
+  const rowStyle = (idx:number):React.CSSProperties => ({
+    display:'flex', alignItems:'center', justifyContent:'space-between',
+    padding:'10px 0', borderTop: idx > 0 ? `1px solid ${t.border}` : 'none',
+  })
 
   return (
     <AppShell>
       {/* Header */}
-      <div className="px-4 pt-5 pb-3 border-b border-slate-800">
-        <div className="flex items-start justify-between">
+      <div style={{ padding:'16px 16px 0', borderBottom:`1px solid ${t.border}`, paddingBottom:12 }}>
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:8 }}>
           <div>
-            <h1 className="text-xl font-bold text-white">Fiscalité & Déclarations</h1>
-            <p className="text-[10px] text-slate-400 mt-0.5">
+            <h1 style={{ fontSize:20, fontWeight:800, color:t.text, margin:0, letterSpacing:'-0.01em' }}>Fiscalité & Déclarations</h1>
+            <p style={{ fontSize:10, color:t.text3, margin:'3px 0 0' }}>
               {period ? `${period['period_start']} → ${period['period_end']}` : 'Aucune période active'} · TPS/TVQ · Québec
             </p>
           </div>
-          <button onClick={() => void load()} className="p-2 rounded-xl bg-slate-800 border border-slate-700">
-            <RefreshCw size={14} className={loading ? 'animate-spin text-qc-blue' : 'text-slate-400'} />
+          <button onClick={() => void load()} style={{ padding:8, borderRadius:12, background:t.card, border:`1.5px solid ${t.border}`, cursor:'pointer' }}>
+            <RefreshCw size={14} color={loading ? t.accent : t.text3} style={loading?{animation:'spin 1s linear infinite'}:undefined} />
           </button>
         </div>
         {/* Pipeline */}
-        <div className="flex items-center gap-1 mt-2 overflow-x-auto pb-1">
+        <div style={{ display:'flex', alignItems:'center', gap:4, overflowX:'auto', paddingBottom:2 }}>
           {['Activité','Transaction','Revenue Ledger','Fiscal Engine','Déclaration','Revenu QC'].map((s, i, arr) => (
-            <span key={s} className="flex items-center gap-1 flex-shrink-0">
-              <span className={`text-[8px] px-1.5 py-0.5 rounded font-semibold ${i === arr.length-1 ? 'bg-qc-blue/20 text-qc-blue' : 'bg-slate-800 text-slate-400'}`}>{s}</span>
-              {i < arr.length-1 && <span className="text-slate-700 text-[8px]">→</span>}
+            <span key={s} style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
+              <span style={{ fontSize:8, padding:'2px 6px', borderRadius:4, fontWeight:700, background: i===arr.length-1 ? 'rgba(0,61,165,0.12)' : (dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)'), color: i===arr.length-1 ? t.accent : t.text3 }}>{s}</span>
+              {i < arr.length-1 && <span style={{ fontSize:8, color:t.text3 }}>→</span>}
             </span>
           ))}
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 px-3 py-2 overflow-x-auto border-b border-slate-800">
-        {TABS.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${tab === t.key ? 'bg-qc-blue text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
-            <span>{t.emoji}</span>{t.label}
+      <div style={{ display:'flex', gap:4, padding:'8px 12px', overflowX:'auto', borderBottom:`1px solid ${t.border}` }}>
+        {TABS.map(tb => (
+          <button key={tb.key} onClick={() => setTab(tb.key)} style={{
+            flexShrink:0, display:'flex', alignItems:'center', gap:4,
+            padding:'7px 12px', borderRadius:10, fontSize:10, fontWeight:700, border:'none', cursor:'pointer', transition:'all 0.15s',
+            background: tab===tb.key ? '#003DA5' : (dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.04)'),
+            color: tab===tb.key ? '#FFFFFF' : t.text3,
+            boxShadow: tab===tb.key ? '0 4px 12px rgba(0,61,165,0.30)' : 'none',
+          }}>
+            <span>{tb.emoji}</span>{tb.label}
           </button>
         ))}
       </div>
 
-      <div className="px-4 py-4 space-y-4 pb-8">
-        {loading && <div className="py-16 text-center"><RefreshCw className="mx-auto animate-spin text-qc-blue" size={24} /><p className="text-xs text-slate-400 mt-2">Moteur fiscal en cours…</p></div>}
-        {error && <Card className="p-4 text-center border-red-500/30"><p className="text-sm text-red-400 mb-3">{error}</p><button onClick={() => void load()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs">Réessayer</button></Card>}
+      <div style={{ padding:'16px 16px 32px', display:'flex', flexDirection:'column', gap:14 }}>
+        {loading && (
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'40px 0' }}>
+            <TaximetreGovLoader message="Moteur fiscal en cours…" />
+          </div>
+        )}
+        {error && (
+          <div style={{ ...cs, padding:'20px 16px', textAlign:'center', borderColor:'rgba(220,38,38,0.30)' }}>
+            <p style={{ fontSize:13, color:t.red, marginBottom:12 }}>{error}</p>
+            <button onClick={() => void load()} style={{ padding:'9px 20px', borderRadius:12, background:'#003DA5', color:'white', fontWeight:700, border:'none', cursor:'pointer', fontSize:12 }}>
+              Réessayer
+            </button>
+          </div>
+        )}
 
         {data && !loading && (
           <>
-            {/* Avertissement permanent */}
-            <div className="flex items-start gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <AlertTriangle size={12} className="text-amber-400 mt-0.5 shrink-0" />
-              <p className="text-[9px] text-amber-400">{data.avertissement}</p>
-              {data.mode_pilote && <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold shrink-0">PILOTE</span>}
+            {/* Avertissement */}
+            <div style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'10px 12px', borderRadius:12, background:'rgba(180,83,9,0.08)', border:'1.5px solid rgba(180,83,9,0.25)' }}>
+              <AlertTriangle size={13} color={t.amber} style={{ flexShrink:0, marginTop:1 }} />
+              <p style={{ fontSize:9, color:t.amber, margin:0, flex:1 }}>{data.avertissement}</p>
+              {data.mode_pilote && <span style={{ fontSize:8, padding:'2px 7px', borderRadius:20, background:'rgba(180,83,9,0.20)', color:t.amber, fontWeight:800, letterSpacing:'0.08em' }}>PILOTE</span>}
             </div>
 
             {!data.hasAccount && (
-              <Card className="p-6 text-center">
-                <Shield size={28} className="mx-auto text-slate-600 mb-3" />
-                <p className="text-sm text-white font-bold mb-1">Aucun compte fiscal configuré</p>
-                <p className="text-xs text-slate-400">Lancez le seed fiscal pour initialiser les données.</p>
-              </Card>
+              <div style={{ ...cs, padding:'32px 16px', textAlign:'center' }}>
+                <Shield size={32} color={t.text3} style={{ margin:'0 auto 12px', display:'block' }} />
+                <p style={{ fontSize:14, fontWeight:700, color:t.text, margin:'0 0 6px' }}>Aucun compte fiscal configuré</p>
+                <p style={{ fontSize:11, color:t.text3, margin:0 }}>Lancez le seed fiscal pour initialiser les données.</p>
+              </div>
             )}
 
             {data.hasAccount && (
               <>
-                {/* ══ TABLEAU DE BORD ══════════════════════════════ */}
+                {/* ── TABLEAU DE BORD ── */}
                 {tab === 'dashboard' && (
                   <>
-                    {/* Solde principal */}
-                    <Card className={`p-5 text-center ${f && f.solde_total > 0 ? 'border-amber-500/30 bg-amber-500/5' : 'border-green-500/30 bg-green-500/5'}`}>
-                      <div className="text-[9px] text-slate-400 tracking-widest uppercase mb-1">
-                        Solde {f?.is_estimate ? 'estimé' : 'calculé'} · {period ? `Q${Math.ceil(new Date(period['period_start']!).getMonth()/3)} ${new Date(period['period_start']!).getFullYear()}` : '—'}
+                    {/* Solde */}
+                    <div style={{ borderRadius:20, background: f&&f.solde_total>0 ? 'linear-gradient(135deg,#B45309 0%,#92400E 100%)' : 'linear-gradient(135deg,#059669 0%,#065F46 100%)', padding:'20px 18px', boxShadow:'0 8px 28px rgba(0,0,0,0.20)', textAlign:'center', position:'relative', overflow:'hidden' }}>
+                      <div style={{ position:'absolute', top:-10, right:8, fontSize:100, color:'rgba(255,255,255,0.05)', pointerEvents:'none' }}>⚜</div>
+                      <div style={{ fontSize:9, fontWeight:800, letterSpacing:'0.14em', color:'rgba(255,255,255,0.60)', textTransform:'uppercase', marginBottom:6 }}>
+                        SOLDE {f?.is_estimate ? 'ESTIMÉ' : 'CALCULÉ'} · {period ? `Q${Math.ceil(new Date(period['period_start']!).getMonth()/3)} ${new Date(period['period_start']!).getFullYear()}` : '—'}
                       </div>
-                      <div className={`text-5xl font-black mb-1 ${f && f.solde_total > 0 ? 'text-amber-400' : 'text-green-400'}`}>
+                      <div style={{ fontSize:44, fontWeight:900, color:'#FFFFFF', letterSpacing:'-0.03em', lineHeight:1, marginBottom:8 }}>
                         {money(f?.solde_total ?? 0)}
                       </div>
-                      <div className="text-[10px] text-slate-400">TPS {money(f?.tps_balance ?? 0)} · TVQ {money(f?.tvq_balance ?? 0)}</div>
-                      {period && <div className={`mt-2 text-[10px] font-bold ${urgent ? 'text-red-400' : 'text-slate-400'}`}>
+                      <div style={{ fontSize:11, color:'rgba(255,255,255,0.60)' }}>TPS {money(f?.tps_balance??0)} · TVQ {money(f?.tvq_balance??0)}</div>
+                      {period && <div style={{ marginTop:8, fontSize:11, fontWeight:700, color: urgent ? '#FCA5A5' : 'rgba(255,255,255,0.80)' }}>
                         {urgent ? '🔴' : '📅'} Échéance: {period['filing_due_date']} ({daysUntil(period['filing_due_date']!)}j)
                       </div>}
-                      <div className="mt-2 text-[9px] text-slate-500">Source: {f?.is_estimate ? 'Revenue Ledger → estimation' : 'tax_calculations (v' + data.currentPeriod?.['period_start'] + ')'}</div>
-                    </Card>
+                    </div>
 
                     {/* Compte fiscal */}
-                    <Card className="p-4">
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Mon dossier fiscal</div>
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-11 h-11 rounded-2xl bg-qc-blue/20 flex items-center justify-center text-xl">🏛️</div>
+                    <div style={{ ...cs, padding:'16px' }}>
+                      <SectionTitle title="Mon dossier fiscal" t={t} />
+                      <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14 }}>
+                        <div style={{ width:44, height:44, borderRadius:13, background:'rgba(0,61,165,0.10)', border:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>🏛️</div>
                         <div>
-                          <div className="font-bold text-white">{profile?.first_name} {profile?.last_name}</div>
-                          <div className="text-[10px] text-green-400">TPS: {data.taxAccount?.['tps_status']} · TVQ: {data.taxAccount?.['tvq_status']}</div>
-                          <div className="text-[9px] text-slate-500">Déclaration {data.taxAccount?.['filing_frequency']?.toLowerCase()}</div>
+                          <div style={{ fontSize:14, fontWeight:700, color:t.text }}>{profile?.first_name} {profile?.last_name}</div>
+                          <div style={{ fontSize:10, color:t.green, marginTop:2 }}>TPS: {data.taxAccount?.['tps_status']} · TVQ: {data.taxAccount?.['tvq_status']}</div>
+                          <div style={{ fontSize:9, color:t.text3, marginTop:1 }}>Déclaration {data.taxAccount?.['filing_frequency']?.toLowerCase()}</div>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                         {[
-                          { label:'No. TPS', val: data.taxAccount?.['tps_registration_masked'] ?? '—' },
-                          { label:'No. TVQ', val: data.taxAccount?.['tvq_registration_masked'] ?? '—' },
-                          { label:'Statut',  val: data.taxAccount?.['tax_account_status'] ?? '—' },
-                          { label:'Règle',   val: `${data.ruleSet?.['version'] ?? '—'} (${data.ruleSet?.['tps_rate'] ? (parseFloat(data.ruleSet['tps_rate'])*100).toFixed(0)+'%' : '—'} / ${data.ruleSet?.['tvq_rate'] ? (parseFloat(data.ruleSet['tvq_rate'])*100).toFixed(3)+'%' : '—'})` },
+                          { label:'No. TPS', val:data.taxAccount?.['tps_registration_masked']??'—' },
+                          { label:'No. TVQ', val:data.taxAccount?.['tvq_registration_masked']??'—' },
+                          { label:'Statut',  val:data.taxAccount?.['tax_account_status']??'—' },
+                          { label:'Règle',   val:`${data.ruleSet?.['version']??'—'}` },
                         ].map(r => (
-                          <div key={r.label} className="bg-slate-800/50 rounded-xl p-2.5">
-                            <div className="text-[9px] text-slate-400">{r.label}</div>
-                            <div className="text-xs font-bold text-white mt-0.5">{r.val}</div>
+                          <div key={r.label} style={{ background: dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.03)', borderRadius:10, padding:'9px 10px', border:`1px solid ${t.border}` }}>
+                            <div style={{ fontSize:9, color:t.text3, marginBottom:3, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.05em' }}>{r.label}</div>
+                            <div style={{ fontSize:12, fontWeight:700, color:t.text }}>{r.val}</div>
                           </div>
                         ))}
                       </div>
-                    </Card>
+                    </div>
 
-                    {/* Statut déclaration courante */}
-                    <Card className={`p-4 border ${filingStatus.bg}`}>
-                      <div className="flex items-center justify-between">
+                    {/* Filing status */}
+                    <div style={{ ...cs, padding:'14px 16px', borderLeft:`4px solid ${filingStatus.color}`, background:`color-mix(in srgb, ${filingStatus.bg}, transparent)` }}>
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <div>
-                          <div className="text-[9px] text-slate-500 uppercase tracking-wider">Déclaration courante</div>
-                          <div className={`text-sm font-bold mt-0.5 ${filingStatus.color}`}>{filingStatus.icon} {filingStatus.label}</div>
-                          {filing?.['government_reference'] && <div className="text-[9px] text-slate-400 mt-1 font-mono">{filing['government_reference']}</div>}
+                          <div style={{ fontSize:9, color:t.text3, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Déclaration courante</div>
+                          <div style={{ fontSize:14, fontWeight:700, color:filingStatus.color }}>{filingStatus.icon} {filingStatus.label}</div>
+                          {filing?.['government_reference'] && <div style={{ fontSize:9, color:t.text3, marginTop:4, fontFamily:'monospace' }}>{filing['government_reference']}</div>}
                         </div>
-                        <button onClick={() => setTab('declaration')} className="text-[10px] text-qc-blue hover:underline">Voir →</button>
+                        <button onClick={() => setTab('declaration')} style={{ fontSize:11, fontWeight:700, color:t.accent, background:'none', border:'none', cursor:'pointer' }}>Voir →</button>
                       </div>
-                    </Card>
+                    </div>
 
                     {/* Revenus par source */}
-                    <Card className="p-4">
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Revenus imposables</div>
+                    <div style={{ ...cs, padding:'14px 16px' }}>
+                      <SectionTitle title="Revenus imposables" t={t} />
                       {[
-                        { label:'Taxi',       val: parseFloat(period?.['gross_revenue_taxi'] ?? '0'),      icon:'🚕' },
-                        { label:'Rideshare',  val: parseFloat(period?.['gross_revenue_rideshare'] ?? '0'), icon:'🚗' },
-                        { label:'Livraison',  val: parseFloat(period?.['gross_revenue_delivery'] ?? '0'),  icon:'📦' },
-                        { label:'Autres',     val: parseFloat(period?.['gross_revenue_other'] ?? '0'),     icon:'💼' },
-                      ].filter(r => r.val > 0).map(r => (
-                        <div key={r.label} className="flex items-center gap-2 py-1.5 border-b border-slate-800 last:border-0">
-                          <span>{r.icon}</span>
-                          <span className="flex-1 text-sm text-white">{r.label}</span>
-                          <span className="font-bold text-green-400">{money(r.val)}</span>
+                        { label:'Taxi',      val:parseFloat(period?.['gross_revenue_taxi']??'0'),      icon:'🚕' },
+                        { label:'Rideshare', val:parseFloat(period?.['gross_revenue_rideshare']??'0'), icon:'🚗' },
+                        { label:'Livraison', val:parseFloat(period?.['gross_revenue_delivery']??'0'),  icon:'📦' },
+                        { label:'Autres',    val:parseFloat(period?.['gross_revenue_other']??'0'),     icon:'💼' },
+                      ].filter(r => r.val > 0).map((r, idx) => (
+                        <div key={r.label} style={rowStyle(idx)}>
+                          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                            <span>{r.icon}</span>
+                            <span style={{ fontSize:13, color:t.text }}>{r.label}</span>
+                          </div>
+                          <span style={{ fontSize:14, fontWeight:700, color:t.green }}>{money(r.val)}</span>
                         </div>
                       ))}
-                      <div className="flex justify-between pt-2 font-bold">
-                        <span className="text-sm text-white">Total brut</span>
-                        <span className="text-lg text-white">{money(f?.gross_revenue_taxable ?? 0)}</span>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:10, marginTop:4, borderTop:`2px solid ${t.border}` }}>
+                        <span style={{ fontSize:13, fontWeight:700, color:t.text }}>Total brut</span>
+                        <span style={{ fontSize:18, fontWeight:900, color:t.text }}>{money(f?.gross_revenue_taxable??0)}</span>
                       </div>
-                    </Card>
+                    </div>
                   </>
                 )}
 
-                {/* ══ CALCULATEUR ══════════════════════════════════ */}
+                {/* ── CALCULATEUR ── */}
                 {tab === 'calculator' && (
-                  <Card className="p-4">
-                    <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">
-                      Calculateur fiscal · Source: {f?.is_estimate ? 'Revenue Ledger' : 'tax_calculations'}
-                    </div>
-                    <div className="bg-slate-800/50 rounded-2xl p-4 font-mono text-xs space-y-2">
-                      <div className="text-[10px] text-qc-blue font-bold mb-2">MOTEUR FISCAL TAXIMETER.GOV · {f?.is_estimate ? 'ESTIMATION' : f?.calculation_status}</div>
+                  <div style={{ ...cs, padding:'16px' }}>
+                    <SectionTitle title={`Calculateur fiscal · ${f?.is_estimate ? 'Revenue Ledger' : 'tax_calculations'}`} t={t} />
+                    <div style={{ background: dark?'rgba(0,0,0,0.25)':'rgba(0,61,165,0.04)', borderRadius:14, padding:'14px', fontFamily:'monospace', fontSize:11, border:`1px solid ${t.border}` }}>
+                      <div style={{ fontSize:9, fontWeight:800, color:t.accent, marginBottom:12, letterSpacing:'0.06em' }}>MOTEUR FISCAL TAXIMETER.GOV · {f?.is_estimate ? 'ESTIMATION' : f?.calculation_status}</div>
                       {[
-                        { label:'Revenus bruts imposables',   val: money(f?.gross_revenue_taxable ?? 0),                            color:'text-white' },
-                        { label:`TPS perçue (${f?.tps_rate})`, val: money(f?.tps_collected ?? 0),                                   color:'text-purple-400' },
-                        { label:`TVQ perçue (${f?.tvq_rate})`, val: money(f?.tvq_collected ?? 0),                                   color:'text-purple-400' },
-                        { label:'Crédits TPS (CTI)',           val: `− ${money(f?.tps_credits ?? 0)}`,                             color:'text-green-400', sep:true },
-                        { label:'Crédits TVQ',                 val: `− ${money(f?.tvq_credits ?? 0)}`,                             color:'text-green-400' },
-                        { label:'TPS nette à remettre',        val: money(f?.tps_balance ?? 0),                                     color:'text-amber-400', sep:true },
-                        { label:'TVQ nette à remettre',        val: money(f?.tvq_balance ?? 0),                                     color:'text-amber-400' },
-                      ].map(r => (
-                        <div key={r.label} className={`flex justify-between py-1 ${r['sep'] ? 'border-t border-slate-700 mt-1 pt-2' : ''}`}>
-                          <span className="text-slate-400">{r.label}</span>
-                          <span className={`font-bold ${r.color}`}>{r.val}</span>
+                        { label:'Revenus bruts imposables',     val:money(f?.gross_revenue_taxable??0),     color:t.text },
+                        { label:`TPS perçue (${f?.tps_rate})`,  val:money(f?.tps_collected??0),            color:'#7C3AED', sep:false },
+                        { label:`TVQ perçue (${f?.tvq_rate})`,  val:money(f?.tvq_collected??0),            color:'#7C3AED' },
+                        { label:'Crédits TPS (CTI)',            val:`− ${money(f?.tps_credits??0)}`,       color:t.green, sep:true },
+                        { label:'Crédits TVQ',                  val:`− ${money(f?.tvq_credits??0)}`,       color:t.green },
+                        { label:'TPS nette à remettre',         val:money(f?.tps_balance??0),              color:t.amber, sep:true },
+                        { label:'TVQ nette à remettre',         val:money(f?.tvq_balance??0),              color:t.amber },
+                      ].map((r, idx) => (
+                        <div key={r.label} style={{ display:'flex', justifyContent:'space-between', padding:'7px 0', borderTop: r.sep||idx===0 ? `1px solid ${t.border}` : 'none', marginTop: r.sep ? 4 : 0 }}>
+                          <span style={{ color:t.text3, fontSize:10 }}>{r.label}</span>
+                          <span style={{ fontWeight:700, color:r.color }}>{r.val}</span>
                         </div>
                       ))}
-                      <div className="flex justify-between pt-3 border-t border-slate-600 text-sm font-bold">
-                        <span className="text-white">TOTAL ESTIMÉ À REMETTRE</span>
-                        <span className="text-amber-400">{money(f?.solde_total ?? 0)}</span>
+                      <div style={{ display:'flex', justifyContent:'space-between', paddingTop:12, marginTop:4, borderTop:`2px solid ${t.border}` }}>
+                        <span style={{ fontSize:11, fontWeight:800, color:t.text }}>TOTAL À REMETTRE</span>
+                        <span style={{ fontSize:14, fontWeight:900, color:t.amber }}>{money(f?.solde_total??0)}</span>
                       </div>
                     </div>
-                    <div className="mt-3 p-2 rounded-lg bg-slate-900 border border-slate-700">
-                      <p className="text-[9px] text-slate-500">
-                        Règle fiscale: {data.ruleSet?.['label'] ?? '—'} · Version: {data.ruleSet?.['version'] ?? '—'}<br/>
+                    <div style={{ marginTop:10, padding:'10px 12px', borderRadius:10, background: dark?'rgba(0,0,0,0.20)':'rgba(0,0,0,0.03)', border:`1px solid ${t.border}` }}>
+                      <p style={{ fontSize:9, color:t.text3, margin:0, lineHeight:1.5 }}>
+                        Règle: {data.ruleSet?.['label']??'—'} · v{data.ruleSet?.['version']??'—'}<br/>
                         CTI = Crédits de taxe sur intrants estimés. Consultez un comptable pour le calcul exact.
                       </p>
                     </div>
-                  </Card>
+                  </div>
                 )}
 
-                {/* ══ DÉCLARATION ══════════════════════════════════ */}
+                {/* ── DÉCLARATION ── */}
                 {tab === 'declaration' && (
-                  <>
-                    <Card className="p-4">
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Déclaration préremplie</div>
-
-                      {/* Période */}
-                      {period && (
-                        <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-800 mb-4">
-                          <div className="text-2xl">📅</div>
-                          <div>
-                            <div className="text-xs font-bold text-white">Période: {period['period_start']} → {period['period_end']}</div>
-                            <div className={`text-[10px] ${PERIOD_STATUS[period['period_status'] as string]?.color ?? 'text-slate-400'}`}>
-                              {PERIOD_STATUS[period['period_status'] as string]?.label ?? period['period_status']}
-                            </div>
-                          </div>
-                          <div className="ml-auto text-right">
-                            <div className="text-[9px] text-slate-500">Échéance</div>
-                            <div className={`text-xs font-bold ${urgent ? 'text-red-400' : 'text-white'}`}>{period['filing_due_date']}</div>
+                  <div style={{ ...cs, padding:'16px' }}>
+                    <SectionTitle title="Déclaration préremplie" t={t} />
+                    {period && (
+                      <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px', borderRadius:12, background: dark?'rgba(255,255,255,0.04)':'rgba(0,61,165,0.05)', border:`1px solid ${t.border}`, marginBottom:14 }}>
+                        <span style={{ fontSize:24 }}>📅</span>
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:12, fontWeight:700, color:t.text }}>Période: {period['period_start']} → {period['period_end']}</div>
+                          <div style={{ fontSize:10, color: P_COLOR[period['period_status'] as string]??t.text3, marginTop:2 }}>
+                            {period['period_status']}
                           </div>
                         </div>
-                      )}
-
-                      {/* Déclaration */}
-                      <div className="bg-slate-800/50 rounded-2xl p-4 font-mono text-xs mb-4">
-                        <div className="text-[10px] text-qc-blue font-bold mb-3">DÉCLARATION TPS/TVQ · SIMULATION · MODE PILOTE</div>
-                        {[
-                          { label:'Revenus bruts (case 101)', val: money(f?.gross_revenue_taxable ?? 0) },
-                          { label:'TPS perçue (ligne 103)',    val: money(f?.tps_collected ?? 0) },
-                          { label:'TVQ perçue (ligne 205)',    val: money(f?.tvq_collected ?? 0) },
-                          { label:'CTI TPS (ligne 106)',       val: money(f?.tps_credits ?? 0) },
-                          { label:'CTI TVQ (ligne 206)',       val: money(f?.tvq_credits ?? 0) },
-                          { label:'TPS nette (ligne 109)',     val: money(f?.tps_balance ?? 0) },
-                          { label:'TVQ nette (ligne 210)',     val: money(f?.tvq_balance ?? 0) },
-                        ].map(r => (
-                          <div key={r.label} className="flex justify-between py-1 border-b border-slate-700 last:border-0">
-                            <span className="text-slate-400">{r.label}</span>
-                            <span className="text-white font-bold">{r.val}</span>
-                          </div>
-                        ))}
-                        <div className="flex justify-between pt-3 text-sm font-bold">
-                          <span className="text-amber-400">MONTANT ESTIMÉ À REMETTRE</span>
-                          <span className="text-amber-400">{money(f?.solde_total ?? 0)}</span>
+                        <div style={{ textAlign:'right' }}>
+                          <div style={{ fontSize:9, color:t.text3 }}>Échéance</div>
+                          <div style={{ fontSize:11, fontWeight:700, color: urgent ? t.red : t.text }}>{period['filing_due_date']}</div>
                         </div>
                       </div>
-
-                      {/* Workflow */}
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Workflow déclaration</div>
-                      <div className="space-y-1.5 mb-4">
-                        {[
-                          { label:'BROUILLON',          done: true  },
-                          { label:'PRÉPARATION',         done: true  },
-                          { label:'VÉRIFICATION',        done: filing?.['filing_status'] === 'PREPARED' || filing?.['filing_status'] === 'SUBMITTED' || filing?.['filing_status'] === 'ACCEPTED' },
-                          { label:'PRÊTE À SOUMETTRE',   done: filing?.['filing_status'] === 'SUBMITTED' || filing?.['filing_status'] === 'ACCEPTED' },
-                          { label:'TRANSMISSION (RQ)',   done: filing?.['filing_status'] === 'ACCEPTED' },
-                          { label:'CONFIRMATION',        done: filing?.['filing_status'] === 'ACCEPTED' },
-                        ].map((s, i) => (
-                          <div key={s.label} className="flex items-center gap-2.5">
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${s.done ? 'bg-green-500/20 text-green-400' : 'bg-slate-800 text-slate-500'}`}>
-                              {s.done ? '✓' : i+1}
-                            </div>
-                            <span className={`text-xs ${s.done ? 'text-green-400' : 'text-slate-400'}`}>{s.label}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <a href={data.revenu_quebec_url} target="_blank" rel="noopener noreferrer"
-                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-qc-blue text-white font-bold text-sm">
-                        <ExternalLink size={16} />
-                        Accéder à mon dossier Revenu Québec
-                      </a>
-                      <p className="text-[9px] text-slate-500 text-center mt-2">TAXIMETER.GOV ne demande jamais vos identifiants Revenu Québec · MODE 1: Redirection officielle</p>
-                    </Card>
-                  </>
-                )}
-
-                {/* ══ PAIEMENT ════════════════════════════════════ */}
-                {tab === 'pay' && (
-                  <>
-                    <Card className={`p-5 text-center ${urgent ? 'border-red-500/30 bg-red-500/5' : 'border-amber-500/30 bg-amber-500/5'}`}>
-                      <div className="text-[9px] text-slate-400 tracking-widest uppercase mb-1">Montant {f?.is_estimate ? 'estimé' : 'calculé'} à payer</div>
-                      <div className={`text-5xl font-black mb-2 ${urgent ? 'text-red-400' : 'text-amber-400'}`}>{money(f?.solde_total ?? 0)}</div>
-                      <div className="text-xs text-slate-400">TPS {money(f?.tps_balance ?? 0)} · TVQ {money(f?.tvq_balance ?? 0)}</div>
-                      {period && <div className={`mt-2 text-[10px] font-bold ${urgent ? 'text-red-400' : 'text-slate-400'}`}>
-                        Échéance: {period['filing_due_date']} · {daysUntil(period['filing_due_date']!)} jours
-                      </div>}
-                    </Card>
-
-                    {/* Workflow paiement */}
-                    <Card className="p-4">
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Workflow paiement</div>
-                      {['Paiement initié','Paiement confirmé','Rapprochement','Ledger fiscal','Historique'].map((s, i) => (
-                        <div key={s} className="flex items-center gap-2.5 py-1.5 border-b border-slate-800 last:border-0">
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${i === 0 ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-500'}`}>{i+1}</div>
-                          <span className={`text-xs ${i === 0 ? 'text-amber-400' : 'text-slate-400'}`}>{s}</span>
+                    )}
+                    <div style={{ background: dark?'rgba(0,0,0,0.25)':'rgba(0,61,165,0.04)', borderRadius:14, padding:'14px', fontFamily:'monospace', fontSize:11, border:`1px solid ${t.border}`, marginBottom:14 }}>
+                      <div style={{ fontSize:9, fontWeight:800, color:t.accent, marginBottom:12, letterSpacing:'0.06em' }}>DÉCLARATION TPS/TVQ · SIMULATION · MODE PILOTE</div>
+                      {[
+                        { label:'Revenus bruts (case 101)',  val:money(f?.gross_revenue_taxable??0) },
+                        { label:'TPS perçue (ligne 103)',    val:money(f?.tps_collected??0) },
+                        { label:'TVQ perçue (ligne 205)',    val:money(f?.tvq_collected??0) },
+                        { label:'CTI TPS (ligne 106)',       val:money(f?.tps_credits??0) },
+                        { label:'CTI TVQ (ligne 206)',       val:money(f?.tvq_credits??0) },
+                        { label:'TPS nette (ligne 109)',     val:money(f?.tps_balance??0) },
+                        { label:'TVQ nette (ligne 210)',     val:money(f?.tvq_balance??0) },
+                      ].map((r, idx) => (
+                        <div key={r.label} style={{ display:'flex', justifyContent:'space-between', padding:'7px 0', borderBottom:`1px solid ${t.border}` }}>
+                          <span style={{ color:t.text3, fontSize:10 }}>{r.label}</span>
+                          <span style={{ fontWeight:700, color:t.text }}>{r.val}</span>
                         </div>
                       ))}
-                    </Card>
+                      <div style={{ display:'flex', justifyContent:'space-between', paddingTop:10, marginTop:4 }}>
+                        <span style={{ fontWeight:800, color:t.amber, fontSize:11 }}>MONTANT ESTIMÉ À REMETTRE</span>
+                        <span style={{ fontWeight:900, color:t.amber, fontSize:14 }}>{money(f?.solde_total??0)}</span>
+                      </div>
+                    </div>
+                    <a href={data.revenu_quebec_url} target="_blank" rel="noopener noreferrer" style={{
+                      display:'flex', alignItems:'center', justifyContent:'center', gap:10,
+                      padding:'13px', borderRadius:14, background:'#003DA5', color:'white',
+                      fontWeight:700, fontSize:13, textDecoration:'none',
+                      boxShadow:'0 4px 16px rgba(0,61,165,0.35)',
+                    }}>
+                      <ExternalLink size={16} />
+                      Accéder à mon dossier Revenu Québec
+                    </a>
+                    <p style={{ fontSize:9, color:t.text3, textAlign:'center', marginTop:8 }}>TAXIMETER.GOV ne demande jamais vos identifiants Revenu Québec</p>
+                  </div>
+                )}
 
-                    <a href={data.revenu_quebec_url} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center justify-between p-4 rounded-2xl bg-qc-blue text-white font-bold">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">🏛️</span>
-                        <div className="text-left"><div>Payer sur Revenu Québec</div><div className="text-[10px] text-blue-200">Mon dossier · Paiement officiel</div></div>
+                {/* ── PAIEMENT ── */}
+                {tab === 'pay' && (
+                  <>
+                    <div style={{ borderRadius:20, background: urgent ? 'linear-gradient(135deg,#DC2626 0%,#991B1B 100%)' : 'linear-gradient(135deg,#B45309 0%,#92400E 100%)', padding:'20px 18px', textAlign:'center', boxShadow:'0 8px 28px rgba(0,0,0,0.20)' }}>
+                      <div style={{ fontSize:9, fontWeight:800, letterSpacing:'0.14em', color:'rgba(255,255,255,0.60)', textTransform:'uppercase', marginBottom:6 }}>MONTANT {f?.is_estimate?'ESTIMÉ':'CALCULÉ'} À PAYER</div>
+                      <div style={{ fontSize:44, fontWeight:900, color:'#FFFFFF', letterSpacing:'-0.03em', lineHeight:1, marginBottom:8 }}>{money(f?.solde_total??0)}</div>
+                      <div style={{ fontSize:11, color:'rgba(255,255,255,0.60)' }}>TPS {money(f?.tps_balance??0)} · TVQ {money(f?.tvq_balance??0)}</div>
+                      {period && <div style={{ marginTop:8, fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.85)' }}>Échéance: {period['filing_due_date']} · {daysUntil(period['filing_due_date']!)} jours</div>}
+                    </div>
+                    <div style={{ ...cs, padding:'14px 16px' }}>
+                      <SectionTitle title="Workflow paiement" t={t} />
+                      {['Paiement initié','Paiement confirmé','Rapprochement','Ledger fiscal','Historique'].map((s, i) => (
+                        <div key={s} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 0', borderBottom: i < 4 ? `1px solid ${t.border}` : 'none' }}>
+                          <div style={{ width:22, height:22, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:700, flexShrink:0, background: i===0 ? 'rgba(180,83,9,0.15)' : (dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.04)'), color: i===0 ? t.amber : t.text3 }}>{i+1}</div>
+                          <span style={{ fontSize:12, color: i===0 ? t.amber : t.text3 }}>{s}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <a href={data.revenu_quebec_url} target="_blank" rel="noopener noreferrer" style={{
+                      display:'flex', alignItems:'center', justifyContent:'space-between',
+                      padding:'16px', borderRadius:16, background:'#003DA5', color:'white',
+                      fontWeight:700, textDecoration:'none', boxShadow:'0 4px 16px rgba(0,61,165,0.35)',
+                    }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                        <span style={{ fontSize:24 }}>🏛️</span>
+                        <div>
+                          <div style={{ fontSize:13 }}>Payer sur Revenu Québec</div>
+                          <div style={{ fontSize:10, color:'rgba(255,255,255,0.60)', marginTop:2 }}>Mon dossier · Paiement officiel</div>
+                        </div>
                       </div>
                       <ExternalLink size={18} />
                     </a>
-                    <p className="text-[9px] text-slate-500 text-center">Aucune confirmation de paiement ne sera fabriquée · Mode pilote</p>
+                    <p style={{ fontSize:9, color:t.text3, textAlign:'center', margin:0 }}>Aucune confirmation de paiement ne sera fabriquée · Mode pilote</p>
                   </>
                 )}
 
-                {/* ══ HISTORIQUE ══════════════════════════════════ */}
+                {/* ── HISTORIQUE ── */}
                 {tab === 'history' && (
                   <>
-                    <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Toutes mes déclarations</div>
+                    <SectionTitle title="Toutes mes déclarations" t={t} />
                     {data.allFilings.length === 0 ? (
-                      <Card className="p-6 text-center"><p className="text-sm text-slate-400">Aucune déclaration encore.</p></Card>
-                    ) : data.allFilings.map(f2 => {
-                      const st = FILING_STATUS[f2['filing_status'] ?? 'DRAFT'] ?? FILING_STATUS['DRAFT']!
-                      const p2 = data.allPeriods.find(p3 => p3['id'] === f2['tax_period_id'])
-                      return (
-                        <Card key={f2['id']} className={`p-4 border ${st.bg}`}>
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <div className={`text-sm font-bold ${st.color}`}>{st.icon} {st.label}</div>
-                              <div className="text-[10px] text-slate-400 mt-0.5">{p2 ? `${p2['period_start']} → ${p2['period_end']}` : '—'}</div>
-                              {f2['government_reference'] && <div className="text-[9px] text-slate-500 font-mono mt-1">{f2['government_reference']}</div>}
-                              {f2['accepted_at'] && <div className="text-[9px] text-green-400 mt-1">Acceptée: {new Date(f2['accepted_at']).toLocaleDateString('fr-CA')}</div>}
+                      <div style={{ ...cs, padding:'32px 0', textAlign:'center' }}>
+                        <div style={{ fontSize:11, color:t.text3 }}>Aucune déclaration encore.</div>
+                      </div>
+                    ) : (
+                      <div style={{ ...cs, overflow:'hidden' }}>
+                        {data.allFilings.map((f2, idx) => {
+                          const st = FILING_STATUS[f2['filing_status']??'DRAFT'] ?? FILING_STATUS['DRAFT']!
+                          const p2 = data.allPeriods.find(p3 => p3['id'] === f2['tax_period_id'])
+                          return (
+                            <div key={f2['id']} style={{ padding:'12px 14px', borderTop: idx>0 ? `1px solid ${t.border}` : 'none', borderLeft:`3px solid ${st.color}` }}>
+                              <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+                                <div>
+                                  <div style={{ fontSize:13, fontWeight:700, color:st.color }}>{st.icon} {st.label}</div>
+                                  <div style={{ fontSize:10, color:t.text3, marginTop:2 }}>{p2 ? `${p2['period_start']} → ${p2['period_end']}` : '—'}</div>
+                                  {f2['government_reference'] && <div style={{ fontSize:9, color:t.text3, marginTop:2, fontFamily:'monospace' }}>{f2['government_reference']}</div>}
+                                  {f2['accepted_at'] && <div style={{ fontSize:9, color:t.green, marginTop:2 }}>✓ Acceptée: {new Date(f2['accepted_at']).toLocaleDateString('fr-CA')}</div>}
+                                </div>
+                                <div style={{ fontSize:9, color:t.text3 }}>{f2['filing_type']}</div>
+                              </div>
                             </div>
-                            <div className="text-[9px] text-slate-500">{f2['filing_type']}</div>
+                          )
+                        })}
+                      </div>
+                    )}
+                    <SectionTitle title="Toutes les périodes" t={t} />
+                    <div style={{ ...cs, overflow:'hidden' }}>
+                      {data.allPeriods.map((p3, idx) => (
+                        <div key={p3['id']} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 14px', borderTop: idx>0 ? `1px solid ${t.border}` : 'none' }}>
+                          <div>
+                            <div style={{ fontSize:12, fontWeight:700, color:t.text }}>{p3['period_start']} → {p3['period_end']}</div>
+                            <div style={{ fontSize:10, color: P_COLOR[p3['period_status'] as string]??t.text3, marginTop:2 }}>{p3['period_status']}</div>
                           </div>
-                        </Card>
-                      )
-                    })}
-
-                    <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-2">Toutes les périodes</div>
-                    {data.allPeriods.map(p3 => {
-                      const ps = PERIOD_STATUS[p3['period_status'] as string] ?? { label: p3['period_status'], color:'text-slate-400' }
-                      return (
-                        <Card key={p3['id']} className="p-3">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <div className="text-xs font-semibold text-white">{p3['period_start']} → {p3['period_end']}</div>
-                              <div className={`text-[10px] ${ps.color}`}>{ps.label}</div>
-                            </div>
-                            <div className="text-right text-[10px] text-slate-400">
-                              <div>Taxi: {money(parseFloat(p3['gross_revenue_taxi'] ?? '0'))}</div>
-                              <div>Échéance: {p3['filing_due_date']}</div>
-                            </div>
+                          <div style={{ textAlign:'right', fontSize:10, color:t.text3 }}>
+                            <div>Taxi: {money(parseFloat(p3['gross_revenue_taxi']??'0'))}</div>
+                            <div>Éch.: {p3['filing_due_date']}</div>
                           </div>
-                        </Card>
-                      )
-                    })}
+                        </div>
+                      ))}
+                    </div>
                   </>
                 )}
 
-                {/* ══ OBLIGATIONS ═════════════════════════════════ */}
+                {/* ── OBLIGATIONS ── */}
                 {tab === 'obligations' && (
                   <>
-                    <Card className="p-4">
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Centre des obligations fiscales</div>
-                      <div className="space-y-3">
+                    <div style={{ ...cs, padding:'14px 16px' }}>
+                      <SectionTitle title="Centre des obligations fiscales" t={t} />
+                      <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
                         {[
-                          { label:'✅ Dossier fiscal configuré',           status:'DONE',    dot:'bg-green-400',   desc:'TPS/TVQ enregistrés' },
-                          { label:'✅ Revenus calculés',                   status:'DONE',    dot:'bg-green-400',   desc:`${money(f?.gross_revenue_taxable ?? 0)} bruts imposables` },
-                          { label:`${filing?.['filing_status'] === 'ACCEPTED' ? '✅' : '🟡'} Déclaration ${FILING_STATUS[filing?.['filing_status'] ?? 'DRAFT']?.label ?? 'en brouillon'}`, status:'CURRENT', dot:'bg-amber-400', desc:'Q3 2026' },
-                          { label:`${urgent ? '🔴' : '🟡'} Déclaration à produire`,         status:'UPCOMING', dot: urgent ? 'bg-red-400 animate-pulse' : 'bg-amber-400', desc: period ? `Échéance ${period['filing_due_date']}` : '—' },
-                          { label:'🔴 Paiement à effectuer',              status:'UPCOMING', dot:'bg-red-400',    desc:`${money(f?.solde_total ?? 0)} estimé` },
-                          { label:'⚪ Confirmation reçue',                status:'FUTURE',   dot:'bg-slate-600',  desc:'Après transmission' },
-                          { label:'⚪ Rapprochement',                     status:'FUTURE',   dot:'bg-slate-600',  desc:'Automatique' },
+                          { label:'✅ Dossier fiscal configuré',  done:true,   dot:t.green, desc:'TPS/TVQ enregistrés' },
+                          { label:'✅ Revenus calculés',          done:true,   dot:t.green, desc:`${money(f?.gross_revenue_taxable??0)} bruts imposables` },
+                          { label:`${filing?.['filing_status']==='ACCEPTED'?'✅':'🟡'} Déclaration ${filingStatus.label}`, done:filing?.['filing_status']==='ACCEPTED', dot: filing?.['filing_status']==='ACCEPTED'?t.green:t.amber, desc:'Période courante' },
+                          { label:`${urgent?'🔴':'🟡'} Déclaration à produire`,  done:false,  dot:urgent?t.red:t.amber,  desc: period ? `Échéance ${period['filing_due_date']}` : '—' },
+                          { label:'🔴 Paiement à effectuer',      done:false,  dot:t.red,   desc:`${money(f?.solde_total??0)} estimé` },
+                          { label:'⚪ Confirmation reçue',        done:false,  dot:t.text3, desc:'Après transmission' },
                         ].map((item, i, arr) => (
-                          <div key={i} className="flex gap-3">
-                            <div className="flex flex-col items-center">
-                              <div className={`w-3 h-3 rounded-full ${item.dot} shrink-0 mt-0.5`} />
-                              {i < arr.length-1 && <div className="w-px flex-1 bg-slate-800 mt-1" />}
+                          <div key={i} style={{ display:'flex', gap:12 }}>
+                            <div style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
+                              <div style={{ width:12, height:12, borderRadius:'50%', background:item.dot, flexShrink:0, marginTop:2 }} />
+                              {i < arr.length-1 && <div style={{ width:1, flex:1, background:t.border, margin:'4px 0' }} />}
                             </div>
-                            <div className="pb-3">
-                              <div className="text-sm text-white">{item.label}</div>
-                              <div className="text-[10px] text-slate-500">{item.desc}</div>
+                            <div style={{ paddingBottom:12, paddingTop:0 }}>
+                              <div style={{ fontSize:12, fontWeight:600, color:t.text }}>{item.label}</div>
+                              <div style={{ fontSize:10, color:t.text3, marginTop:2 }}>{item.desc}</div>
                             </div>
                           </div>
                         ))}
                       </div>
-                    </Card>
+                    </div>
 
                     {/* Alertes */}
-                    <Card className="p-4">
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">Alertes fiscales actives</div>
-                      <div className="space-y-2">
-                        {urgent && (
-                          <div className="flex gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                            <span className="text-xl">🔴</span>
-                            <div><div className="text-xs font-bold text-red-400">Déclaration bientôt due</div><div className="text-[9px] text-red-300/70">{period?.['filing_due_date']} · {daysUntil(period?.['filing_due_date'] ?? '')}j restants</div></div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                      {urgent && (
+                        <div style={{ display:'flex', gap:12, padding:'12px 14px', borderRadius:12, background:'rgba(220,38,38,0.08)', border:'1.5px solid rgba(220,38,38,0.25)' }}>
+                          <span style={{ fontSize:20 }}>🔴</span>
+                          <div>
+                            <div style={{ fontSize:12, fontWeight:700, color:t.red }}>Déclaration bientôt due</div>
+                            <div style={{ fontSize:10, color:t.text3, marginTop:2 }}>{period?.['filing_due_date']} · {daysUntil(period?.['filing_due_date']??'')}j restants</div>
                           </div>
-                        )}
-                        {(f?.solde_total ?? 0) > 0 && (
-                          <div className="flex gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                            <span className="text-xl">🟡</span>
-                            <div><div className="text-xs font-bold text-amber-400">Paiement à prévoir</div><div className="text-[9px] text-amber-300/70">{money(f?.solde_total ?? 0)} estimé · TPS + TVQ</div></div>
+                        </div>
+                      )}
+                      {(f?.solde_total??0) > 0 && (
+                        <div style={{ display:'flex', gap:12, padding:'12px 14px', borderRadius:12, background:'rgba(180,83,9,0.08)', border:'1.5px solid rgba(180,83,9,0.25)' }}>
+                          <span style={{ fontSize:20 }}>🟡</span>
+                          <div>
+                            <div style={{ fontSize:12, fontWeight:700, color:t.amber }}>Paiement à prévoir</div>
+                            <div style={{ fontSize:10, color:t.text3, marginTop:2 }}>{money(f?.solde_total??0)} estimé · TPS + TVQ</div>
                           </div>
-                        )}
-                        <div className="flex gap-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                          <span className="text-xl">ℹ️</span>
-                          <div><div className="text-xs font-bold text-blue-400">SEV 2e génération</div><div className="text-[9px] text-blue-300/70">Requis depuis le 1er janvier 2026 pour transport rémunéré</div></div>
+                        </div>
+                      )}
+                      <div style={{ display:'flex', gap:12, padding:'12px 14px', borderRadius:12, background:'rgba(0,61,165,0.07)', border:'1.5px solid rgba(0,61,165,0.20)' }}>
+                        <span style={{ fontSize:20 }}>ℹ️</span>
+                        <div>
+                          <div style={{ fontSize:12, fontWeight:700, color:t.accent }}>SEV 2e génération</div>
+                          <div style={{ fontSize:10, color:t.text3, marginTop:2 }}>Requis depuis le 1er janvier 2026 pour transport rémunéré</div>
                         </div>
                       </div>
-                    </Card>
-
-                    {/* Government Integration Layer — Futur */}
-                    <Card className="p-4 border-slate-700">
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2">Government Integration Layer (futur)</div>
-                      <div className="text-[9px] text-slate-500 space-y-1">
-                        {['API sécurisée · OAuth gouvernemental', 'Webhooks · Synchronisation', 'Accusé de réception · Erreurs · Reprise', 'Journalisation · Audit complet'].map(s => (
-                          <div key={s} className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-slate-600" />{s}</div>
-                        ))}
-                        <div className="mt-2 text-amber-400 font-semibold">Aucune intégration réelle sans autorisation officielle Revenu Québec</div>
-                      </div>
-                    </Card>
+                    </div>
                   </>
                 )}
               </>

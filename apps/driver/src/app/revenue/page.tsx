@@ -1,158 +1,127 @@
 'use client'
-
-import { AppShell, PageHeader } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
-import { RefreshCw } from 'lucide-react'
+import { AppShell } from '@/components/layout/AppShell'
 import { TaximetreGovLoader } from '@/components/brand/Logo'
 import { useRevenue, money } from '@/lib/api'
+import { useTheme } from '@/lib/theme'
+import { getThemeTokens, cardStyle, cardAccentStyle, SectionTitle, filterBtnStyle } from '@/lib/theme-helpers'
 import { useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 
 type Period = 'week' | 'month' | 'year'
-
-const periodLabels: Record<Period, string> = {
-  week:  '7 jours',
-  month: '30 jours',
-  year:  '12 mois',
-}
-
-const sourceIcon: Record<string, string> = {
-  TAXI:      '🚕',
-  UBER:      '⬛',
-  LYFT:      '🟣',
-  DOORDASH:  '🔴',
-  INSTACART: '🟢',
-  UBER_EATS: '🟡',
-  SKIP:      '🟠',
-}
+const PERIODS: { key: Period; label: string }[] = [
+  { key:'week',  label:'7 jours'  },
+  { key:'month', label:'30 jours' },
+  { key:'year',  label:'12 mois'  },
+]
+const SRC_ICON: Record<string,string> = { TAXI:'🚕', UBER:'⬛', LYFT:'🟣', DOORDASH:'📦', UBEREATS:'🛵', INSTACAR:'🚘', TAXI_DIAMOND:'💎', DEFAULT:'🚗' }
 
 export default function RevenuePage() {
   const [period, setPeriod] = useState<Period>('month')
-  const { revenue, loading, error, refresh } = useRevenue(period)
+  const { revenue, loading, refresh } = useRevenue(period)
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+  const t = getThemeTokens(dark)
 
-  if (loading) {
-    return (
-      <AppShell>
-        <div className="min-h-[70vh] flex items-center justify-center">
-          <TaximetreGovLoader message="Chargement des revenus…" />
-        </div>
-      </AppShell>
-    )
-  }
+  const gross = parseFloat(revenue?.summary.total_gross ?? '0')
+  const net   = parseFloat(revenue?.summary.total_net   ?? '0')
+  const tips  = parseFloat(revenue?.summary.total_tips  ?? '0')
+  const acts  = parseInt(revenue?.summary.total_activities ?? '0')
 
-  if (!revenue) {
-    return (
-      <AppShell>
-        <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mes revenus</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
-        <div className="px-4 py-16 text-center">
-          <p className="text-sm text-red-300 mb-4">{error ?? 'Données indisponibles.'}</p>
-          <button onClick={() => void refresh()} className="px-4 py-2 rounded-xl bg-qc-blue text-white text-xs font-semibold">
-            Réessayer
-          </button>
-        </div>
-      </AppShell>
-    )
-  }
-
-  const s = revenue.summary
-  const gross    = parseFloat(s.total_gross    ?? '0')
-  const tips     = parseFloat(s.total_tips     ?? '0')
-  const net      = parseFloat(s.total_net      ?? '0')
-  const taxiG    = parseFloat(s.taxi_gross     ?? '0')
-  const rideshareG = parseFloat(s.rideshare_gross ?? '0')
-  const deliveryG  = parseFloat(s.delivery_gross  ?? '0')
-  const wallet   = parseFloat(revenue.wallet.balance ?? '0')
+  if (loading) return (
+    <AppShell>
+      <div style={{ minHeight:'70vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <TaximetreGovLoader message="Chargement des revenus…" />
+      </div>
+    </AppShell>
+  )
 
   return (
     <AppShell>
-      <PageHeader title="Mes revenus" subtitle={`Données réelles · ${periodLabels[period]}`} />
-      <div className="px-4 space-y-4 pb-8">
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 16px 12px' }}>
+        <div>
+          <h1 style={{ fontSize:22, fontWeight:800, color:t.text, margin:0, letterSpacing:'-0.01em' }}>Mes revenus</h1>
+          <p style={{ fontSize:11, color:t.text3, margin:'3px 0 0', fontWeight:500 }}>Données réelles · Supabase</p>
+        </div>
+        <button onClick={refresh} style={{ width:38, height:38, borderRadius:12, background:t.card, border:`1.5px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:t.shadow }}>
+          <RefreshCw size={16} color={t.accent} />
+        </button>
+      </div>
 
-        {/* Sélecteur de période */}
-        <div className="flex gap-2">
-          {(['week', 'month', 'year'] as Period[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
-                period === p ? 'bg-qc-blue text-white' : 'bg-slate-800 text-slate-400'
-              }`}
-            >
-              {periodLabels[p]}
+      {/* Filtre période */}
+      <div style={{ padding:'0 16px 16px' }}>
+        <div style={{ display:'flex', gap:6, background:t.card2, borderRadius:14, padding:5, border:`1px solid ${t.border}` }}>
+          {PERIODS.map(p => (
+            <button key={p.key} style={filterBtnStyle(period === p.key, dark)} onClick={() => setPeriod(p.key)}>
+              {p.label}
             </button>
           ))}
         </div>
-
-        {/* Résumé principal */}
-        <Card className="p-4">
-          <div className="text-xs text-slate-400 mb-1">Revenus bruts</div>
-          <div className="text-3xl font-bold text-white mb-4">{money(gross)}</div>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: 'Pourboires',  val: money(tips),   color: 'text-green-400' },
-              { label: 'Net chauffeur', val: money(net),   color: 'text-blue-400' },
-              { label: 'Solde wallet', val: money(wallet), color: 'text-amber-400' },
-              { label: 'Activités',   val: s.total_activities ?? '0', color: 'text-white' },
-            ].map((item) => (
-              <div key={item.label} className="bg-slate-800/50 rounded-xl p-3">
-                <div className={`font-bold text-sm ${item.color}`}>{item.val}</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">{item.label}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Breakdown par type */}
-        <Card className="p-4">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Par type d'activité</div>
-          <div className="space-y-3">
-            {[
-              { label: 'Taxi (taximètre)', val: taxiG,     icon: '🚕', color: 'bg-qc-blue/20' },
-              { label: 'Covoiturage',      val: rideshareG, icon: '🚗', color: 'bg-purple-500/20' },
-              { label: 'Livraison',        val: deliveryG,  icon: '📦', color: 'bg-amber-500/20' },
-            ].map((item) => (
-              <div key={item.label} className={`flex items-center gap-3 p-3 rounded-xl ${item.color}`}>
-                <span className="text-xl">{item.icon}</span>
-                <div className="flex-1">
-                  <div className="text-xs font-semibold text-white">{item.label}</div>
-                  <div className="w-full bg-slate-700 rounded-full h-1 mt-1">
-                    <div
-                      className="bg-qc-blue h-1 rounded-full"
-                      style={{ width: gross > 0 ? `${Math.min((item.val / gross) * 100, 100)}%` : '0%' }}
-                    />
-                  </div>
-                </div>
-                <div className="font-bold text-white text-sm">{money(item.val)}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Détail par provider */}
-        {revenue.breakdown.length > 0 && (
-          <Card className="p-4">
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Par plateforme</div>
-            <div className="space-y-2">
-              {revenue.breakdown.map((src) => (
-                <div key={src.source_type} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
-                  <span className="text-xl">{sourceIcon[src.source_type] ?? '📦'}</span>
-                  <div className="flex-1">
-                    <div className="text-xs font-semibold text-white">{src.source_type}</div>
-                    <div className="text-[10px] text-slate-500">{src.count} activité(s) · {money(parseFloat(src.tips))} pourboires</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-white text-sm">{money(parseFloat(src.gross))}</div>
-                    <div className="text-[10px] text-green-400">net {money(parseFloat(src.net))}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
-
-        <button onClick={() => void refresh()} className="w-full py-3 rounded-xl bg-slate-800 text-slate-400 text-xs font-semibold flex items-center justify-center gap-2">
-          <RefreshCw size={14} /> Actualiser les données
-        </button>
       </div>
+
+      {/* Hero KPI */}
+      <div style={{ padding:'0 16px 16px' }}>
+        <div style={{ borderRadius:20, background:'linear-gradient(135deg,#003DA5 0%,#0B4F71 100%)', boxShadow:'0 8px 32px rgba(0,61,165,0.35)', padding:'20px 18px', position:'relative', overflow:'hidden' }}>
+          <div style={{ position:'absolute', top:-10, right:8, fontSize:100, color:'rgba(255,255,255,0.05)', pointerEvents:'none', userSelect:'none' }}>⚜</div>
+          <div style={{ fontSize:9, fontWeight:800, letterSpacing:'0.14em', color:'rgba(255,255,255,0.55)', textTransform:'uppercase', marginBottom:6 }}>
+            REVENUS BRUTS · {PERIODS.find(p=>p.key===period)?.label.toUpperCase()}
+          </div>
+          <div style={{ fontSize:42, fontWeight:900, color:'#FFF', letterSpacing:'-0.03em', lineHeight:1, marginBottom:16 }}>
+            {money(gross)}
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+            {[
+              { label:'Courses', val:String(acts), icon:'🛣️' },
+              { label:'Pourboires', val:money(tips), icon:'💝' },
+              { label:'Net', val:money(net), icon:'💰' },
+            ].map(s => (
+              <div key={s.label} style={{ background:'rgba(255,255,255,0.10)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'10px 6px', textAlign:'center' }}>
+                <div style={{ fontSize:18, marginBottom:3 }}>{s.icon}</div>
+                <div style={{ fontSize:13, fontWeight:800, color:'#FFF' }}>{s.val}</div>
+                <div style={{ fontSize:9, color:'rgba(255,255,255,0.55)', fontWeight:600, marginTop:1 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Breakdown par plateforme */}
+      {revenue?.breakdown && revenue.breakdown.length > 0 && (
+        <div style={{ padding:'0 16px 16px' }}>
+          <SectionTitle title="Par plateforme" t={t} />
+          <div style={{ ...cardStyle(t), overflow:'hidden' }}>
+            {revenue.breakdown.map((src, idx) => (
+              <div key={src.source_type} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 15px', borderTop: idx > 0 ? `1px solid ${t.border}` : 'none' }}>
+                <div style={{ width:38, height:38, borderRadius:11, background: dark ? 'rgba(59,130,246,0.12)' : 'rgba(0,61,165,0.07)', border:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>
+                  {SRC_ICON[src.source_type] ?? SRC_ICON.DEFAULT}
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:t.text }}>{src.source_type}</div>
+                  <div style={{ fontSize:10, color:t.text3, marginTop:1 }}>{src.count} activité(s)</div>
+                </div>
+                <div style={{ textAlign:'right' }}>
+                  <div style={{ fontSize:15, fontWeight:800, color:t.text, letterSpacing:'-0.01em' }}>{money(parseFloat(src.gross))}</div>
+                  <div style={{ fontSize:10, color:t.text3, marginTop:1 }}>net: {money(parseFloat(src.net ?? src.gross))}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Wallet */}
+      {revenue?.wallet && (
+        <div style={{ padding:'0 16px 24px' }}>
+          <SectionTitle title="Solde wallet" t={t} />
+          <div style={{ ...cardAccentStyle(t), padding:'16px' }}>
+            <div style={{ fontSize:9, fontWeight:800, letterSpacing:'0.10em', color:t.text3, textTransform:'uppercase', marginBottom:6 }}>💳 DISPONIBLE AU RETRAIT</div>
+            <div style={{ fontSize:30, fontWeight:900, color:t.green, letterSpacing:'-0.02em' }}>
+              {money(parseFloat(revenue.wallet.balance))}
+            </div>
+            <div style={{ fontSize:10, color:t.text3, marginTop:6 }}>Mis à jour · {new Intl.DateTimeFormat('fr-CA',{dateStyle:'medium',timeStyle:'short'}).format(new Date(revenue.wallet.last_updated))}</div>
+          </div>
+        </div>
+      )}
     </AppShell>
   )
 }

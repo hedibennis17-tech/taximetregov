@@ -1,318 +1,205 @@
 'use client'
 import { TaximetreGovLoader } from '@/components/brand/Logo'
-
-// ================================================================
-// TAXIMÈTRE.GOV — PAGE PLATEFORMES
-// Phase 6 — Providers réels · OAuth Architecture · MOCK_ONLY dev
-// ================================================================
-
 import { AppShell } from '@/components/layout/AppShell'
-import { Card, SectionHeader } from '@/components/ui'
+import { useTheme } from '@/lib/theme'
+import { getThemeTokens, cardStyle, SectionTitle } from '@/lib/theme-helpers'
 import { useState, useEffect, useCallback } from 'react'
-import { CheckCircle, Clock, Lock, RefreshCw, AlertCircle, Unplug } from 'lucide-react'
+import { CheckCircle, Lock, RefreshCw, AlertCircle, Unplug } from 'lucide-react'
 import { getToken } from '@/lib/api'
 
-// ─── Types ───────────────────────────────────────────────────
-
 interface Provider {
-  id:                        string
-  provider_code:             string
-  display_name:              string
-  provider_type:             string
-  provider_status:           string
-  connector_status:          string
-  account_id:                string | null
-  connection_status:         string | null
-  provider_driver_id_masked: string | null
-  connected_at:              string | null
-  last_sync_at:              string | null
-  sync_error_count:          number
-  partner_approval_reference: string | null
-  isMockOnly:                boolean
-  revenue: {
-    gross: string; tips: string; count: string; last_activity: string
-  } | null
+  id:string; provider_code:string; display_name:string; provider_type:string; provider_status:string
+  connector_status:string; account_id:string|null; connection_status:string|null
+  provider_driver_id_masked:string|null; connected_at:string|null; last_sync_at:string|null
+  sync_error_count:number; partner_approval_reference:string|null; isMockOnly:boolean
+  revenue:{gross:string;tips:string;count:string;last_activity:string}|null
 }
 
-// ─── Helpers ─────────────────────────────────────────────────
+const PROVIDER_ICON: Record<string,string> = { UBER:'⬛', LYFT:'🟣', DOORDASH:'🔴', UBER_EATS:'🟡', INSTACART:'🟢', SKIP:'🟠' }
+const TYPE_LABEL: Record<string,string> = { RIDESHARE:'Covoiturage', MULTI_SERVICE:'Multi-service', FOOD_DELIVERY:'Livraison repas', GROCERY_DELIVERY:'Livraison épicerie' }
 
-const PROVIDER_ICON: Record<string, string> = {
-  UBER: '⬛', LYFT: '🟣', DOORDASH: '🔴',
-  UBER_EATS: '🟡', INSTACART: '🟢', SKIP: '🟠',
+function fmtMoney(v:string|number) { return new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD'}).format(typeof v==='string'?parseFloat(v)||0:v) }
+
+function statusConf(status:string|null, isMockOnly:boolean) {
+  if (status==='CONNECTED'&&isMockOnly) return { label:'Connectée (DEV)', color:'#B45309', bg:'rgba(180,83,9,0.10)', bdr:'rgba(180,83,9,0.25)' }
+  if (status==='CONNECTED')            return { label:'Connectée',        color:'#059669', bg:'rgba(5,150,105,0.10)', bdr:'rgba(5,150,105,0.25)' }
+  if (status==='PENDING')              return { label:'En attente',       color:'#B45309', bg:'rgba(180,83,9,0.10)', bdr:'rgba(180,83,9,0.25)' }
+  if (status==='ERROR')                return { label:'Erreur',           color:'#DC2626', bg:'rgba(220,38,38,0.10)', bdr:'rgba(220,38,38,0.25)' }
+  if (status==='DISCONNECTED')         return { label:'Déconnectée',      color:'#4A6A9A', bg:'rgba(74,106,154,0.08)', bdr:'rgba(74,106,154,0.20)' }
+  return { label:'Non connectée', color:'#4A6A9A', bg:'rgba(74,106,154,0.05)', bdr:'rgba(74,106,154,0.15)' }
 }
 
-const PROVIDER_TYPE_LABEL: Record<string, string> = {
-  RIDESHARE: 'Covoiturage', MULTI_SERVICE: 'Multi-service',
-  FOOD_DELIVERY: 'Livraison repas', GROCERY_DELIVERY: 'Livraison épicerie',
-}
-
-function money(v: string | number) {
-  return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' })
-    .format(typeof v === 'string' ? parseFloat(v) || 0 : v)
-}
-
-function connectionStatusConf(status: string | null, isMockOnly: boolean) {
-  if (status === 'CONNECTED' && isMockOnly)
-    return { label: 'Connectée (DEV)', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' }
-  if (status === 'CONNECTED')
-    return { label: 'Connectée', color: 'text-green-400 bg-green-500/10 border-green-500/20' }
-  if (status === 'PENDING')
-    return { label: 'En attente', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' }
-  if (status === 'ERROR')
-    return { label: 'Erreur', color: 'text-red-400 bg-red-500/10 border-red-500/20' }
-  if (status === 'DISCONNECTED')
-    return { label: 'Déconnectée', color: 'text-slate-400 bg-slate-800 border-slate-700' }
-  return { label: 'Non connectée', color: 'text-slate-500 bg-slate-900 border-slate-800' }
-}
-
-async function apiFetch(path: string, body?: unknown) {
+async function apiFetch(path:string, body?:unknown) {
   const token = getToken()
-  const res = await fetch(path, {
-    method: body ? 'POST' : 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
-  const json = await res.json() as { success: boolean; data: unknown; error?: string }
-  if (!res.ok || !json.success) throw new Error(json.error ?? `Erreur ${res.status}`)
+  const res = await fetch(path, { method:body?'POST':'GET', headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})}, body:body?JSON.stringify(body):undefined })
+  const json = await res.json() as {success:boolean;data:unknown;error?:string}
+  if (!res.ok || !json.success) throw new Error(json.error??`Erreur ${res.status}`)
   return json.data
 }
-
-// ─── COMPOSANT PRINCIPAL ─────────────────────────────────────
 
 export default function PlatformsPage() {
   const [providers, setProviders]   = useState<Provider[]>([])
   const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState<string | null>(null)
-  const [connecting, setConnecting] = useState<string | null>(null)
-  const [connected, setConnected]   = useState<string | null>(null)
+  const [error, setError]           = useState<string|null>(null)
+  const [connecting, setConnecting] = useState<string|null>(null)
+  const [connected, setConnected]   = useState<string|null>(null)
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+  const t = getThemeTokens(dark)
 
   const loadProviders = useCallback(async () => {
     try {
       setLoading(true); setError(null)
-      const data = await apiFetch('/api/providers/list') as {
-        providers: Provider[]; connectedCount: number
-      }
+      const data = await apiFetch('/api/providers/list') as { providers:Provider[]; connectedCount:number }
       setProviders(data.providers)
-    } catch (e) {
-      setError((e as Error).message)
-    } finally {
-      setLoading(false)
-    }
+    } catch (e) { setError((e as Error).message) }
+    finally { setLoading(false) }
   }, [])
 
   useEffect(() => { void loadProviders() }, [loadProviders])
 
-  async function handleConnect(providerCode: string) {
-    setConnecting(providerCode)
-    setError(null)
-    try {
-      await apiFetch('/api/providers/connect', { providerCode })
-      setConnected(providerCode)
-      await loadProviders()
-      setTimeout(() => setConnected(null), 3000)
-    } catch (e) {
-      setError((e as Error).message)
-    } finally {
-      setConnecting(null)
-    }
+  async function handleConnect(code:string) {
+    setConnecting(code); setError(null)
+    try { await apiFetch('/api/providers/connect',{providerCode:code}); setConnected(code); await loadProviders(); setTimeout(()=>setConnected(null),3000) }
+    catch (e) { setError((e as Error).message) }
+    finally { setConnecting(null) }
   }
 
-  async function handleDisconnect(providerCode: string) {
-    if (!confirm(`Déconnecter ${providerCode} ?`)) return
-    try {
-      await apiFetch('/api/providers/disconnect', { providerCode })
-      await loadProviders()
-    } catch (e) {
-      setError((e as Error).message)
-    }
+  async function handleDisconnect(code:string) {
+    if (!confirm(`Déconnecter ${code} ?`)) return
+    try { await apiFetch('/api/providers/disconnect',{providerCode:code}); await loadProviders() }
+    catch (e) { setError((e as Error).message) }
   }
 
-  const connectedProviders    = providers.filter(p => p.connection_status === 'CONNECTED')
-  const notConnectedProviders = providers.filter(p => p.connection_status !== 'CONNECTED')
+  const conn    = providers.filter(p => p.connection_status==='CONNECTED')
+  const notConn = providers.filter(p => p.connection_status!=='CONNECTED')
+
+  if (loading) return <AppShell><div style={{minHeight:'70vh',display:'flex',alignItems:'center',justifyContent:'center'}}><TaximetreGovLoader message="Chargement des plateformes…" /></div></AppShell>
 
   return (
     <AppShell>
-      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 16px 12px' }}>
         <div>
-          <h1 className="text-xl font-bold text-white">Mes plateformes</h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            {connectedProviders.length} connectée(s) · {providers.length} disponibles
-          </p>
+          <h1 style={{ fontSize:22, fontWeight:800, color:t.text, margin:0, letterSpacing:'-0.01em' }}>Mes plateformes</h1>
+          <p style={{ fontSize:11, color:t.text3, margin:'3px 0 0' }}>{conn.length} connectée(s) · {providers.length} disponibles</p>
         </div>
-        <button onClick={() => void loadProviders()}
-          className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center">
-          <RefreshCw size={15} className={loading ? 'animate-spin text-qc-blue' : 'text-slate-400'} />
+        <button onClick={() => void loadProviders()} style={{ width:38, height:38, borderRadius:12, background:t.card, border:`1.5px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:t.shadow }}>
+          <RefreshCw size={16} color={t.accent} />
         </button>
       </div>
 
-      <div className="px-4 space-y-4 pb-8">
-
-        {/* MOCK_ONLY banner */}
-        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-          <div className="flex items-start gap-2">
-            <AlertCircle size={14} className="text-amber-400 mt-0.5 shrink-0" />
-            <div>
-              <div className="text-xs font-semibold text-amber-400">Mode développement</div>
-              <div className="text-[10px] text-amber-300/70 mt-0.5">
-                Toutes les connexions sont simulées. L'intégration réelle nécessite l'approbation officielle du programme partenaire de chaque plateforme.
-              </div>
-            </div>
+      <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:14, paddingBottom:32 }}>
+        {/* Dev warning */}
+        <div style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'11px 13px', borderRadius:12, background:'rgba(180,83,9,0.08)', border:'1.5px solid rgba(180,83,9,0.25)' }}>
+          <AlertCircle size={14} color={t.amber} style={{ flexShrink:0, marginTop:1 }} />
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:t.amber, marginBottom:3 }}>Mode développement</div>
+            <div style={{ fontSize:10, color:t.text2, lineHeight:1.5 }}>Toutes les connexions sont simulées. L'intégration réelle nécessite l'approbation officielle du programme partenaire de chaque plateforme.</div>
           </div>
         </div>
 
-        {/* Error */}
         {error && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-            <div className="flex items-center gap-2 text-red-400 text-xs">
-              <AlertCircle size={14} /> {error}
-            </div>
+          <div style={{ display:'flex', alignItems:'center', gap:8, padding:'11px 13px', borderRadius:12, background:'rgba(220,38,38,0.08)', border:'1.5px solid rgba(220,38,38,0.25)' }}>
+            <AlertCircle size={14} color={t.red} />
+            <span style={{ fontSize:11, color:t.red }}>{error}</span>
           </div>
         )}
 
-        {/* Plateformes connectées */}
-        {connectedProviders.length > 0 && (
+        {/* Connectées */}
+        {conn.length > 0 && (
           <div>
-            <SectionHeader title="Connectées" />
-            <div className="space-y-3">
-              {connectedProviders.map(p => {
-                const stConf = connectionStatusConf(p.connection_status, p.isMockOnly)
+            <SectionTitle title="Connectées" t={t} />
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {conn.map(p => {
+                const sc = statusConf(p.connection_status, p.isMockOnly)
                 return (
-                  <Card key={p.id} className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-3xl">{PROVIDER_ICON[p.provider_code] ?? '🚗'}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-white">{p.display_name}</span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold ${stConf.color}`}>
-                            {stConf.label}
-                          </span>
+                  <div key={p.id} style={{ ...cardStyle(t), padding:'16px' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom: p.revenue ? 12 : 0 }}>
+                      <span style={{ fontSize:30 }}>{PROVIDER_ICON[p.provider_code]??'🚗'}</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:3 }}>
+                          <span style={{ fontSize:14, fontWeight:700, color:t.text }}>{p.display_name}</span>
+                          <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:20, background:sc.bg, color:sc.color, border:`1px solid ${sc.bdr}` }}>{sc.label}</span>
                         </div>
-                        <div className="text-[10px] text-slate-400">
-                          {PROVIDER_TYPE_LABEL[p.provider_type] ?? p.provider_type}
+                        <div style={{ fontSize:10, color:t.text3 }}>
+                          {TYPE_LABEL[p.provider_type]??p.provider_type}
                           {p.provider_driver_id_masked && ` · ID: ${p.provider_driver_id_masked}`}
                         </div>
                       </div>
                     </div>
-
-                    {/* Revenus */}
                     {p.revenue && (
-                      <div className="grid grid-cols-3 gap-2 mb-3">
-                        <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                          <div className="font-bold text-green-400 text-xs">{money(p.revenue.gross)}</div>
-                          <div className="text-[9px] text-slate-500">Brut 30j</div>
-                        </div>
-                        <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                          <div className="font-bold text-blue-400 text-xs">{money(p.revenue.tips)}</div>
-                          <div className="text-[9px] text-slate-500">Pourboires</div>
-                        </div>
-                        <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                          <div className="font-bold text-white text-xs">{p.revenue.count}</div>
-                          <div className="text-[9px] text-slate-500">Activités</div>
-                        </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:12 }}>
+                        {[
+                          { label:'Brut 30j',   val:fmtMoney(p.revenue.gross), color:t.green },
+                          { label:'Pourboires', val:fmtMoney(p.revenue.tips),  color:t.accent },
+                          { label:'Activités',  val:p.revenue.count,            color:t.text },
+                        ].map(s => (
+                          <div key={s.label} style={{ background: dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.03)', borderRadius:10, padding:'9px', textAlign:'center', border:`1px solid ${t.border}` }}>
+                            <div style={{ fontSize:12, fontWeight:800, color:s.color }}>{s.val}</div>
+                            <div style={{ fontSize:9, color:t.text3, marginTop:2 }}>{s.label}</div>
+                          </div>
+                        ))}
                       </div>
                     )}
-
-                    {/* Sync info */}
-                    <div className="flex items-center justify-between text-[10px] text-slate-500">
-                      <span>
-                        {p.last_sync_at
-                          ? `Sync: ${new Date(p.last_sync_at).toLocaleDateString('fr-CA')}`
-                          : 'Jamais synchronisé'}
-                      </span>
-                      <button
-                        onClick={() => void handleDisconnect(p.provider_code)}
-                        className="flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors"
-                      >
-                        <Unplug size={11} /> Déconnecter
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                      <span style={{ fontSize:10, color:t.text3 }}>{p.last_sync_at ? `Sync: ${new Date(p.last_sync_at).toLocaleDateString('fr-CA')}` : 'Jamais synchronisé'}</span>
+                      <button onClick={() => void handleDisconnect(p.provider_code)} style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, fontWeight:600, color:t.red, background:'none', border:'none', cursor:'pointer' }}>
+                        <Unplug size={12} /> Déconnecter
                       </button>
                     </div>
-                  </Card>
+                  </div>
                 )
               })}
             </div>
           </div>
         )}
 
-        {/* Plateformes disponibles */}
-        {notConnectedProviders.length > 0 && (
+        {/* Disponibles */}
+        {notConn.length > 0 && (
           <div>
-            <SectionHeader title="Disponibles" />
-            <div className="space-y-3">
-              {notConnectedProviders.map(p => (
-                <Card key={p.id} className="p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{PROVIDER_ICON[p.provider_code] ?? '🚗'}</span>
-                    <div className="flex-1">
-                      <div className="font-bold text-white">{p.display_name}</div>
-                      <div className="text-[10px] text-slate-400">
-                        {PROVIDER_TYPE_LABEL[p.provider_type] ?? p.provider_type}
+            <SectionTitle title="Disponibles" t={t} />
+            <div style={{ ...cardStyle(t), overflow:'hidden' }}>
+              {notConn.map((p, idx) => (
+                <div key={p.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 15px', borderTop: idx>0?`1px solid ${t.border}`:'none' }}>
+                  <span style={{ fontSize:26 }}>{PROVIDER_ICON[p.provider_code]??'🚗'}</span>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:t.text }}>{p.display_name}</div>
+                    <div style={{ fontSize:10, color:t.text3, marginTop:1 }}>{TYPE_LABEL[p.provider_type]??p.provider_type}</div>
+                    {p.isMockOnly && (
+                      <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:4, fontSize:9, color:t.text3 }}>
+                        <Lock size={9} color={t.text3} /> Connexion simulée
                       </div>
-                    </div>
-
-                    {/* Connect button */}
-                    {connected === p.provider_code ? (
-                      <div className="flex items-center gap-1 text-green-400 text-xs">
-                        <CheckCircle size={14} /> Connecté!
-                      </div>
-                    ) : connecting === p.provider_code ? (
-                      <div className="flex items-center gap-1 text-amber-400 text-xs">
-                        <RefreshCw size={12} className="animate-spin" /> Connexion…
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => void handleConnect(p.provider_code)}
-                        className="px-3 py-1.5 rounded-xl bg-qc-blue text-white text-xs font-semibold hover:bg-qc-blue/90 transition-colors"
-                      >
-                        Connecter
-                      </button>
                     )}
                   </div>
-
-                  {/* MOCK badge */}
-                  {p.isMockOnly && (
-                    <div className="mt-2 flex items-center gap-1.5 text-[10px] text-amber-400/70">
-                      <Lock size={9} />
-                      Connexion simulée · Approbation partenaire requise pour production
+                  {connected===p.provider_code ? (
+                    <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:t.green, fontWeight:700 }}>
+                      <CheckCircle size={14} color={t.green} /> Connecté!
                     </div>
+                  ) : connecting===p.provider_code ? (
+                    <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:t.amber }}>
+                      <RefreshCw size={12} color={t.amber} style={{animation:'spin 1s linear infinite'}} /> Connexion…
+                    </div>
+                  ) : (
+                    <button onClick={() => void handleConnect(p.provider_code)} style={{ padding:'8px 14px', borderRadius:11, background:'#003DA5', color:'white', fontSize:11, fontWeight:700, border:'none', cursor:'pointer', boxShadow:'0 3px 10px rgba(0,61,165,0.25)' }}>
+                      Connecter
+                    </button>
                   )}
-                </Card>
+                </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Loading */}
-        {loading && (
-          <div className="py-16 text-center">
-            <TaximetreGovLoader />
-          </div>
-        )}
-
-        {/* Architecture info */}
-        <Card className="p-4">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-            Architecture de connexion
-          </div>
-          <div className="space-y-2 text-[10px] text-slate-400">
-            {[
-              { step: '1', label: 'Tu cliques "Connecter"' },
-              { step: '2', label: 'Taximètre.gov → OAuth provider' },
-              { step: '3', label: 'Tu autorises sur la plateforme' },
-              { step: '4', label: 'Token sécurisé — jamais ton mot de passe' },
-              { step: '5', label: 'Activités synchronisées automatiquement' },
-            ].map(item => (
-              <div key={item.step} className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-bold text-white shrink-0">
-                  {item.step}
-                </span>
-                <span>{item.label}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+        {/* Architecture */}
+        <div style={{ ...cardStyle(t), padding:'14px 16px' }}>
+          <SectionTitle title="Architecture de connexion" t={t} />
+          {['Tu cliques "Connecter"','Taximètre.gov → OAuth provider','Tu autorises sur la plateforme','Token sécurisé — jamais ton mot de passe','Activités synchronisées automatiquement'].map((s, i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'7px 0', borderTop: i>0?`1px solid ${t.border}`:'none' }}>
+              <div style={{ width:22, height:22, borderRadius:'50%', background: dark?'rgba(0,61,165,0.20)':'rgba(0,61,165,0.10)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:800, color:t.accent, flexShrink:0 }}>{i+1}</div>
+              <span style={{ fontSize:11, color:t.text2 }}>{s}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </AppShell>
   )

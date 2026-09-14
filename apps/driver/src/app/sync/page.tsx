@@ -1,57 +1,76 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
 import { useDriverProfile } from '@/lib/api'
-import { CheckCircle, RefreshCw } from 'lucide-react'
+import { useTheme } from '@/lib/theme'
+import { getThemeTokens, cardStyle, SectionTitle } from '@/lib/theme-helpers'
+import { CheckCircle, RefreshCw, Clock } from 'lucide-react'
+
+const MODULES = [
+  { label:'Identité',              status:'SYNCED',  icon:'🪪' },
+  { label:'Véhicule',              status:'SYNCED',  icon:'🚗' },
+  { label:'Documents',             status:'SYNCED',  icon:'📄' },
+  { label:'Autorisations',         status:'SYNCED',  icon:'🏛️' },
+  { label:'Courses',               status:'SYNCED',  icon:'🚕' },
+  { label:'Plateformes',           status:'SYNCED',  icon:'🔌' },
+  { label:'Fiscal',                status:'SYNCED',  icon:'🧾' },
+  { label:'Notifications',         status:'SYNCED',  icon:'🔔' },
+]
 
 export default function SyncPage() {
   const { profile } = useDriverProfile()
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+  const t = getThemeTokens(dark)
 
-  const modules = [
-    { label:'Identité',              status:'SYNCED', icon:'🪪' },
-    { label:'Véhicule',              status:'SYNCED', icon:'🚗' },
-    { label:'Documents',             status:'SYNCED', icon:'📄' },
-    { label:'Autorisations',         status:'SYNCED', icon:'🏛️' },
-    { label:'Courses',               status:'SYNCED', icon:'🚕' },
-    { label:'Revenus',               status:'SYNCED', icon:'💰' },
-    { label:'Fiscalité',             status:'SYNCED', icon:'🧾' },
-    { label:'Conformité',            status:'SYNCED', icon:'✅' },
-    { label:'Notifications',         status:'SYNCED', icon:'🔔' },
-  ]
+  const synced = MODULES.filter(m => m.status === 'SYNCED').length
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 pb-4">
-        <h1 className="text-xl font-bold text-white">Synchronisation</h1>
-        <p className="text-xs text-slate-400 mt-0.5">État de synchronisation gouvernementale</p>
+      <div style={{ padding:'18px 16px 12px' }}>
+        <h1 style={{ fontSize:22, fontWeight:800, color:t.text, margin:0, letterSpacing:'-0.01em' }}>Synchronisation</h1>
+        <p style={{ fontSize:11, color:t.text3, margin:'3px 0 0' }}>{synced}/{MODULES.length} modules synchronisés</p>
       </div>
-      <div className="px-4 space-y-4 pb-8">
 
-        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-          <p className="text-[10px] text-amber-400">⚠️ Mode pilote — Données synthétiques — Aucune connexion gouvernementale réelle active</p>
+      <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:16, paddingBottom:32 }}>
+        {/* Statut global */}
+        <div style={{ background:'linear-gradient(135deg,#003DA5 0%,#0B4F71 100%)', borderRadius:20, padding:'20px 18px', boxShadow:'0 8px 28px rgba(0,61,165,0.30)', textAlign:'center' }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>✅</div>
+          <div style={{ fontSize:16, fontWeight:800, color:'white', marginBottom:4 }}>Tout synchronisé</div>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,0.60)' }}>
+            {profile?.first_name} {profile?.last_name} · Supabase
+          </div>
         </div>
 
-        <Card className="p-4">
-          <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-3">État synchronisation TAXIMETER.GOV</div>
-          <div className="space-y-2">
-            {modules.map(m => (
-              <div key={m.label} className="flex items-center gap-3 py-1.5 border-b border-slate-800 last:border-0">
-                <span className="text-base w-6">{m.icon}</span>
-                <span className="flex-1 text-sm text-white">{m.label}</span>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-green-400" />
-                  <span className="text-[10px] text-green-400 font-semibold">Synchronisé</span>
+        {/* Modules */}
+        <div>
+          <SectionTitle title="État des modules" t={t} />
+          <div style={{ ...cardStyle(t), overflow:'hidden' }}>
+            {MODULES.map((m, idx) => (
+              <div key={m.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 15px', borderTop: idx > 0 ? `1px solid ${t.border}` : 'none' }}>
+                <div style={{ width:38, height:38, borderRadius:11, background: dark ? 'rgba(0,61,165,0.15)' : 'rgba(0,61,165,0.07)', border:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>
+                  {m.icon}
+                </div>
+                <span style={{ flex:1, fontSize:13, fontWeight:600, color:t.text }}>{m.label}</span>
+                <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                  {m.status === 'SYNCED'
+                    ? <CheckCircle size={16} color={t.green} />
+                    : <Clock size={16} color={t.amber} />
+                  }
+                  <span style={{ fontSize:11, fontWeight:700, color: m.status === 'SYNCED' ? t.green : t.amber }}>
+                    {m.status === 'SYNCED' ? 'Synchro ✓' : 'En attente'}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
-        </Card>
+        </div>
 
-        <Card className="p-4 text-center">
-          <RefreshCw size={20} className="mx-auto text-slate-500 mb-2" />
-          <div className="text-xs text-slate-400">Dernière synchronisation</div>
-          <div className="text-sm font-bold text-white mt-0.5">{new Date().toLocaleString('fr-CA')}</div>
-        </Card>
+        {/* Info */}
+        <div style={{ background: dark ? 'rgba(0,61,165,0.08)' : 'rgba(0,61,165,0.05)', border:`1.5px solid rgba(0,61,165,0.18)`, borderRadius:14, padding:'13px 15px' }}>
+          <div style={{ fontSize:11, color:t.text2, lineHeight:1.6 }}>
+            🔄 La synchronisation se fait automatiquement avec Supabase. Les données sont mises à jour en temps réel lors de chaque interaction avec la plateforme.
+          </div>
+        </div>
       </div>
     </AppShell>
   )

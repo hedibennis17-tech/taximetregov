@@ -1,76 +1,136 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
+import { TaximetreGovLoader } from '@/components/brand/Logo'
 import { useDriverProfile } from '@/lib/api'
+import { useTheme } from '@/lib/theme'
+import { getThemeTokens, cardStyle, SectionTitle } from '@/lib/theme-helpers'
 import { useState, useEffect } from 'react'
-import { RefreshCw, CheckCircle, Clock, AlertTriangle, FileText } from 'lucide-react'
+import { RefreshCw, CheckCircle, Clock, AlertTriangle, FileText, Upload } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface Doc { id:string; status:string; issued_at:string; expires_at:string; document_types:{label:string;code:string} }
 
-const STATUS = {
-  APPROVED:   { label:'Vérifié',      color:'text-green-400',  bg:'bg-green-500/10 border-green-500/30',  icon: CheckCircle },
-  PENDING:    { label:'En attente',   color:'text-amber-400',  bg:'bg-amber-500/10 border-amber-500/30',  icon: Clock },
-  SUBMITTED:  { label:'Soumis',       color:'text-blue-400',   bg:'bg-blue-500/10 border-blue-500/30',    icon: Clock },
-  REJECTED:   { label:'Refusé',       color:'text-red-400',    bg:'bg-red-500/10 border-red-500/30',      icon: AlertTriangle },
-  EXPIRED:    { label:'Expiré',       color:'text-red-400',    bg:'bg-red-500/10 border-red-500/30',      icon: AlertTriangle },
+const STATUS_CONF = {
+  APPROVED:   { label:'Vérifié',    color:'#059669', bg:'rgba(5,150,105,0.12)',   border:'rgba(5,150,105,0.25)',  Icon:CheckCircle  },
+  PENDING:    { label:'En attente', color:'#B45309', bg:'rgba(180,83,9,0.10)',    border:'rgba(180,83,9,0.25)',   Icon:Clock        },
+  SUBMITTED:  { label:'Soumis',     color:'#003DA5', bg:'rgba(0,61,165,0.10)',    border:'rgba(0,61,165,0.25)',   Icon:Clock        },
+  REJECTED:   { label:'Refusé',     color:'#DC2626', bg:'rgba(220,38,38,0.10)',   border:'rgba(220,38,38,0.25)',  Icon:AlertTriangle},
+  EXPIRED:    { label:'Expiré',     color:'#DC2626', bg:'rgba(220,38,38,0.10)',   border:'rgba(220,38,38,0.25)',  Icon:AlertTriangle},
+} as const
+
+function fmtDate(d:string|null) {
+  if (!d) return '—'
+  return new Intl.DateTimeFormat('fr-CA',{year:'numeric',month:'short',day:'numeric'}).format(new Date(d))
 }
 
 export default function DocumentsPage() {
   const { profile, loading: pLoading } = useDriverProfile()
   const [docs, setDocs] = useState<Doc[]>([])
   const [loading, setLoading] = useState(true)
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+  const t = getThemeTokens(dark)
+  const router = useRouter()
 
-  useEffect(() => {
+  async function load() {
     if (!profile?.id) return
-    void (async () => {
-      try {
-        const sb = getSupabaseBrowserClient()
-        const { data } = await sb.from('documents').select('id,status,issued_at,expires_at,document_types(label,code)').eq('driver_owner_id', profile.id).order('expires_at')
-        setDocs((data ?? []) as unknown as Doc[])
-      } finally { setLoading(false) }
-    })()
-  }, [profile?.id])
+    setLoading(true)
+    try {
+      const { data } = await getSupabaseBrowserClient()
+        .from('driver_documents').select('*, document_types(label,code)')
+        .eq('driver_id', profile.id).order('created_at', { ascending:false })
+      setDocs(data ?? [])
+    } finally { setLoading(false) }
+  }
 
-  const daysUntil = (d: string) => Math.ceil((new Date(d).getTime() - Date.now()) / 86400000)
+  useEffect(() => { void load() }, [profile?.id])
+
+  if (pLoading || loading) return (
+    <AppShell>
+      <div style={{ minHeight:'70vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <TaximetreGovLoader message="Chargement des documents…" />
+      </div>
+    </AppShell>
+  )
+
+  const byStatus = (s: string) => docs.filter(d => d.status === s)
+  const alerts = [...byStatus('REJECTED'), ...byStatus('EXPIRED')]
 
   return (
     <AppShell>
-      <div className="px-4 pt-6 pb-4">
-        <h1 className="text-xl font-bold text-white">Mes documents</h1>
-        <p className="text-xs text-slate-400 mt-0.5">Dossier gouvernemental · TAXIMETER.GOV</p>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 16px 12px' }}>
+        <div>
+          <h1 style={{ fontSize:22, fontWeight:800, color:t.text, margin:0, letterSpacing:'-0.01em' }}>Mes documents</h1>
+          <p style={{ fontSize:11, color:t.text3, margin:'3px 0 0' }}>{docs.length} document(s)</p>
+        </div>
+        <div style={{ display:'flex', gap:8 }}>
+          <button onClick={() => router.push('/documents/upload')} style={{ width:38, height:38, borderRadius:12, background:'#003DA5', border:'none', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:'0 4px 12px rgba(0,61,165,0.30)' }}>
+            <Upload size={16} color="white" />
+          </button>
+          <button onClick={load} style={{ width:38, height:38, borderRadius:12, background:t.card, border:`1.5px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:t.shadow }}>
+            <RefreshCw size={16} color={t.accent} />
+          </button>
+        </div>
       </div>
-      <div className="px-4 space-y-3 pb-8">
-        {(loading || pLoading) && <div className="py-12 text-center"><RefreshCw className="mx-auto animate-spin text-qc-blue" size={24} /></div>}
-        {!loading && docs.length === 0 && (
-          <Card className="p-8 text-center">
-            <FileText size={32} className="mx-auto text-slate-600 mb-3" />
-            <p className="text-sm text-slate-400">Aucun document trouvé.</p>
-            <p className="text-xs text-slate-500 mt-1">Vos documents apparaîtront ici après vérification.</p>
-          </Card>
-        )}
-        {docs.map(doc => {
-          const s = STATUS[doc.status as keyof typeof STATUS] ?? STATUS['PENDING']!
-          const Icon = s.icon
-          const days = daysUntil(doc.expires_at)
-          return (
-            <Card key={doc.id} className={`p-4 border ${s.bg}`}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Icon size={14} className={s.color} />
-                    <span className="font-semibold text-white text-sm">{(doc.document_types as {label:string}).label}</span>
-                  </div>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${s.bg} ${s.color}`}>{s.label}</span>
-                </div>
-                <div className="text-right text-[10px] text-slate-400">
-                  {doc.expires_at && <div className={days < 30 ? 'text-amber-400 font-bold' : ''}>{days > 0 ? `Expire dans ${days}j` : 'Expiré'}</div>}
-                  {doc.issued_at && <div>Émis: {new Date(doc.issued_at).toLocaleDateString('fr-CA')}</div>}
-                </div>
+
+      <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:16, paddingBottom:32 }}>
+        {/* Alertes */}
+        {alerts.length > 0 && (
+          <div style={{ background:'rgba(220,38,38,0.07)', border:'1.5px solid rgba(220,38,38,0.25)', borderLeft:'4px solid #DC2626', borderRadius:14, padding:'13px 15px' }}>
+            <div style={{ fontSize:12, fontWeight:700, color:'#DC2626', marginBottom:5 }}>⚠ Action requise</div>
+            {alerts.map(d => (
+              <div key={d.id} style={{ fontSize:11, color: dark ? '#FCA5A5' : '#7F1D1D', marginTop:3 }}>
+                • {d.document_types?.label ?? d.id} — {STATUS_CONF[d.status as keyof typeof STATUS_CONF]?.label ?? d.status}
               </div>
-            </Card>
-          )
-        })}
+            ))}
+          </div>
+        )}
+
+        {/* Liste */}
+        {docs.length === 0 ? (
+          <div style={{ ...cardStyle(t), padding:'48px 0', textAlign:'center' }}>
+            <FileText size={40} color={t.text3} style={{ margin:'0 auto 12px', display:'block' }} />
+            <div style={{ fontSize:14, color:t.text3, fontWeight:500 }}>Aucun document trouvé</div>
+            <button onClick={() => router.push('/documents/upload')} style={{ marginTop:16, padding:'10px 20px', borderRadius:12, background:'#003DA5', color:'white', fontWeight:700, border:'none', cursor:'pointer', fontSize:13 }}>
+              + Ajouter un document
+            </button>
+          </div>
+        ) : (
+          <div>
+            <SectionTitle title="Tous les documents" t={t} />
+            <div style={{ ...cardStyle(t), overflow:'hidden' }}>
+              {docs.map((doc, idx) => {
+                const sc = STATUS_CONF[doc.status as keyof typeof STATUS_CONF] ?? STATUS_CONF.PENDING
+                const { Icon } = sc
+                return (
+                  <div key={doc.id} onClick={() => router.push(`/documents/detail?id=${doc.id}`)} style={{
+                    display:'flex', alignItems:'center', gap:12,
+                    padding:'13px 15px',
+                    borderTop: idx > 0 ? `1px solid ${t.border}` : 'none',
+                    cursor:'pointer',
+                  }}>
+                    <div style={{ width:40, height:40, borderRadius:12, background: dark ? 'rgba(0,61,165,0.15)' : 'rgba(0,61,165,0.07)', border:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                      <FileText size={18} color={t.accent} />
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:t.text, marginBottom:3 }}>
+                        {doc.document_types?.label ?? 'Document'}
+                      </div>
+                      <div style={{ fontSize:10, color:t.text3 }}>
+                        Exp. {fmtDate(doc.expires_at)}
+                      </div>
+                    </div>
+                    <div style={{ display:'flex', alignItems:'center', gap:5, background:sc.bg, border:`1px solid ${sc.border}`, borderRadius:20, padding:'4px 10px' }}>
+                      <Icon size={11} color={sc.color} />
+                      <span style={{ fontSize:10, fontWeight:700, color:sc.color }}>{sc.label}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </AppShell>
   )

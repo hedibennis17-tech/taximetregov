@@ -1,66 +1,92 @@
 'use client'
-
 import { AppShell } from '@/components/layout/AppShell'
-import { Card, SectionHeader } from '@/components/ui'
-import { useDriverProfile, useRevenue, money } from '@/lib/api'
-import Link from 'next/link'
-import { RefreshCw } from 'lucide-react'
+import { useTheme } from '@/lib/theme'
+import { getThemeTokens, cardStyle, SectionTitle } from '@/lib/theme-helpers'
+import { MessageCircle, Phone, FileText, HelpCircle, ChevronRight, Mail } from 'lucide-react'
 
-export default function Page() {
-  const { profile, loading, refresh } = useDriverProfile()
-  const { revenue } = useRevenue('month')
+const FAQ = [
+  { q:'Comment déclarer mes revenus?',       a:'Rendez-vous dans la section Fiscal pour accéder aux outils de déclaration Revenu Québec.' },
+  { q:'Comment connecter une plateforme?',   a:'Allez dans Mes plateformes, choisissez votre service (Uber, Taxi Diamond, etc.) et suivez les étapes.' },
+  { q:'Mon document est refusé, que faire?', a:'Vérifiez que le document est lisible, non expiré, puis soumettez-le à nouveau depuis Mes documents.' },
+  { q:'Comment calculer mes déductions?',    a:'Le Centre fiscal calcule automatiquement vos dépenses déductibles selon les règles RQ en vigueur.' },
+]
+
+export default function SupportPage() {
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+  const t = getThemeTokens(dark)
+
+  const contacts = [
+    { icon:Phone,         label:'Téléphone',  sub:'1-800-TAXI-GOV',             color:'#059669' },
+    { icon:Mail,          label:'Courriel',   sub:'support@taximetregov.qc.ca',  color:'#003DA5' },
+    { icon:MessageCircle, label:'Clavardage', sub:'Lun-Ven 8h–18h (HAE)',        color:'#7C3AED' },
+  ]
 
   return (
     <AppShell>
-      <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Support</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
-      <div className="px-4 pb-8 space-y-4">
+      <div style={{ padding:'18px 16px 12px' }}>
+        <h1 style={{ fontSize:22, fontWeight:800, color:t.text, margin:0, letterSpacing:'-0.01em' }}>Support</h1>
+        <p style={{ fontSize:11, color:t.text3, margin:'3px 0 0' }}>Aide · TAXIMÈTRE.GOV</p>
+      </div>
 
-        {/* Connexion status */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs text-green-400">Base de données connectée · Supabase</span>
-          <button onClick={() => void refresh()} className="ml-auto">
-            <RefreshCw size={12} className={loading ? 'animate-spin text-green-400' : 'text-green-600'} />
-          </button>
+      <div style={{ padding:'0 16px', display:'flex', flexDirection:'column', gap:16, paddingBottom:32 }}>
+        {/* Hero */}
+        <div style={{ background:'linear-gradient(135deg,#003DA5 0%,#0B4F71 100%)', borderRadius:20, padding:'20px 18px', boxShadow:'0 8px 28px rgba(0,61,165,0.30)', textAlign:'center' }}>
+          <div style={{ fontSize:40, marginBottom:8 }}>🆘</div>
+          <div style={{ fontSize:16, fontWeight:800, color:'white', marginBottom:6 }}>Comment pouvons-nous vous aider?</div>
+          <div style={{ fontSize:12, color:'rgba(255,255,255,0.60)', lineHeight:1.5 }}>
+            Notre équipe de support est disponible pour vous aider avec toute question concernant TAXIMÈTRE.GOV
+          </div>
         </div>
 
-        {/* Contenu */}
-        <Card className="p-8 text-center">
-          <div className="text-5xl mb-4">🆘</div>
-          <h2 className="text-lg font-bold text-white mb-2">Support</h2>
-          {profile && (
-            <p className="text-sm text-slate-400 mb-4">
-              {profile.first_name} {profile.last_name} · {profile.public_driver_id}
-            </p>
-          )}
-          {revenue && (
-            <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto mt-4">
-              <div className="bg-slate-800 rounded-xl p-3">
-                <div className="font-bold text-green-400">{money(revenue.wallet.balance)}</div>
-                <div className="text-[10px] text-slate-400">Solde wallet</div>
-              </div>
-              <div className="bg-slate-800 rounded-xl p-3">
-                <div className="font-bold text-white">{revenue.summary.total_activities}</div>
-                <div className="text-[10px] text-slate-400">Activités ce mois</div>
-              </div>
-            </div>
-          )}
-        </Card>
+        {/* Contacts */}
+        <div>
+          <SectionTitle title="Nous contacter" t={t} />
+          <div style={{ ...cardStyle(t), overflow:'hidden' }}>
+            {contacts.map((c, idx) => {
+              const Icon = c.icon
+              return (
+                <div key={c.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'13px 15px', borderTop: idx > 0 ? `1px solid ${t.border}` : 'none' }}>
+                  <div style={{ width:38, height:38, borderRadius:11, background: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', border:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <Icon size={17} color={c.color} />
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:t.text }}>{c.label}</div>
+                    <div style={{ fontSize:11, color:t.text3, marginTop:2 }}>{c.sub}</div>
+                  </div>
+                  <ChevronRight size={16} color={t.text3} />
+                </div>
+              )
+            })}
+          </div>
+        </div>
 
-        {/* Navigation */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { href: '/home',    label: 'Accueil',    icon: '🏠' },
-            { href: '/revenue', label: 'Revenus',    icon: '💰' },
-            { href: '/trips',   label: 'Courses',    icon: '🚕' },
-            { href: '/taximeter', label: 'Taximètre', icon: '📟' },
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors">
-              <span>{item.icon}</span>
-              <span className="text-xs font-semibold text-white">{item.label}</span>
-            </Link>
-          ))}
+        {/* FAQ */}
+        <div>
+          <SectionTitle title="Questions fréquentes" t={t} />
+          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+            {FAQ.map((item, idx) => (
+              <div key={idx} style={{ ...cardStyle(t), padding:'13px 15px' }}>
+                <div style={{ display:'flex', gap:10, alignItems:'flex-start' }}>
+                  <HelpCircle size={15} color={t.accent} style={{ flexShrink:0, marginTop:1 }} />
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:700, color:t.text, marginBottom:5 }}>{item.q}</div>
+                    <div style={{ fontSize:11, color:t.text2, lineHeight:1.5 }}>{item.a}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Docs */}
+        <div style={{ ...cardStyle(t), padding:'14px 16px', display:'flex', alignItems:'center', gap:12 }}>
+          <FileText size={20} color={t.accent} />
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:13, fontWeight:700, color:t.text }}>Documentation complète</div>
+            <div style={{ fontSize:11, color:t.text3, marginTop:2 }}>Guide du chauffeur · TAXIMÈTRE.GOV</div>
+          </div>
+          <ChevronRight size={16} color={t.text3} />
         </div>
       </div>
     </AppShell>
