@@ -86,7 +86,7 @@ export default function TripsPage() {
                     </span>
                   </div>
                   <div style={{ fontSize:10, color:t.text3 }}>
-                    {fmt(trip.started_at)} · {formatDistance(trip.distance_meters)} · {formatDuration(trip.duration_seconds ?? 0)}
+                    {fmt(trip.started_at)} · {formatDistance(trip.distance_meters)}
                   </div>
                 </div>
                 <div style={{ textAlign:'right', flexShrink:0 }}>
