@@ -2,46 +2,45 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
 type Theme = 'dark' | 'light'
-
-const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({
-  theme: 'dark',
-  toggle: () => {},
-})
+const ThemeCtx = createContext<{ theme: Theme; toggle: () => void }>({ theme: 'dark', toggle: () => {} })
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark')
 
-  // Charger depuis localStorage au montage
   useEffect(() => {
     const saved = localStorage.getItem('qc-theme') as Theme | null
-    if (saved === 'light' || saved === 'dark') setTheme(saved)
+    apply(saved ?? 'dark')
+    setTheme(saved ?? 'dark')
   }, [])
 
-  // Appliquer au DOM à chaque changement
-  useEffect(() => {
-    const root = document.documentElement
+  function apply(t: Theme) {
+    const html = document.documentElement
     const body = document.body
-    root.setAttribute('data-theme', theme)
-    if (theme === 'dark') {
-      body.style.background = '#050E1C'
-      body.style.color = '#F0F4FF'
+    // Classe sur html pour Tailwind darkMode: 'class'
+    if (t === 'dark') {
+      html.classList.add('dark')
+      html.classList.remove('light')
     } else {
-      body.style.background = '#F0F4FF'
-      body.style.color = '#0A1628'
+      html.classList.add('light')
+      html.classList.remove('dark')
     }
-  }, [theme])
+    // Background direct sur body
+    body.style.cssText = t === 'dark'
+      ? 'background:#050E1C!important;color:#F0F4FF!important;'
+      : 'background:#F0F4FF!important;color:#0A1628!important;'
+  }
 
   function toggle() {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
     setTheme(next)
     localStorage.setItem('qc-theme', next)
+    apply(next)
+    // Force reload des styles en ajoutant/retirant une classe sur body
+    document.body.classList.toggle('theme-transitioning')
+    setTimeout(() => document.body.classList.toggle('theme-transitioning'), 50)
   }
 
-  return (
-    <ThemeCtx.Provider value={{ theme, toggle }}>
-      {children}
-    </ThemeCtx.Provider>
-  )
+  return <ThemeCtx.Provider value={{ theme, toggle }}>{children}</ThemeCtx.Provider>
 }
 
 export const useTheme = () => useContext(ThemeCtx)
