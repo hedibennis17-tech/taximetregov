@@ -91,9 +91,6 @@ export default function TripsPage() {
                 </div>
                 <div style={{ textAlign:'right', flexShrink:0 }}>
                   <div style={{ fontSize:15, fontWeight:800, color:t.text }}>{money(trip.final_amount ?? '0')}</div>
-                  {trip.tip_amount && parseFloat(trip.tip_amount) > 0 && (
-                    <div style={{ fontSize:10, color:t.green, marginTop:1 }}>+{money(trip.tip_amount)} tip</div>
-                  )}
                 </div>
               </div>
             ))}
