@@ -1,129 +1,180 @@
 'use client'
-
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Shield } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
-
-type Mode = 'login' | 'signup'
-
-function messageForAuthError(message: string) {
-  const normalized = message.toLowerCase()
-  if (normalized.includes('invalid login credentials')) return 'Courriel ou mot de passe incorrect.'
-  if (normalized.includes('email not confirmed')) return 'Confirmez votre courriel avant de vous connecter.'
-  if (normalized.includes('already registered')) return 'Un compte existe déjà avec ce courriel.'
-  if (normalized.includes('password')) return 'Le mot de passe ne respecte pas les exigences de sécurité.'
-  return message
-}
+import { Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react'
+import { TaximetreGovLogo } from '@/components/brand/Logo'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [mode, setMode] = useState<Mode>('login')
-  const [email, setEmail] = useState('')
+  const [mode,     setMode]     = useState<'login'|'register'>('login')
+  const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const [showPwd,  setShowPwd]  = useState(false)
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState<string|null>(null)
+  const [success,  setSuccess]  = useState<string|null>(null)
 
-  const nextPath = '/home'
-
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setLoading(true)
-    setError(null)
-    setNotice(null)
-
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true); setError(null); setSuccess(null)
     try {
       const supabase = getSupabaseBrowserClient()
-      const normalizedEmail = email.trim().toLowerCase()
 
-      if (mode === 'signup') {
-        if (!firstName.trim() || !lastName.trim()) {
-          throw new Error('Indiquez votre prénom et votre nom pour créer votre dossier chauffeur.')
-        }
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: {
-            data: { first_name: firstName.trim(), last_name: lastName.trim(), province: 'QC', language: 'fr' },
-            emailRedirectTo: `${window.location.origin}/auth/login`,
-          },
-        })
+      if (mode === 'register') {
+        const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
         if (signUpError) throw signUpError
         if (data.session) {
-          router.replace(nextPath)
-          return
+          await fetch('/api/auth/setup', { method: 'POST', headers: { Authorization: `Bearer ${data.session.access_token}` } })
+          router.replace('/home')
+        } else {
+          setSuccess('Compte créé! Vérifiez votre courriel pour confirmer.')
         }
-        setNotice('Votre compte a été créé. Consultez votre courriel pour confirmer votre adresse, puis connectez-vous.')
-        setMode('login')
-        setPassword('')
-        return
+      } else {
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+        if (signInError) throw signInError
+        if (!data.session) throw new Error('Impossible de créer la session.')
+        await fetch('/api/auth/setup', { method: 'POST', headers: { Authorization: `Bearer ${data.session.access_token}` } })
+        router.replace('/home')
       }
-
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      })
-      if (signInError) throw signInError
-      if (!data.session) throw new Error('Aucune session sécurisée n’a été créée. Réessayez.')
-      router.replace(nextPath)
-    } catch (caught) {
-      setError(messageForAuthError(caught instanceof Error ? caught.message : 'Connexion impossible.'))
+    } catch (err) {
+      const msg = (err as Error).message
+      if (msg.includes('Invalid login')) setError('Courriel ou mot de passe incorrect.')
+      else if (msg.includes('already registered')) setError('Ce courriel est déjà utilisé.')
+      else setError(msg)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 flex flex-col">
-      <div className="px-6 pt-16 pb-8 text-center">
-        <div className="w-20 h-20 rounded-3xl bg-qc-blue flex items-center justify-center mx-auto mb-4 text-4xl shadow-lg shadow-blue-900/50">⚜</div>
-        <h1 className="text-2xl font-bold text-white">TAXIMÈTRE.GOV</h1>
-        <p className="text-sm text-slate-400 mt-1">Espace sécurisé des chauffeurs — Québec</p>
+    <div className="min-h-screen flex flex-col" style={{ background: '#F4F6FA' }}>
+
+      {/* Bande bleue en haut */}
+      <div style={{ background: '#003DA5', height: 6 }} />
+
+      {/* Header gouvernemental */}
+      <div className="px-6 py-4 flex items-center justify-between" style={{ background: 'white', borderBottom: '1px solid #DDE3EE' }}>
+        <div className="text-[10px] text-gray-500 font-medium tracking-wide">Gouvernement du Québec</div>
+        <div className="text-[10px] text-gray-400">🔒 Connexion sécurisée</div>
       </div>
 
-      <div className="flex-1 px-6 max-w-md w-full mx-auto">
-        <div className="grid grid-cols-2 rounded-xl bg-slate-900 border border-slate-800 p-1 mb-6">
-          <button type="button" onClick={() => { setMode('login'); setError(null); setNotice(null) }} className={`py-2 rounded-lg text-sm font-semibold ${mode === 'login' ? 'bg-qc-blue text-white' : 'text-slate-400'}`}>Connexion</button>
-          <button type="button" onClick={() => { setMode('signup'); setError(null); setNotice(null) }} className={`py-2 rounded-lg text-sm font-semibold ${mode === 'signup' ? 'bg-qc-blue text-white' : 'text-slate-400'}`}>Créer un compte</button>
+      {/* Contenu principal */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+
+        {/* Logo */}
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <TaximetreGovLogo size="lg" variant="light" showTagline />
+          <div className="text-xs text-center" style={{ color: '#8A96A8', maxWidth: 260 }}>
+            Infrastructure numérique gouvernementale · Espace chauffeur
+          </div>
         </div>
 
-        <form onSubmit={submit} className="space-y-4">
-          {mode === 'signup' && (
-            <div className="grid grid-cols-2 gap-3">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide block">Prénom
-                <input required value={firstName} onChange={(event) => setFirstName(event.target.value)} autoComplete="given-name" className="mt-2 w-full px-4 py-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-white text-sm outline-none focus:border-qc-blue" />
-              </label>
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide block">Nom
-                <input required value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name" className="mt-2 w-full px-4 py-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-white text-sm outline-none focus:border-qc-blue" />
-              </label>
+        {/* Card formulaire */}
+        <div className="w-full max-w-sm" style={{ background: 'white', borderRadius: 20, border: '1px solid #DDE3EE', boxShadow: '0 4px 20px rgba(0,0,0,0.07)', padding: 28 }}>
+
+          {/* Tabs login/register */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', background:'#F4F6FA', borderRadius:10, padding:3, marginBottom:24 }}>
+            {(['login','register'] as const).map(m => (
+              <button key={m} onClick={() => { setMode(m); setError(null) }}
+                style={{
+                  padding:'9px 0', borderRadius:8, fontWeight:700, fontSize:13,
+                  background: mode===m ? 'white' : 'transparent',
+                  color: mode===m ? '#003DA5' : '#8A96A8',
+                  boxShadow: mode===m ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                  border:'none', cursor:'pointer', transition:'all 0.15s',
+                }}>
+                {m === 'login' ? 'Connexion' : 'Créer un compte'}
+              </button>
+            ))}
+          </div>
+
+          {/* Erreur */}
+          {error && (
+            <div style={{ background:'#FEE2E2', border:'1px solid #FECACA', borderRadius:10, padding:'10px 14px', marginBottom:16, display:'flex', alignItems:'center', gap:8 }}>
+              <AlertCircle size={14} color="#C8102E" />
+              <span style={{ fontSize:13, color:'#C8102E', fontWeight:500 }}>{error}</span>
             </div>
           )}
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide block">Courriel
-            <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" className="mt-2 w-full px-4 py-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-white text-sm outline-none focus:border-qc-blue" placeholder="vous@exemple.com" />
-          </label>
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide block">Mot de passe
-            <span className="relative block mt-2">
-              <input required minLength={12} type={showPass ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} className="w-full px-4 py-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-white text-sm outline-none focus:border-qc-blue pr-12" placeholder="12 caractères minimum" />
-              <button type="button" onClick={() => setShowPass((visible) => !visible)} aria-label={showPass ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">{showPass ? <EyeOff size={18} /> : <Eye size={18} />}</button>
-            </span>
-          </label>
-          {error && <p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{error}</p>}
-          {notice && <p role="status" className="rounded-xl border border-green-500/30 bg-green-500/10 px-3 py-2 text-xs text-green-300">{notice}</p>}
-          <button type="submit" disabled={loading} className="w-full py-4 rounded-2xl bg-qc-blue text-white font-bold text-base hover:bg-qc-blue-dark active:scale-98 transition-all disabled:opacity-60 shadow-lg shadow-blue-900/40 mt-2">
-            {loading ? 'Connexion sécurisée…' : mode === 'login' ? 'Se connecter' : 'Créer mon compte chauffeur'}
-          </button>
-          <div className="flex items-center gap-2 justify-center mt-2">
-            <Shield size={13} className="text-slate-500" />
-            <span className="text-xs text-slate-500">Authentification Supabase sécurisée par courriel et mot de passe</span>
+          {success && (
+            <div style={{ background:'#E6F4ED', border:'1px solid #A7F3C4', borderRadius:10, padding:'10px 14px', marginBottom:16 }}>
+              <span style={{ fontSize:13, color:'#00873A', fontWeight:500 }}>{success}</span>
+            </div>
+          )}
+
+          <form onSubmit={e => void handleSubmit(e)}>
+            {/* Email */}
+            <div style={{ marginBottom:16 }}>
+              <label style={{ display:'block', fontSize:12, fontWeight:600, color:'#4A5568', marginBottom:6 }}>
+                Adresse courriel
+              </label>
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="votre@courriel.ca"
+                style={{
+                  width:'100%', padding:'12px 14px', borderRadius:10,
+                  border:'1.5px solid #DDE3EE', fontSize:15, outline:'none',
+                  background:'white', color:'#0A1628',
+                  transition:'border 0.15s',
+                }}
+                onFocus={e => e.target.style.border='1.5px solid #003DA5'}
+                onBlur={e => e.target.style.border='1.5px solid #DDE3EE'}
+              />
+            </div>
+
+            {/* Mot de passe */}
+            <div style={{ marginBottom:24 }}>
+              <label style={{ display:'block', fontSize:12, fontWeight:600, color:'#4A5568', marginBottom:6 }}>
+                Mot de passe
+              </label>
+              <div style={{ position:'relative' }}>
+                <input type={showPwd ? 'text' : 'password'} required value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  minLength={8}
+                  style={{
+                    width:'100%', padding:'12px 44px 12px 14px', borderRadius:10,
+                    border:'1.5px solid #DDE3EE', fontSize:15, outline:'none',
+                    background:'white', color:'#0A1628',
+                  }}
+                  onFocus={e => e.target.style.border='1.5px solid #003DA5'}
+                  onBlur={e => e.target.style.border='1.5px solid #DDE3EE'}
+                />
+                <button type="button" onClick={() => setShowPwd(v => !v)}
+                  style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#8A96A8' }}>
+                  {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Bouton */}
+            <button type="submit" disabled={loading}
+              style={{
+                width:'100%', padding:'14px', borderRadius:12,
+                background: loading ? '#7A98D0' : '#003DA5',
+                color:'white', fontWeight:800, fontSize:15,
+                border:'none', cursor: loading ? 'not-allowed' : 'pointer',
+                display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+                transition:'background 0.15s',
+              }}>
+              {loading && <Loader2 size={16} className="animate-spin" />}
+              {mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+            </button>
+          </form>
+        </div>
+
+        {/* Pied de page */}
+        <div className="mt-8 text-center space-y-1">
+          <div className="text-[10px]" style={{ color:'#8A96A8' }}>
+            Mode pilote · Données synthétiques · Gouvernement du Québec
           </div>
-        </form>
+          <div className="text-[10px]" style={{ color:'#C8102E' }}>
+            ⚜ TAXIMETER.GOV
+          </div>
+        </div>
       </div>
 
-      <div className="px-6 pb-8 text-center"><p className="text-[10px] text-slate-600">TAXIMÈTRE.GOV — Pilote Québec 2026</p></div>
-    </main>
+      {/* Bande bleue en bas */}
+      <div style={{ background:'#003DA5', height:4 }} />
+    </div>
   )
 }

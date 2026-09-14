@@ -1,40 +1,40 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Gauge, DollarSign, FileText, User, Grid } from 'lucide-react'
+import { Home, Gauge, FileText, DollarSign, User, Grid, X } from 'lucide-react'
 import { useState } from 'react'
 
 const navItems = [
-  { href: '/home',      icon: Home,        label: 'Accueil'   },
-  { href: '/taximeter', icon: Gauge,        label: 'Taximètre' },
-  { href: '/tax',       icon: FileText,     label: 'Fiscal'    },
-  { href: '/revenue',   icon: DollarSign,   label: 'Revenus'   },
-  { href: '/profile',   icon: User,         label: 'Profil'    },
+  { href:'/home',      icon:Home,      label:'Accueil'   },
+  { href:'/taximeter', icon:Gauge,      label:'Taximètre' },
+  { href:'/tax',       icon:FileText,   label:'Fiscal'    },
+  { href:'/revenue',   icon:DollarSign, label:'Revenus'   },
+  { href:'/profile',   icon:User,       label:'Profil'    },
 ]
 
 const menuItems = [
-  { href: '/home',          label: 'Accueil',                emoji: '🏠', cat: 'principal' },
-  { href: '/taximeter',     label: 'Taximètre',              emoji: '📟', cat: 'principal' },
-  { href: '/trips',         label: 'Mes courses',            emoji: '🚕', cat: 'principal' },
-  { href: '/revenue',       label: 'Mes revenus',            emoji: '💰', cat: 'principal' },
-  { href: '/profile',       label: 'Mon profil',             emoji: '👤', cat: 'dossier'   },
-  { href: '/documents',     label: 'Mes documents',          emoji: '📄', cat: 'dossier'   },
-  { href: '/vehicle',       label: 'Mon véhicule',           emoji: '🚗', cat: 'dossier'   },
-  { href: '/platforms',     label: 'Mes plateformes',        emoji: '🔌', cat: 'dossier'   },
-  { href: '/tax',           label: 'Fiscalité & Déclarations', emoji: '🧾', cat: 'fiscal'  },
-  { href: '/wallet',        label: 'Wallet & Paiements',     emoji: '💳', cat: 'fiscal'    },
-  { href: '/compliance',    label: 'Ma conformité',          emoji: '✅', cat: 'fiscal'    },
-  { href: '/notifications', label: 'Notifications',          emoji: '🔔', cat: 'systeme'   },
-  { href: '/sync',          label: 'Synchronisation',        emoji: '🔄', cat: 'systeme'   },
-  { href: '/security',      label: 'Sécurité',               emoji: '🔐', cat: 'systeme'   },
-  { href: '/support',       label: 'Support',                emoji: '🆘', cat: 'systeme'   },
+  { href:'/home',          label:'Accueil',                 emoji:'🏠', cat:'principal' },
+  { href:'/taximeter',     label:'Taximètre',               emoji:'📟', cat:'principal' },
+  { href:'/trips',         label:'Mes courses',             emoji:'🚕', cat:'principal' },
+  { href:'/revenue',       label:'Mes revenus',             emoji:'💰', cat:'principal' },
+  { href:'/profile',       label:'Mon profil',              emoji:'👤', cat:'dossier'   },
+  { href:'/documents',     label:'Mes documents',           emoji:'📄', cat:'dossier'   },
+  { href:'/vehicle',       label:'Mon véhicule',            emoji:'🚗', cat:'dossier'   },
+  { href:'/platforms',     label:'Mes plateformes',         emoji:'🔌', cat:'dossier'   },
+  { href:'/tax',           label:'Fiscalité & Déclarations',emoji:'🧾', cat:'fiscal'    },
+  { href:'/wallet',        label:'Wallet & Paiements',      emoji:'💳', cat:'fiscal'    },
+  { href:'/compliance',    label:'Ma conformité',           emoji:'✅', cat:'fiscal'    },
+  { href:'/notifications', label:'Notifications',           emoji:'🔔', cat:'systeme'   },
+  { href:'/sync',          label:'Synchronisation',         emoji:'🔄', cat:'systeme'   },
+  { href:'/security',      label:'Sécurité',                emoji:'🔐', cat:'systeme'   },
+  { href:'/support',       label:'Support',                 emoji:'🆘', cat:'systeme'   },
 ]
 
-const cats: Record<string, string> = {
-  principal: '⚡ Principal',
-  dossier:   '📁 Mon dossier',
-  fiscal:    '💰 Fiscal & Revenus',
-  systeme:   '⚙️ Système',
+const cats: Record<string,string> = {
+  principal:'⚡ Principal',
+  dossier:  '📁 Mon dossier',
+  fiscal:   '💰 Fiscal & Revenus',
+  systeme:  '⚙️ Système',
 }
 
 export function BottomNav() {
@@ -44,29 +44,42 @@ export function BottomNav() {
   return (
     <>
       {open && (
-        <div className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div className="absolute bottom-20 left-2 right-2 rounded-2xl bg-slate-900 border border-slate-700 overflow-hidden shadow-2xl"
-            onClick={e => e.stopPropagation()}>
-            <div className="p-3 border-b border-slate-800 flex items-center justify-between">
+        <div style={{ position:'fixed', inset:0, zIndex:40, background:'rgba(10,22,40,0.6)', backdropFilter:'blur(4px)' }}
+          onClick={() => setOpen(false)}>
+          <div style={{
+            position:'absolute', bottom:72, left:8, right:8,
+            borderRadius:20, background:'white', border:'1px solid #DDE3EE',
+            boxShadow:'0 -4px 40px rgba(0,0,0,0.15)', overflow:'hidden',
+          }} onClick={e => e.stopPropagation()}>
+            {/* Header menu */}
+            <div style={{ padding:'12px 16px', borderBottom:'1px solid #EDF0F7', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <div>
-                <div className="text-xs font-black tracking-[0.2em] text-qc-blue">TAXIMETER.GOV</div>
-                <div className="text-[9px] text-slate-500">Espace professionnel chauffeur</div>
+                <div style={{ fontSize:11, fontWeight:900, letterSpacing:'0.12em', color:'#003DA5' }}>TAXIMETER.GOV</div>
+                <div style={{ fontSize:9, color:'#8A96A8' }}>Espace professionnel chauffeur</div>
               </div>
-              <button onClick={() => setOpen(false)} className="text-slate-500 text-lg">✕</button>
+              <button onClick={() => setOpen(false)} style={{ width:28, height:28, borderRadius:8, background:'#F4F6FA', border:'1px solid #DDE3EE', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <X size={14} color="#4A5568" />
+              </button>
             </div>
-            <div className="max-h-[60vh] overflow-y-auto p-2">
-              {Object.entries(cats).map(([cat, catLabel]) => (
-                <div key={cat} className="mb-3">
-                  <div className="text-[9px] font-bold uppercase tracking-widest text-slate-500 px-2 pb-1">{catLabel}</div>
-                  <div className="grid grid-cols-3 gap-1.5">
+
+            <div style={{ maxHeight:'62vh', overflowY:'auto', padding:8 }}>
+              {Object.entries(cats).map(([cat, label]) => (
+                <div key={cat} style={{ marginBottom:8 }}>
+                  <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.1em', color:'#8A96A8', padding:'4px 8px 6px', textTransform:'uppercase' }}>{label}</div>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:6 }}>
                     {menuItems.filter(i => i.cat === cat).map(item => {
                       const active = pathname === item.href
                       return (
                         <Link key={item.href} href={item.href} onClick={() => setOpen(false)}
-                          className={`flex flex-col items-center gap-1 p-2.5 rounded-xl transition-all
-                            ${active ? 'bg-qc-blue text-white' : 'bg-slate-800 text-slate-300 active:bg-slate-700'}`}>
-                          <span className="text-xl leading-none">{item.emoji}</span>
-                          <span className="text-[9px] font-semibold text-center leading-tight">{item.label}</span>
+                          style={{
+                            display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+                            padding:'10px 4px', borderRadius:12, textDecoration:'none',
+                            background: active ? '#EBF0FA' : '#F8FAFF',
+                            border: `1px solid ${active ? '#003DA5' : '#EDF0F7'}`,
+                            transition:'all 0.15s',
+                          }}>
+                          <span style={{ fontSize:20 }}>{item.emoji}</span>
+                          <span style={{ fontSize:9, fontWeight:600, textAlign:'center', lineHeight:1.2, color: active ? '#003DA5' : '#4A5568' }}>{item.label}</span>
                         </Link>
                       )
                     })}
@@ -78,26 +91,28 @@ export function BottomNav() {
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-800">
-        <div className="flex items-center justify-around px-1 pt-1.5 pb-1">
+      {/* Barre de navigation */}
+      <nav style={{
+        position:'fixed', bottom:0, left:0, right:0, zIndex:50,
+        background:'white', borderTop:'1px solid #DDE3EE',
+        boxShadow:'0 -2px 12px rgba(0,0,0,0.08)',
+      }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-around', padding:'6px 4px 8px' }}>
           {navItems.map(item => {
             const active = pathname === item.href || (item.href !== '/home' && pathname.startsWith(item.href))
-            const Icon   = item.icon
+            const Icon = item.icon
             return (
               <Link key={item.href} href={item.href}
-                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all
-                  ${active ? 'text-qc-blue' : 'text-slate-500'}`}>
-                <Icon size={20} strokeWidth={active ? 2.5 : 1.5} />
-                <span className="text-[9px] font-semibold">{item.label}</span>
-                {active && <div className="w-1 h-1 rounded-full bg-qc-blue" />}
+                style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:2, padding:'6px 12px', borderRadius:10, textDecoration:'none', transition:'all 0.15s', background: active ? '#EBF0FA' : 'transparent' }}>
+                <Icon size={20} strokeWidth={active ? 2.5 : 1.8} color={active ? '#003DA5' : '#8A96A8'} />
+                <span style={{ fontSize:9, fontWeight: active ? 700 : 500, color: active ? '#003DA5' : '#8A96A8' }}>{item.label}</span>
               </Link>
             )
           })}
           <button onClick={() => setOpen(o => !o)}
-            className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all
-              ${open ? 'text-qc-blue bg-qc-blue/10' : 'text-slate-500'}`}>
-            <Grid size={20} strokeWidth={open ? 2.5 : 1.5} />
-            <span className="text-[9px] font-semibold">Menu</span>
+            style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:2, padding:'6px 12px', borderRadius:10, border:'none', cursor:'pointer', background: open ? '#EBF0FA' : 'transparent', transition:'all 0.15s' }}>
+            <Grid size={20} strokeWidth={open ? 2.5 : 1.8} color={open ? '#003DA5' : '#8A96A8'} />
+            <span style={{ fontSize:9, fontWeight: open ? 700 : 500, color: open ? '#003DA5' : '#8A96A8' }}>Menu</span>
           </button>
         </div>
       </nav>
