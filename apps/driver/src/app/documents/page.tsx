@@ -4,7 +4,7 @@ import { TaximetreGovLoader } from '@/components/brand/Logo'
 import { useTheme } from '@/lib/theme'
 import { getThemeTokens, cardStyle, SectionTitle } from '@/lib/theme-helpers'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { RefreshCw, CheckCircle, AlertTriangle, Clock, XCircle, FileText, Shield, ChevronRight, X, Upload, Camera, Plus } from 'lucide-react'
+import { RefreshCw, CheckCircle, AlertTriangle, Clock, XCircle, FileText, Shield, ChevronRight, X, Upload, Camera, Plus, type LucideIcon } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 // ─── Types ───────────────────────────────────────────────────
@@ -26,7 +26,7 @@ interface DocsData {
 interface DocType { id:string; code:string; label:string; label_fr:string|null; owner_type:string; has_expiry_date:boolean }
 
 // ─── Constantes ───────────────────────────────────────────────
-const STATUS_CONF: Record<string,{label:string;color:string;bg:string;bdr:string;Icon:React.ComponentType<{size?:number;color?:string}>}> = {
+const STATUS_CONF: Record<string,{label:string;color:string;bg:string;bdr:string;Icon:LucideIcon}> = {
   APPROVED:      {label:'Valide',           color:'#059669', bg:'rgba(5,150,105,0.10)',  bdr:'rgba(5,150,105,0.25)',  Icon:CheckCircle  },
   UPLOADED:      {label:'En vérification',  color:'#7C3AED', bg:'rgba(124,58,237,0.10)',bdr:'rgba(124,58,237,0.25)', Icon:Clock        },
   PENDING_REVIEW:{label:'En révision',      color:'#003DA5', bg:'rgba(0,61,165,0.10)',  bdr:'rgba(0,61,165,0.25)',   Icon:Clock        },
