@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     if (txm.status === 'IN_TRIP') {
       const tripRes = await fetch(
-        `${SB_URL}/rest/v1/taxi_trips?taximeter_id=eq.${txm.id}&trip_status=in.(STARTED,PAUSED)&select=id,public_trip_id,trip_reference,trip_status,distance_meters,elapsed_seconds,waiting_seconds,started_at&limit=1`,
+        `${SB_URL}/rest/v1/taxi_trips?taximeter_id=eq.${txm.id}&trip_status=in.(STARTED,PAUSED)&select=id,public_trip_id,trip_reference,trip_status,distance_meters,elapsed_seconds,waiting_seconds,started_at,fare_snapshot&limit=1`,
         { headers: { apikey: KEY(), Authorization: `Bearer ${KEY()}` } }
       )
       const trips = await tripRes.json() as unknown[]

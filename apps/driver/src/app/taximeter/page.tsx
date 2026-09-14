@@ -302,9 +302,21 @@ export default function TaxiMeterPage() {
           const t = data.taximeter.active_trip
           setTripReference(t.tripReference)
           setTripId(t.id)
-          setDistanceM(t.distanceMeters)
-          setElapsedSec(t.elapsedSeconds)
+          setDistanceM(t.distanceMeters ?? 0)
+          setElapsedSec(t.elapsedSeconds ?? 0)
           setFareVersion(data.taximeter.fare_version ?? '—')
+          // Charger le fareSnapshot depuis la course active
+          const snap = (data.taximeter as Record<string,unknown> & { active_trip: Record<string,unknown> | null })?.active_trip?.["fare_snapshot"] as FareSnapshot | undefined
+          if (snap?.baseFare) {
+            setFareSnapshot(snap)
+          } else {
+            // Fallback: tarifs QC officiels
+            setFareSnapshot({
+              version: 'QC-CTQ-2024', baseFare: '3.50', distanceRatePer100m: '0.185',
+              timeRatePerMinute: '0.55', waitingRatePerMinute: '0.55',
+              minimumFare: '3.50', airportSurcharge: '1.50', currency: 'CAD',
+            })
+          }
           setTripStatus(t.status === 'PAUSED' ? 'PAUSED' : 'ACTIVE')
           if (t.status !== 'PAUSED') { startTimer(); startGPS(t.id) }
         }
@@ -314,6 +326,34 @@ export default function TaxiMeterPage() {
   }, [])
 
   // ─── Actions ────────────────────────────────────────────────
+
+  // Reset forcé si bloqué
+  async function resetTaximeter() {
+    try {
+      const { getSupabaseBrowserClient } = await import('@/lib/supabase/client')
+      const sb = getSupabaseBrowserClient()
+      const { data: { session } } = await sb.auth.getSession()
+      const token = session?.access_token
+      const res = await fetch('/api/taximeter/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      })
+      const json = await res.json() as { success: boolean; data: { message: string } }
+      if (json.success) {
+        setTripStatus('IDLE')
+        setTripReference(null)
+        setTripId(null)
+        setFareSnapshot(null)
+        setDisplayFare(0)
+        setDistanceM(0)
+        setElapsedSec(0)
+        setWaitingSec(0)
+        stopTimer()
+        stopGPS()
+        setError(null)
+      }
+    } catch (e) { setError('Reset failed: ' + String(e)) }
+  }
 
   async function startTrip() {
     setError(null); setTripStatus('STARTING')
@@ -366,7 +406,19 @@ export default function TaxiMeterPage() {
   }
 
   function resetForNewTrip() {
-    setCompletedTrip(null); setTripStatus('IDLE')
+    // Reset complet de l'état pour nouvelle course
+    setCompletedTrip(null)
+    setTripStatus('IDLE')
+    setTripReference(null)
+    setTripId(null)
+    setFareSnapshot(null)
+    setDisplayFare(0)
+    setDistanceM(0)
+    setElapsedSec(0)
+    setWaitingSec(0)
+    setSpeedKmh(0)
+    stopTimer()
+    stopGPS()
     setElapsedSec(0); setDistanceM(0); setWaitingSec(0); setDisplayFare(0)
   }
 
@@ -588,6 +640,16 @@ export default function TaxiMeterPage() {
             className={`py-4 rounded-2xl font-bold text-sm tracking-wide transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 ${tk.ctrlStop}`}>
             <Square size={16} />
             {String(tripStatus) === 'STOPPING' ? 'ENVOI…' : 'FIN DE COURSE'}
+          </button>
+        </div>
+      )}
+
+      {/* Bouton reset si bloqué */}
+      {(tripStatus === 'ACTIVE' || tripStatus === 'PAUSED') && (
+        <div className="mt-2 text-center">
+          <button onClick={() => void resetTaximeter()}
+            className="text-[9px] text-slate-600 hover:text-red-400 underline transition-colors">
+            ⚠️ Course bloquée? Réinitialiser le taximètre
           </button>
         </div>
       )}
