@@ -1,4 +1,5 @@
 'use client'
+import { TaximetreGovLoader } from '@/components/brand/Logo'
 
 import Link from 'next/link'
 import { Bell, ChevronRight, Clock, MapPin, RefreshCw } from 'lucide-react'
@@ -53,10 +54,7 @@ export default function HomePage() {
     return (
       <AppShell>
         <div className="min-h-[70vh] flex items-center justify-center px-6 text-center">
-          <div>
-            <RefreshCw className="mx-auto mb-3 text-qc-blue animate-spin" size={28} />
-            <p className="text-sm text-slate-400">Chargement de vos données…</p>
-          </div>
+          <TaximetreGovLoader message="Chargement de vos données…" />
         </div>
       </AppShell>
     )

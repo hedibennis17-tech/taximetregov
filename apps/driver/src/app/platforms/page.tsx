@@ -1,4 +1,5 @@
 'use client'
+import { TaximetreGovLoader } from '@/components/brand/Logo'
 
 // ================================================================
 // TAXIMÈTRE.GOV — PAGE PLATEFORMES
@@ -286,8 +287,7 @@ export default function PlatformsPage() {
         {/* Loading */}
         {loading && (
           <div className="py-16 text-center">
-            <RefreshCw className="mx-auto animate-spin text-qc-blue" size={24} />
-            <p className="text-sm text-slate-400 mt-3">Chargement des plateformes…</p>
+            <TaximetreGovLoader />
           </div>
         )}
 
