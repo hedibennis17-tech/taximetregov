@@ -30,9 +30,9 @@ export async function GET(req: NextRequest) {
 
     // 1. Trouver le driver_profile de l'utilisateur connecté
     const profiles = await sbQuery(
-      `driver_profiles?select=id,first_name,last_name,public_driver_id,verification_status`,
+      `driver_profiles?select=id,first_name,last_name,driver_number,status`,
       token
-    ) as Array<{id:string;first_name:string;last_name:string;public_driver_id:string;verification_status:string}>
+    ) as Array<{id:string;first_name:string;last_name:string;driver_number:string;status:string}>
 
     if (!profiles.length) return apiError('Profil chauffeur introuvable', 404)
     const driverId = profiles[0]!.id
@@ -119,8 +119,7 @@ export async function GET(req: NextRequest) {
     }
 
     return apiSuccess({
-      driver: profiles[0],
-      documents: enriched,
+      driver: profiles[0],      documents: enriched,
       categories,
       stats,
       compliance: snapshots[0] ?? null,

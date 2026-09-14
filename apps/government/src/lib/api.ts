@@ -112,18 +112,18 @@ export function useGovDashboard() {
 // ─── Drivers list ────────────────────────────────────────────
 
 export interface GovDriver {
-  id:                  string
-  public_driver_id:    string
-  first_name:          string
-  last_name:           string
-  email:               string
-  verification_status: string
-  onboarding_status:   string
-  phone_number_masked: string
-  created_at:          string
-  revenue_this_month:  string
-  trips_this_month:    string
-  connected_platforms: string
+  id:                           string
+  driver_number:                string
+  first_name:                   string
+  last_name:                    string
+  email:                        string
+  status:                       string
+  identity_verification_status: string
+  language:                     string
+  created_at:                   string
+  revenue_this_month:           string
+  trips_this_month:             string
+  connected_platforms:          string
 }
 
 export function useGovDrivers(opts: { status?: string; search?: string } = {}) {
@@ -196,7 +196,7 @@ export interface TaxPeriod {
   gross_revenue_taxi:     string
   gross_revenue_rideshare: string
   gross_revenue_delivery: string
-  public_driver_id:       string
+  driver_number:       string
   first_name:             string
   last_name:              string
 }
@@ -275,7 +275,7 @@ export interface Transaction {
   activity_date:    string
   is_settled:       boolean
   source_reference: string | null
-  public_driver_id: string
+  driver_number: string
   first_name:       string
   last_name:        string
 }

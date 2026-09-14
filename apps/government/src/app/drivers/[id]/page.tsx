@@ -46,7 +46,7 @@ export default function DriverDetailPage() {
   )
 
   const d = driverDetail as {
-    profile: { id: string; public_driver_id: string; first_name: string; last_name: string; email: string; verification_status: string; onboarding_status: string; created_at: string }
+    profile: { id: string; driver_number: string; first_name: string; last_name: string; email: string; status: string; identity_verification_status: string; created_at: string }
     revenue: { source_type: string; gross: string; tips: string; net: string; count: string }[]
     trips:   { public_trip_id: string; trip_status: string; distance_meters: number; final_amount: string; started_at: string }[]
     platforms: { provider_code: string; display_name: string; connection_status: string; connected_at: string }[]
@@ -54,7 +54,7 @@ export default function DriverDetailPage() {
     taxAccount: { tps_status: string; tvq_status: string; filing_frequency: string } | null
   }
 
-  const status = statusConfig[d.profile.verification_status] ?? { label: d.profile.verification_status, color: 'bg-slate-100 text-slate-600' }
+  const status = statusConfig[d.profile.status] ?? { label: d.profile.status, color: 'bg-slate-100 text-slate-600' }
   const totalRevenue = d.revenue.reduce((sum, r) => sum + parseFloat(r.gross || '0'), 0)
 
   const docStats = {
@@ -75,7 +75,7 @@ export default function DriverDetailPage() {
           <div>
             <h1 className="text-2xl font-bold text-white">{d.profile.first_name} {d.profile.last_name}</h1>
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-sm text-slate-400 font-mono">{d.profile.public_driver_id}</span>
+              <span className="text-sm text-slate-400 font-mono">{d.profile.driver_number}</span>
               <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${status.color}`}>{status.label}</span>
             </div>
             <div className="text-xs text-slate-500 mt-1">{d.profile.email}</div>

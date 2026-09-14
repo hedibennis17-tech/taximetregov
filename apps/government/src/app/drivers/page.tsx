@@ -114,8 +114,8 @@ export default function DriversPage() {
             </div>
 
             {drivers.map((driver) => {
-              const status = statusConfig[driver.verification_status]
-                ?? { label: driver.verification_status, color: 'bg-slate-100 text-slate-600' }
+              const status = statusConfig[driver.status]
+                ?? { label: driver.status, color: 'bg-slate-100 text-slate-600' }
 
               return (
                 <Card key={driver.id} className="p-0 overflow-hidden hover:border-qc-blue/50 transition-colors">
@@ -127,7 +127,7 @@ export default function DriversPage() {
                           <div className="font-semibold text-white text-sm">
                             {driver.first_name} {driver.last_name}
                           </div>
-                          <div className="text-[10px] text-slate-400 font-mono">{driver.public_driver_id}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">{driver.driver_number}</div>
                         </div>
                         <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${status.color}`}>
                           {status.label}
@@ -150,7 +150,7 @@ export default function DriversPage() {
                           {driver.first_name} {driver.last_name}
                         </div>
                         <div className="text-[10px] text-slate-400">{driver.email}</div>
-                        <div className="text-[10px] text-slate-500 font-mono">{driver.public_driver_id}</div>
+                        <div className="text-[10px] text-slate-500 font-mono">{driver.driver_number}</div>
                       </div>
                       <span className={`text-[10px] px-2 py-1 rounded-full font-semibold w-fit ${status.color}`}>
                         {status.label}

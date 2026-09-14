@@ -52,9 +52,9 @@ export async function POST(req: NextRequest) {
 
     // ── 1. Trouver le driver ──────────────────────────────────
     const profiles = await sb(
-      `driver_profiles?select=id,user_id,first_name,last_name,public_driver_id`,
+      `driver_profiles?select=id,user_id,first_name,last_name,driver_number`,
       undefined
-    ) as Array<{id:string;user_id:string;first_name:string;last_name:string;public_driver_id:string}>
+    ) as Array<{id:string;user_id:string;first_name:string;last_name:string;driver_number:string}>
 
     // Priorité: Hedi Bennis
     let profile = profiles.find(p => p.first_name?.toLowerCase().includes('hedi')) ?? profiles[0]

@@ -22,10 +22,10 @@ export async function GET(
       // Profil complet
       db.execute(sql`
         SELECT
-          dp.id, dp.public_driver_id,
+          dp.id, dp.driver_number,
           dp.first_name, dp.last_name,
-          dp.verification_status, dp.onboarding_status,
-          dp.preferred_language, dp.phone_number_masked,
+          dp.status, dp.identity_verification_status,
+          dp.language,
           dp.created_at, dp.updated_at,
           u.email
         FROM driver_profiles dp
