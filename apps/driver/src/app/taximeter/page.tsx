@@ -390,11 +390,34 @@ export default function TaxiMeterPage() {
   }
 
   async function stopTrip() {
-    if (!tripReference) return
     setTripStatus('STOPPING'); stopTimer(); stopGPS()
+
+    // Si tripReference perdu (ex: reload page), récupérer depuis la DB
+    let ref = tripReference
+    if (!ref) {
+      try {
+        const statusData = await apiFetch('/api/taximeter/status') as {
+          hasActiveMeter: boolean
+          taximeter: { active_trip: { tripReference: string; distanceMeters: number; elapsedSeconds: number } | null } | null
+        }
+        if (statusData.hasActiveMeter && statusData.taximeter?.active_trip) {
+          ref = statusData.taximeter.active_trip.tripReference
+          // Récupérer distance/durée depuis DB si localement à 0
+          if (distanceM === 0) setDistanceM(statusData.taximeter.active_trip.distanceMeters ?? 0)
+          if (elapsedSec === 0) setElapsedSec(statusData.taximeter.active_trip.elapsedSeconds ?? 0)
+        }
+      } catch { /* ignore */ }
+    }
+
+    if (!ref) {
+      // Pas de course active — reset forcé
+      await resetTaximeter()
+      return
+    }
+
     try {
       const data = await apiFetch('/api/taximeter/stop', {
-        tripReference,
+        tripReference: ref,
         distanceMeters: Math.round(distanceM),
         elapsedSeconds: elapsedSec,
         waitingSeconds: waitingSec,

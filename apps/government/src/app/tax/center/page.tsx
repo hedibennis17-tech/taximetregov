@@ -100,7 +100,7 @@ export default function TaxCenterPage() {
       <PageHeader
         title="Centre fiscal gouvernemental"
         subtitle={`TPS · TVQ · Québec · ${usingDemo ? 'DONNÉES DEMO' : 'TAXIMETER.GOV'}`}
-        action={
+        actions={
           <button onClick={() => void load()} className="p-2 rounded-xl bg-slate-800 border border-slate-700">
             <RefreshCw size={14} className={loading ? 'animate-spin text-qc-blue' : 'text-slate-400'} />
           </button>
