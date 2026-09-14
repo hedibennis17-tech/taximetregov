@@ -13,6 +13,7 @@ import {
   RotateCcw, Sun, Moon, ArrowLeft,
   Pause, Play, Square, Zap, AlertTriangle, CheckCircle
 } from 'lucide-react'
+import { useTheme } from '@/lib/theme'
 
 
 // ─── TYPES ───────────────────────────────────────────────────
@@ -157,9 +158,9 @@ const T = {
 
 export default function TaxiMeterPage() {
   const router = useRouter()
+  const { theme, toggle: toggleTheme } = useTheme()
 
-  // Theme + orientation
-  const [theme, setTheme] = useState<Theme>('dark')
+  // orientation
   const [orientation, setOrientation] = useState<Orientation>('portrait')
 
   // Trip state
@@ -742,7 +743,7 @@ export default function TaxiMeterPage() {
           <RotateCcw size={13} />
         </button>
         {/* Theme toggle */}
-        <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+        <button onClick={toggleTheme}
           className={`p-1.5 rounded-lg border ${tk.panelBorder} ${tk.label} transition-colors`}>
           {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
         </button>
