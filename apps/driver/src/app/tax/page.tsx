@@ -34,10 +34,6 @@ const FILING_STATUS: Record<string,{label:string;color:string;bg:string;icon:str
   AMENDED:   { label:'Modifiée',   color:'#B45309', bg:'rgba(180,83,9,0.10)',    icon:'🔄' },
 }
 
-const PERIOD_STATUS: Record<string,{label:string;color:string}> = {
-  OPEN:'',FILED:'',ACCEPTED:'',CLOSED:'',READY_TO_FILE:'',
-}
-
 const P_COLOR: Record<string,string> = {
   OPEN:'#003DA5', FILED:'#059669', ACCEPTED:'#059669', CLOSED:'#4A6A9A', READY_TO_FILE:'#7C3AED',
 }
