@@ -8,6 +8,38 @@ import { useState, useEffect, useCallback } from 'react'
 import { RefreshCw, AlertTriangle, CheckCircle, Clock, ExternalLink, Shield } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
+// ── Bouton seed fiscal 10 mois ────────────────────────────────
+function SeedFiscalButton({ t, onDone }: { t: ReturnType<typeof getThemeTokens>; onDone: () => void }) {
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg]         = useState<string|null>(null)
+
+  async function run() {
+    setLoading(true); setMsg(null)
+    try {
+      const res  = await fetch('/api/admin/seed-fiscal', { method: 'POST' })
+      const json = await res.json() as { success: boolean; data: { message: string; resume: Record<string,string> }; error?: string }
+      if (!json.success) { setMsg(json.error ?? 'Erreur'); return }
+      setMsg(json.data.message)
+      setTimeout(() => { onDone() }, 1500)
+    } catch(e) { setMsg((e as Error).message) }
+    finally { setLoading(false) }
+  }
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:10, alignItems:'center' }}>
+      <button onClick={() => void run()} disabled={loading} style={{
+        padding:'13px 28px', borderRadius:14, background:loading?t.border:'#003DA5',
+        color:loading?t.text3:'white', fontWeight:800, fontSize:13, border:'none',
+        cursor:loading?'not-allowed':'pointer', boxShadow:loading?'none':'0 4px 16px rgba(0,61,165,0.35)',
+        display:'flex', alignItems:'center', gap:10,
+      }}>
+        {loading ? <><RefreshCw size={14} style={{animation:'spin 1s linear infinite'}}/> Initialisation…</> : '📊 Initialiser dossier fiscal 10 mois'}
+      </button>
+      {msg && <div style={{ fontSize:11, color:t.green, textAlign:'center', maxWidth:280 }}>{msg}</div>}
+    </div>
+  )
+}
+
 interface TaxData {
   hasAccount:boolean; taxAccount:Record<string,string>|null; currentPeriod:Record<string,string>|null
   allPeriods:Array<Record<string,string>>
@@ -148,7 +180,8 @@ export default function TaxPage() {
               <div style={{ ...cs, padding:'32px 16px', textAlign:'center' }}>
                 <Shield size={32} color={t.text3} style={{ margin:'0 auto 12px', display:'block' }} />
                 <p style={{ fontSize:14, fontWeight:700, color:t.text, margin:'0 0 6px' }}>Aucun compte fiscal configuré</p>
-                <p style={{ fontSize:11, color:t.text3, margin:0 }}>Lancez le seed fiscal pour initialiser les données.</p>
+                <p style={{ fontSize:11, color:t.text3, margin:'0 0 16px' }}>Lancez le seed fiscal pour initialiser les données.</p>
+                <SeedFiscalButton t={t} onDone={() => void load()} />
               </div>
             )}
 
@@ -157,6 +190,16 @@ export default function TaxPage() {
                 {/* ── TABLEAU DE BORD ── */}
                 {tab === 'dashboard' && (
                   <>
+                    {/* Bouton seed si aucune période */}
+                    {!period && (
+                      <div style={{ ...cs, padding:'24px 16px', textAlign:'center' }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:t.text, marginBottom:6 }}>📊 Aucune période fiscale active</div>
+                        <div style={{ fontSize:11, color:t.text3, marginBottom:18, lineHeight:1.6 }}>
+                          Initialisez le dossier fiscal pilote avec 10 mois de données réalistes — revenus taxi + plateformes, calculs TPS/TVQ, déclarations trimestrielles.
+                        </div>
+                        <SeedFiscalButton t={t} onDone={() => void load()} />
+                      </div>
+                    )}
                     {/* Solde */}
                     <div style={{ borderRadius:20, background: f&&f.solde_total>0 ? 'linear-gradient(135deg,#B45309 0%,#92400E 100%)' : 'linear-gradient(135deg,#059669 0%,#065F46 100%)', padding:'20px 18px', boxShadow:'0 8px 28px rgba(0,0,0,0.20)', textAlign:'center', position:'relative', overflow:'hidden' }}>
                       <div style={{ position:'absolute', top:-10, right:8, fontSize:100, color:'rgba(255,255,255,0.05)', pointerEvents:'none' }}>⚜</div>
