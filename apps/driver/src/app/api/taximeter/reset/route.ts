@@ -14,6 +14,10 @@ async function patch(path: string, body: unknown) {
   })
 }
 
+export async function GET(req: NextRequest) {
+  return POST(req)
+}
+
 export async function POST(req: NextRequest) {
   const ctx = await requireAuth(req)
   if (ctx instanceof Response) return ctx

@@ -372,7 +372,36 @@ export default function TaxiMeterPage() {
       setElapsedSec(0); setDistanceM(0); setWaitingSec(0)
       setTripStatus('ACTIVE')
       startTimer(); startGPS(resolvedId)
-    } catch (e) { setError((e as Error).message); setTripStatus('IDLE') }
+    } catch (e) {
+      const msg = (e as Error).message
+      // Si course déjà active → la charger au lieu d'afficher une erreur
+      if (msg.includes('déjà active') || msg.includes('already active')) {
+        try {
+          const statusData = await apiFetch('/api/taximeter/status') as {
+            hasActiveMeter: boolean
+            taximeter: { id: string; active_trip: { id: string; tripReference: string; status: string; distanceMeters: number; elapsedSeconds: number; fare_snapshot: Record<string,string> } | null } | null
+          }
+          if (statusData.hasActiveMeter && statusData.taximeter?.active_trip) {
+            const t = statusData.taximeter.active_trip
+            setTripReference(t.tripReference)
+            setTripId(t.id)
+            setDistanceM(t.distanceMeters ?? 0)
+            setElapsedSec(t.elapsedSeconds ?? 0)
+            const snap = t.fare_snapshot
+            if (snap?.baseFare) {
+              setFareSnapshot(snap as unknown as FareSnapshot)
+            } else {
+              setFareSnapshot({ version:'QC-CTQ-2024', baseFare:'3.50', distanceRatePer100m:'0.185', timeRatePerMinute:'0.55', waitingRatePerMinute:'0.55', minimumFare:'3.50', airportSurcharge:'1.50', currency:'CAD' })
+            }
+            setTripStatus(t.status === 'PAUSED' ? 'PAUSED' : 'ACTIVE')
+            if (t.status !== 'PAUSED') { startTimer(); startGPS(t.id) }
+            setError(null)
+            return
+          }
+        } catch { /* ignore */ }
+      }
+      setError(msg); setTripStatus('IDLE')
+    }
   }
 
   async function pauseTrip() {
