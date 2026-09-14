@@ -41,13 +41,16 @@ const CAT_ICON:Record<string,string> = {
   'Taximètre':'📟','Formation':'🎓','Fiscalité':'🧾','Autre':'📄',
 }
 const REQUIRED_DOCS = [
-  {code:'DRIVER_LICENSE',              label:'Permis de conduire',                   cat:'Identité',            required:true},
-  {code:'AUTHORIZED_DRIVER_PERMIT',    label:'Permis de chauffeur autorisé',          cat:'Transport rémunéré',  required:true},
-  {code:'CRIMINAL_RECORD_CHECK',       label:'Vérification des antécédents',          cat:'Transport rémunéré',  required:true},
-  {code:'TRAINING_CERTIFICATE',        label:'Attestation de formation',              cat:'Formation',           required:true},
+  // 🚗 Véhicule — en premier
   {code:'VEHICLE_REGISTRATION',        label:'Immatriculation du véhicule',           cat:'Véhicule',            required:true},
   {code:'VEHICLE_INSURANCE',           label:'Assurance automobile',                  cat:'Véhicule',            required:true},
   {code:'TAXIMETER_CERTIFICATE',       label:'Certificat de conformité du taximètre', cat:'Taximètre',           required:false},
+  // 🪪 Identité / Chauffeur
+  {code:'DRIVER_LICENSE',              label:'Permis de conduire',                    cat:'Identité',            required:true},
+  {code:'AUTHORIZED_DRIVER_PERMIT',    label:'Permis de chauffeur autorisé',          cat:'Transport rémunéré',  required:true},
+  {code:'CRIMINAL_RECORD_CHECK',       label:'Vérification des antécédents',          cat:'Transport rémunéré',  required:true},
+  {code:'TRAINING_CERTIFICATE',        label:'Attestation de formation',              cat:'Formation',           required:true},
+  // 🧾 Fiscalité
   {code:'TPS_REGISTRATION',            label:'Inscription TPS/TVQ',                   cat:'Fiscalité',           required:false},
 ]
 
