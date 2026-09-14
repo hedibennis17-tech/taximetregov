@@ -118,7 +118,7 @@ export default function RevenuePage() {
             <div style={{ fontSize:30, fontWeight:900, color:t.green, letterSpacing:'-0.02em' }}>
               {money(parseFloat(revenue.wallet.balance))}
             </div>
-            <div style={{ fontSize:10, color:t.text3, marginTop:6 }}>Mis à jour · {new Intl.DateTimeFormat('fr-CA',{dateStyle:'medium',timeStyle:'short'}).format(new Date(revenue.wallet.last_updated))}</div>
+            <div style={{ fontSize:10, color:t.text3, marginTop:6 }}>Solde disponible au retrait</div>
           </div>
         </div>
       )}
