@@ -143,186 +143,339 @@ function DocModal({doc,t,dark,onClose}:{doc:Doc;t:ReturnType<typeof getThemeToke
 }
 
 // ─── Modal upload ─────────────────────────────────────────────
-function UploadModal({t,dark,docTypes,onClose,onSubmit}:{t:ReturnType<typeof getThemeTokens>;dark:boolean;docTypes:DocType[];onClose:()=>void;onSubmit:(payload:Record<string,unknown>)=>Promise<void>}) {
-  const [step,setStep]       = useState<'type'|'info'|'file'|'confirm'>('type')
-  const [selCode,setSelCode] = useState('')
-  const [issuedAt,setIssuedAt]   = useState('')
-  const [expiresAt,setExpiresAt] = useState('')
-  const [last4,setLast4]         = useState('')
-  const [fileB64,setFileB64]     = useState<string|null>(null)
-  const [fileName,setFileName]   = useState('')
-  const [loading,setLoading]     = useState(false)
-  const [error,setError]         = useState<string|null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
+// ─── Interface fichier local ─────────────────────────────────
+interface DocFile { file: File|null; preview: string; url: string; uploading: boolean; uploaded: boolean }
+const emptyDocFile = (): DocFile => ({ file: null, preview: '', url: '', uploading: false, uploaded: false })
+
+// ─── Composant upload fichier (style DepXpreS) ───────────────
+function FileUploadZone({
+  label, description, docFile, onChange, onClear, inputRef, dark, t, accept = 'image/*,application/pdf'
+}: {
+  label: string; description: string
+  docFile: DocFile
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onClear: () => void
+  inputRef: React.RefObject<HTMLInputElement|null>
+  dark: boolean
+  t: ReturnType<typeof getThemeTokens>
+  accept?: string
+}) {
+  return (
+    <div>
+      <div style={{ fontSize:11, color:t.text3, marginBottom:6, fontWeight:600 }}>{label}</div>
+      <input ref={inputRef} type="file" accept={accept} capture="environment" onChange={onChange} style={{ display:'none' }}/>
+      {docFile.preview ? (
+        <div style={{ position:'relative', borderRadius:14, overflow:'hidden', border:`1.5px solid ${t.border}` }}>
+          {docFile.file?.type === 'application/pdf' ? (
+            <div style={{ padding:'20px', background:dark?'rgba(0,61,165,0.12)':'rgba(0,61,165,0.06)', textAlign:'center' }}>
+              <div style={{ fontSize:32, marginBottom:6 }}>📄</div>
+              <div style={{ fontSize:12, fontWeight:700, color:t.text }}>{docFile.file.name}</div>
+              <div style={{ fontSize:10, color:t.text3, marginTop:3 }}>{(docFile.file.size/1024).toFixed(0)} Ko</div>
+            </div>
+          ) : (
+            <img src={docFile.preview} alt="" style={{ width:'100%', height:120, objectFit:'cover', display:'block' }}/>
+          )}
+          {/* Overlay upload en cours */}
+          {docFile.uploading && (
+            <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
+              <div style={{ width:32, height:32, border:'3px solid rgba(255,255,255,0.3)', borderTop:'3px solid white', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
+              <span style={{ fontSize:11, color:'white', fontWeight:700 }}>Envoi en cours…</span>
+            </div>
+          )}
+          {/* Badge succès */}
+          {docFile.uploaded && !docFile.uploading && (
+            <div style={{ position:'absolute', bottom:8, right:8, background:'#059669', borderRadius:'50%', padding:4, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          )}
+          {/* Bouton supprimer */}
+          <button onClick={onClear} style={{ position:'absolute', top:8, right:8, width:26, height:26, borderRadius:'50%', background:'rgba(0,0,0,0.60)', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      ) : (
+        <div style={{ display:'flex', gap:8 }}>
+          {/* Prendre en photo */}
+          <button onClick={() => { if (inputRef.current) { inputRef.current.accept = 'image/*'; inputRef.current.capture = 'environment'; inputRef.current.click() } }}
+            style={{ flex:1, padding:'14px 10px', borderRadius:14, border:`2px dashed ${dark?'rgba(255,255,255,0.15)':'rgba(0,61,165,0.25)'}`, background:'transparent', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+            <Camera size={22} color={t.accent}/>
+            <span style={{ fontSize:10, fontWeight:700, color:t.text3 }}>Caméra</span>
+          </button>
+          {/* Choisir fichier */}
+          <button onClick={() => { if (inputRef.current) { inputRef.current.accept = 'image/*,application/pdf'; inputRef.current.removeAttribute('capture'); inputRef.current.click() } }}
+            style={{ flex:2, padding:'14px 10px', borderRadius:14, border:`2px dashed ${dark?'rgba(255,255,255,0.15)':'rgba(0,61,165,0.25)'}`, background:'transparent', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+            <Upload size={22} color={t.accent}/>
+            <span style={{ fontSize:11, fontWeight:700, color:t.text }}>Choisir un fichier</span>
+            <span style={{ fontSize:9, color:t.text3 }}>JPG · PNG · PDF · Max 10 Mo</span>
+          </button>
+        </div>
+      )}
+      <div style={{ fontSize:9, color:t.text3, marginTop:5, textAlign:'center' }}>{description}</div>
+    </div>
+  )
+}
+
+// ─── Modal upload complet ─────────────────────────────────────
+function UploadModal({ t, dark, docTypes, onClose, token }: {
+  t: ReturnType<typeof getThemeTokens>; dark: boolean
+  docTypes: DocType[]; onClose: () => void; token: string
+}) {
+  const [step, setStep]           = useState<'type'|'form'>('type')
+  const [selCode, setSelCode]     = useState('')
+  const [issuedAt, setIssuedAt]   = useState('')
+  const [expiresAt, setExpiresAt] = useState('')
+  const [last4, setLast4]         = useState('')
+  const [notes, setNotes]         = useState('')
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState<string|null>(null)
+  const [success, setSuccess]     = useState(false)
+
+  // Fichiers uploadés — un par document (recto, verso optionnel)
+  const [mainFile, setMainFile]   = useState<DocFile>(emptyDocFile())
+  const [backFile, setBackFile]   = useState<DocFile>(emptyDocFile())
+
+  const mainRef = useRef<HTMLInputElement>(null)
+  const backRef = useRef<HTMLInputElement>(null)
 
   const selType = docTypes.find(t => t.code === selCode)
+  const requiresBack = ['DRIVER_LICENSE','IDENTITY_DOCUMENT'].includes(selCode) // recto/verso
 
-  function handleFile(e:React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelect(
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: (f: DocFile) => void,
+    ref: React.RefObject<HTMLInputElement|null>
+  ) {
     const file = e.target.files?.[0]
     if (!file) return
-    setFileName(file.name)
-    const reader = new FileReader()
-    reader.onload = ev => setFileB64(ev.target?.result as string)
-    reader.readAsDataURL(file)
+    const preview = file.type !== 'application/pdf' ? URL.createObjectURL(file) : 'pdf'
+    setter({ file, preview, url: '', uploading: true, uploaded: false })
+
+    // Upload immédiat vers l'API
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/driver/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      })
+      const data = await res.json() as { ok: boolean; url?: string; error?: string; isMock?: boolean }
+      if (data.ok && data.url) {
+        setter({ file, preview: file.type !== 'application/pdf' ? URL.createObjectURL(file) : 'pdf', url: data.url, uploading: false, uploaded: true })
+      } else {
+        setter({ file, preview, url: '', uploading: false, uploaded: false })
+        setError(data.error ?? 'Erreur upload')
+      }
+    } catch {
+      setter({ file, preview, url: '', uploading: false, uploaded: false })
+      setError('Erreur réseau lors de l'upload')
+    }
+    // Reset input pour permettre re-sélection du même fichier
+    if (ref.current) ref.current.value = ''
   }
 
   async function handleSubmit() {
+    if (!selCode) { setError('Choisissez un type de document'); return }
     setLoading(true); setError(null)
     try {
-      await onSubmit({
+      const payload: Record<string, unknown> = {
         documentTypeCode: selCode,
-        issuedAt:  issuedAt || undefined,
-        expiresAt: expiresAt || undefined,
-        docNumberLast4: last4 || undefined,
-        fileBase64: fileB64 ?? undefined,
-        fileName:   fileName || undefined,
+        issuedAt:         issuedAt   || undefined,
+        expiresAt:        expiresAt  || undefined,
+        docNumberLast4:   last4      || undefined,
+        notes:            notes      || undefined,
+        storageUrl:       mainFile.url || undefined,
+        storageUrlBack:   backFile.url || undefined,
+        fileName:         mainFile.file?.name || undefined,
+      }
+      const res = await fetch('/api/driver/documents/submit', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       })
-      onClose()
+      const json = await res.json() as { success: boolean; error?: string }
+      if (!json.success) throw new Error(json.error)
+      setSuccess(true)
+      setTimeout(() => { onClose() }, 2200)
     } catch(e) { setError((e as Error).message) }
     finally { setLoading(false) }
   }
 
-  const inp = (placeholder:string, value:string, onChange:(v:string)=>void, type='text') => (
-    <input type={type} placeholder={placeholder} value={value} onChange={e=>onChange(e.target.value)}
-      style={{width:'100%',padding:'11px 13px',borderRadius:10,border:`1.5px solid ${t.border}`,fontSize:13,color:t.text,background:dark?'rgba(5,14,28,0.8)':'#FFFFFF',outline:'none',boxSizing:'border-box'}}/>
+  const cardS = { borderRadius:16, background:dark?'rgba(255,255,255,0.04)':'rgba(0,61,165,0.04)', border:`1.5px solid ${t.border}`, padding:'16px' }
+  const inp = (placeholder: string, value: string, onChange: (v: string) => void, type = 'text') => (
+    <input type={type} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)}
+      style={{ width:'100%', padding:'11px 13px', borderRadius:10, border:`1.5px solid ${t.border}`, fontSize:13, color:t.text, background:dark?'rgba(5,14,28,0.8)':'#FFFFFF', outline:'none', boxSizing:'border-box' as const }}/>
   )
 
   return (
-    <div style={{position:'fixed',inset:0,zIndex:300,display:'flex',alignItems:'flex-end',background:'rgba(0,0,0,0.70)'}} onClick={onClose}>
-      <div style={{width:'100%',maxHeight:'92vh',overflowY:'auto',background:dark?'#0F1F38':'#FFFFFF',borderRadius:'20px 20px 0 0',padding:'20px 16px 48px'}} onClick={e=>e.stopPropagation()}>
-        <div style={{width:40,height:4,borderRadius:2,background:t.border,margin:'0 auto 16px'}}/>
-        {/* Header */}
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
-          <div>
-            <div style={{fontSize:17,fontWeight:800,color:t.text}}>+ Ajouter un document</div>
-            <div style={{fontSize:11,color:t.text3,marginTop:2}}>Étape {step==='type'?1:step==='info'?2:step==='file'?3:4}/4</div>
+    <div style={{ position:'fixed', inset:0, zIndex:300, display:'flex', alignItems:'flex-end', background:'rgba(0,0,0,0.72)' }} onClick={onClose}>
+      <div style={{ width:'100%', maxHeight:'94vh', overflowY:'auto', background:dark?'#0F1F38':'#FFFFFF', borderRadius:'20px 20px 0 0', padding:'0 0 48px' }} onClick={e => e.stopPropagation()}>
+
+        {/* Handle + Header */}
+        <div style={{ padding:'16px 16px 0', position:'sticky', top:0, background:dark?'#0F1F38':'#FFFFFF', zIndex:10, borderBottom:`1px solid ${t.border}`, paddingBottom:12 }}>
+          <div style={{ width:40, height:4, borderRadius:2, background:t.border, margin:'0 auto 14px' }}/>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div>
+              <div style={{ fontSize:17, fontWeight:800, color:t.text }}>
+                {step === 'type' ? '📂 Choisir le type' : `📄 ${selType?.label_fr ?? selType?.label ?? selCode}`}
+              </div>
+              <div style={{ fontSize:10, color:t.text3, marginTop:2 }}>
+                {step === 'type' ? 'Sélectionnez la catégorie' : 'Remplissez et joignez le document'}
+              </div>
+            </div>
+            <button onClick={onClose} style={{ padding:8, borderRadius:10, background:t.card2, border:`1px solid ${t.border}`, cursor:'pointer' }}>
+              <X size={16} color={t.text3}/>
+            </button>
           </div>
-          <button onClick={onClose} style={{padding:8,borderRadius:10,background:t.card2,border:`1px solid ${t.border}`,cursor:'pointer'}}>
-            <X size={16} color={t.text3}/>
-          </button>
         </div>
 
-        {/* Étape 1 — Choisir le type */}
-        {step==='type'&&(
-          <div>
-            <div style={{fontSize:13,fontWeight:700,color:t.text,marginBottom:12}}>Choisissez le type de document</div>
-            <div style={{display:'flex',flexDirection:'column',gap:8,maxHeight:'55vh',overflowY:'auto'}}>
-              {REQUIRED_DOCS.map(rd=>{
-                const dt = docTypes.find(t=>t.code===rd.code)
-                return (
-                  <button key={rd.code} onClick={()=>{setSelCode(rd.code);setStep('info')}} style={{
-                    display:'flex',alignItems:'center',gap:12,padding:'13px 14px',borderRadius:14,
-                    background:dark?'rgba(0,61,165,0.10)':'rgba(0,61,165,0.05)',
-                    border:`1.5px solid ${selCode===rd.code?t.accent:t.border}`,
-                    cursor:'pointer',textAlign:'left',
-                  }}>
-                    <span style={{fontSize:22}}>{CAT_ICON[rd.cat]??'📄'}</span>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:13,fontWeight:700,color:t.text}}>{rd.label}</div>
-                      <div style={{fontSize:10,color:t.text3,marginTop:2}}>
-                        {rd.cat} · {rd.required?'Requis':'Optionnel'}
-                        {!dt&&<span style={{color:'#B45309'}}> · type non disponible</span>}
+        {/* Success state */}
+        {success && (
+          <div style={{ padding:'48px 24px', textAlign:'center' }}>
+            <div style={{ width:64, height:64, borderRadius:'50%', background:'rgba(5,150,105,0.15)', border:'2px solid rgba(5,150,105,0.40)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div style={{ fontSize:18, fontWeight:800, color:t.text, marginBottom:6 }}>Document soumis !</div>
+            <div style={{ fontSize:13, color:t.text3 }}>En attente de vérification administrative</div>
+          </div>
+        )}
+
+        {!success && (
+          <div style={{ padding:'16px' }}>
+
+            {/* ── ÉTAPE 1 : TYPE ── */}
+            {step === 'type' && (
+              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                {REQUIRED_DOCS.map(rd => {
+                  const dt = docTypes.find(t => t.code === rd.code)
+                  const sel = selCode === rd.code
+                  return (
+                    <button key={rd.code} onClick={() => { setSelCode(rd.code); setStep('form') }}
+                      style={{
+                        display:'flex', alignItems:'center', gap:14, padding:'14px 16px', borderRadius:16, cursor:'pointer', textAlign:'left',
+                        background: sel ? (dark?'rgba(0,61,165,0.25)':'rgba(0,61,165,0.08)') : (dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.02)'),
+                        border: `1.5px solid ${sel ? t.accent : t.border}`,
+                        boxShadow: sel ? `0 0 0 1px ${t.accent}40` : 'none',
+                      }}>
+                      <span style={{ fontSize:24, width:32, textAlign:'center', flexShrink:0 }}>{CAT_ICON[rd.cat] ?? '📄'}</span>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:13, fontWeight:700, color:t.text }}>{rd.label}</div>
+                        <div style={{ fontSize:10, color:t.text3, marginTop:2 }}>
+                          {rd.cat}
+                          <span style={{ marginLeft:6, padding:'1px 6px', borderRadius:20, fontSize:9, fontWeight:700,
+                            background:rd.required?(dark?'rgba(0,61,165,0.20)':'rgba(0,61,165,0.10)'):(dark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)'),
+                            color:rd.required?t.accent:t.text3 }}>
+                            {rd.required ? 'Requis' : 'Optionnel'}
+                          </span>
+                          {!dt && <span style={{ marginLeft:6, color:'#B45309', fontSize:9 }}>⚠ type indispo</span>}
+                        </div>
                       </div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.text3} strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* ── ÉTAPE 2 : FORMULAIRE + UPLOAD ── */}
+            {step === 'form' && selType && (
+              <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+
+                {/* Retour */}
+                <button onClick={() => { setStep('type'); setMainFile(emptyDocFile()); setBackFile(emptyDocFile()) }}
+                  style={{ alignSelf:'flex-start', display:'flex', alignItems:'center', gap:6, fontSize:12, color:t.text3, background:'none', border:'none', cursor:'pointer', fontWeight:600 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+                  Retour
+                </button>
+
+                {/* Infos du document */}
+                <div style={cardS}>
+                  <div style={{ fontSize:10, fontWeight:800, letterSpacing:'0.10em', textTransform:'uppercase' as const, color:t.text3, marginBottom:12 }}>📋 Informations</div>
+                  <div style={{ display:'flex', flexDirection:'column' as const, gap:12 }}>
+                    <div>
+                      <div style={{ fontSize:11, color:t.text3, marginBottom:5, fontWeight:600 }}>Date d'émission</div>
+                      {inp('AAAA-MM-JJ', issuedAt, setIssuedAt, 'date')}
                     </div>
-                    <ChevronRight size={14} color={t.text3}/>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Étape 2 — Infos */}
-        {step==='info'&&selType&&(
-          <div style={{display:'flex',flexDirection:'column',gap:14}}>
-            <div style={{padding:'11px 13px',borderRadius:12,background:'rgba(0,61,165,0.08)',border:`1px solid rgba(0,61,165,0.20)`}}>
-              <div style={{fontSize:12,fontWeight:700,color:t.text}}>{selType.label_fr??selType.label}</div>
-              <div style={{fontSize:10,color:t.text3,marginTop:2}}>{selType.owner_type} · Juridiction QC</div>
-            </div>
-            <div>
-              <div style={{fontSize:11,color:t.text3,marginBottom:5,fontWeight:600}}>Date d'émission</div>
-              {inp('AAAA-MM-JJ',issuedAt,setIssuedAt,'date')}
-            </div>
-            {selType.has_expiry_date&&(
-              <div>
-                <div style={{fontSize:11,color:t.text3,marginBottom:5,fontWeight:600}}>Date d'expiration</div>
-                {inp('AAAA-MM-JJ',expiresAt,setExpiresAt,'date')}
-              </div>
-            )}
-            <div>
-              <div style={{fontSize:11,color:t.text3,marginBottom:5,fontWeight:600}}>Numéro (4 derniers chiffres, optionnel)</div>
-              {inp('ex: 4417',last4,setLast4)}
-            </div>
-            <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>setStep('type')} style={{flex:1,padding:'12px',borderRadius:12,background:t.card2,border:`1px solid ${t.border}`,color:t.text3,fontWeight:700,cursor:'pointer',fontSize:13}}>← Retour</button>
-              <button onClick={()=>setStep('file')} style={{flex:2,padding:'12px',borderRadius:12,background:'#003DA5',color:'white',fontWeight:700,cursor:'pointer',fontSize:13,border:'none',boxShadow:'0 4px 12px rgba(0,61,165,0.30)'}}>Suivant →</button>
-            </div>
-          </div>
-        )}
-
-        {/* Étape 3 — Fichier */}
-        {step==='file'&&(
-          <div style={{display:'flex',flexDirection:'column',gap:14}}>
-            <div style={{fontSize:13,fontWeight:700,color:t.text}}>Joindre le document</div>
-            <input ref={fileRef} type="file" accept="image/*,application/pdf" onChange={handleFile} style={{display:'none'}}/>
-            {fileB64?(
-              <div style={{padding:'14px',borderRadius:14,background:'rgba(5,150,105,0.08)',border:'1.5px solid rgba(5,150,105,0.25)',textAlign:'center'}}>
-                <CheckCircle size={24} color="#059669" style={{margin:'0 auto 8px',display:'block'}}/>
-                <div style={{fontSize:12,fontWeight:700,color:'#059669'}}>Fichier prêt</div>
-                <div style={{fontSize:10,color:t.text3,marginTop:3}}>{fileName}</div>
-                <button onClick={()=>{setFileB64(null);setFileName('')}} style={{marginTop:8,fontSize:10,color:t.text3,background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>Changer</button>
-              </div>
-            ):(
-              <div style={{display:'flex',flexDirection:'column',gap:10}}>
-                <button onClick={()=>fileRef.current?.click()} style={{padding:'20px',borderRadius:14,background:dark?'rgba(0,61,165,0.10)':'rgba(0,61,165,0.05)',border:`2px dashed ${t.border}`,cursor:'pointer',textAlign:'center'}}>
-                  <Upload size={28} color={t.accent} style={{margin:'0 auto 8px',display:'block'}}/>
-                  <div style={{fontSize:13,fontWeight:700,color:t.text}}>Choisir un fichier</div>
-                  <div style={{fontSize:10,color:t.text3,marginTop:3}}>Image ou PDF · Max 10 MB</div>
-                </button>
-                <button onClick={()=>fileRef.current?.click()} style={{padding:'13px',borderRadius:12,background:dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.04)',border:`1px solid ${t.border}`,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
-                  <Camera size={16} color={t.text3}/><span style={{fontSize:12,color:t.text3,fontWeight:600}}>Prendre une photo</span>
-                </button>
-              </div>
-            )}
-            <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>setStep('info')} style={{flex:1,padding:'12px',borderRadius:12,background:t.card2,border:`1px solid ${t.border}`,color:t.text3,fontWeight:700,cursor:'pointer',fontSize:13}}>← Retour</button>
-              <button onClick={()=>setStep('confirm')} style={{flex:2,padding:'12px',borderRadius:12,background:'#003DA5',color:'white',fontWeight:700,cursor:'pointer',fontSize:13,border:'none',boxShadow:'0 4px 12px rgba(0,61,165,0.30)'}}>
-                {fileB64?'Confirmer →':'Passer sans fichier →'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Étape 4 — Confirmation */}
-        {step==='confirm'&&(
-          <div style={{display:'flex',flexDirection:'column',gap:14}}>
-            <div style={{fontSize:13,fontWeight:700,color:t.text}}>Confirmer et soumettre</div>
-            <div style={{...cardStyle(t),padding:'14px 16px'}}>
-              {[
-                {label:'Type',      val:selType?.label_fr??selType?.label??selCode},
-                {label:'Émis le',   val:issuedAt||'—'},
-                {label:'Expire le', val:expiresAt||'Sans expiration'},
-                {label:'Numéro',    val:last4?`••••${last4}`:'—'},
-                {label:'Fichier',   val:fileB64?fileName:'Non fourni'},
-              ].map((r,idx)=>(
-                <div key={r.label} style={{display:'flex',justifyContent:'space-between',padding:'7px 0',borderTop:idx>0?`1px solid ${t.border}`:'none'}}>
-                  <span style={{fontSize:11,color:t.text3}}>{r.label}</span>
-                  <span style={{fontSize:11,fontWeight:700,color:t.text}}>{r.val}</span>
+                    {selType.has_expiry_date && (
+                      <div>
+                        <div style={{ fontSize:11, color:t.text3, marginBottom:5, fontWeight:600 }}>Date d'expiration *</div>
+                        {inp('AAAA-MM-JJ', expiresAt, setExpiresAt, 'date')}
+                      </div>
+                    )}
+                    <div>
+                      <div style={{ fontSize:11, color:t.text3, marginBottom:5, fontWeight:600 }}>
+                        {selCode === 'DRIVER_LICENSE' ? 'N° permis (4 derniers chiffres)' :
+                         selCode === 'VEHICLE_INSURANCE' ? 'N° police (4 derniers chiffres)' :
+                         'Numéro de référence (optionnel)'}
+                      </div>
+                      {inp('ex: 4417', last4, setLast4)}
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div style={{padding:'10px 13px',borderRadius:10,background:'rgba(180,83,9,0.08)',border:'1px solid rgba(180,83,9,0.25)'}}>
-              <div style={{fontSize:10,color:t.amber,lineHeight:1.5}}>
-                ⚠ Mode pilote — Ces informations seront enregistrées comme données synthétiques de démonstration.
+
+                {/* Upload recto */}
+                <div style={cardS}>
+                  <div style={{ fontSize:10, fontWeight:800, letterSpacing:'0.10em', textTransform:'uppercase' as const, color:t.text3, marginBottom:12 }}>
+                    📸 {requiresBack ? 'Photo — Recto' : 'Photo du document'}
+                  </div>
+                  <FileUploadZone
+                    label={requiresBack ? 'Face avant' : 'Document ou photo'}
+                    description={requiresBack ? 'Photo claire du recto, tous les chiffres lisibles' : 'Image ou PDF · Recto · Bien éclairé et net'}
+                    docFile={mainFile}
+                    onChange={e => void handleFileSelect(e, setMainFile, mainRef)}
+                    onClear={() => setMainFile(emptyDocFile())}
+                    inputRef={mainRef}
+                    dark={dark} t={t}
+                  />
+                </div>
+
+                {/* Upload verso (permis, carte identité) */}
+                {requiresBack && (
+                  <div style={cardS}>
+                    <div style={{ fontSize:10, fontWeight:800, letterSpacing:'0.10em', textTransform:'uppercase' as const, color:t.text3, marginBottom:12 }}>📸 Photo — Verso (optionnel)</div>
+                    <FileUploadZone
+                      label="Face arrière"
+                      description="Photo du verso si requis"
+                      docFile={backFile}
+                      onChange={e => void handleFileSelect(e, setBackFile, backRef)}
+                      onClear={() => setBackFile(emptyDocFile())}
+                      inputRef={backRef}
+                      dark={dark} t={t}
+                    />
+                  </div>
+                )}
+
+                {/* Notes */}
+                <div>
+                  <div style={{ fontSize:11, color:t.text3, marginBottom:5, fontWeight:600 }}>Note (optionnelle)</div>
+                  <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Ex: Renouvellement, numéro de dossier…" rows={2}
+                    style={{ width:'100%', padding:'11px 13px', borderRadius:10, border:`1.5px solid ${t.border}`, fontSize:12, color:t.text, background:dark?'rgba(5,14,28,0.8)':'#FFFFFF', outline:'none', resize:'none', boxSizing:'border-box' as const }}/>
+                </div>
+
+                {/* Alerte pilote */}
+                <div style={{ padding:'10px 13px', borderRadius:10, background:'rgba(180,83,9,0.08)', border:'1px solid rgba(180,83,9,0.25)' }}>
+                  <div style={{ fontSize:10, color:t.amber, lineHeight:1.5 }}>⚠ Mode pilote · Données synthétiques de démonstration</div>
+                </div>
+
+                {error && <div style={{ fontSize:11, color:t.red, padding:'8px 12px', borderRadius:8, background:'rgba(220,38,38,0.08)', border:`1px solid rgba(220,38,38,0.25)` }}>{error}</div>}
+
+                {/* Bouton soumettre */}
+                <button onClick={() => void handleSubmit()} disabled={loading || mainFile.uploading}
+                  style={{ padding:'15px', borderRadius:14, border:'none', cursor:loading||mainFile.uploading?'not-allowed':'pointer', fontWeight:800, fontSize:14,
+                    background:loading||mainFile.uploading?t.border:'#003DA5', color:loading||mainFile.uploading?t.text3:'white',
+                    boxShadow:loading||mainFile.uploading?'none':'0 4px 16px rgba(0,61,165,0.35)',
+                    display:'flex', alignItems:'center', justifyContent:'center', gap:10 }}>
+                  {loading ? (
+                    <><div style={{ width:16, height:16, border:'2px solid rgba(255,255,255,0.3)', borderTop:'2px solid white', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/> Soumission…</>
+                  ) : mainFile.uploading ? (
+                    <><div style={{ width:16, height:16, border:'2px solid rgba(255,255,255,0.3)', borderTop:'2px solid white', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/> Upload en cours…</>
+                  ) : (
+                    <>🏛️ Soumettre pour vérification</>
+                  )}
+                </button>
               </div>
-            </div>
-            {error&&<div style={{fontSize:11,color:t.red,padding:'8px 12px',borderRadius:8,background:'rgba(220,38,38,0.08)',border:`1px solid rgba(220,38,38,0.25)`}}>{error}</div>}
-            <div style={{display:'flex',gap:10}}>
-              <button onClick={()=>setStep('file')} style={{flex:1,padding:'12px',borderRadius:12,background:t.card2,border:`1px solid ${t.border}`,color:t.text3,fontWeight:700,cursor:'pointer',fontSize:13}}>← Retour</button>
-              <button onClick={()=>void handleSubmit()} disabled={loading} style={{flex:2,padding:'12px',borderRadius:12,background:loading?t.border:'#003DA5',color:loading?t.text3:'white',fontWeight:700,cursor:loading?'not-allowed':'pointer',fontSize:13,border:'none',boxShadow:loading?'none':'0 4px 12px rgba(0,61,165,0.30)'}}>
-                {loading?'Soumission…':'🏛️ Soumettre le document'}
-              </button>
-            </div>
+            )}
+
           </div>
         )}
       </div>
@@ -338,6 +491,7 @@ export default function DocumentsPage() {
   const [seeding,setSeeding]     = useState(false)
   const [selectedDoc,setSelectedDoc] = useState<Doc|null>(null)
   const [showUpload,setShowUpload]   = useState(false)
+  const [authToken,setAuthToken]     = useState('')
   const [error,setError]         = useState<string|null>(null)
   const [toast,setToast]         = useState<string|null>(null)
   const { theme } = useTheme()
@@ -355,6 +509,7 @@ export default function DocumentsPage() {
     try {
       const token = await getToken()
       if (!token) throw new Error('Non authentifié')
+      setAuthToken(token)
       const [docsRes, typesRes] = await Promise.all([
         fetch('/api/driver/documents', { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/driver/documents/types', { headers: { Authorization: `Bearer ${token}` } }),
@@ -424,7 +579,7 @@ export default function DocumentsPage() {
       )}
 
       {selectedDoc&&<DocModal doc={selectedDoc} t={t} dark={dark} onClose={()=>setSelectedDoc(null)}/>}
-      {showUpload&&<UploadModal t={t} dark={dark} docTypes={docTypes} onClose={()=>setShowUpload(false)} onSubmit={submitDoc}/>}
+      {showUpload&&<UploadModal t={t} dark={dark} docTypes={docTypes} token={authToken} onClose={()=>{ setShowUpload(false); void loadDocs() }}/>}
 
       {/* Header */}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 16px 10px'}}>
