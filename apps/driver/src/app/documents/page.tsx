@@ -155,7 +155,7 @@ function FileUploadZone({
   docFile: DocFile
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onClear: () => void
-  inputRef: React.RefObject<HTMLInputElement|null>
+  inputRef: React.RefObject<HTMLInputElement>
   dark: boolean
   t: ReturnType<typeof getThemeTokens>
   accept?: string
@@ -243,7 +243,7 @@ function UploadModal({ t, dark, docTypes, onClose, token }: {
   async function handleFileSelect(
     e: React.ChangeEvent<HTMLInputElement>,
     setter: (f: DocFile) => void,
-    ref: React.RefObject<HTMLInputElement|null>
+    ref: React.RefObject<HTMLInputElement>
   ) {
     const file = e.target.files?.[0]
     if (!file) return
