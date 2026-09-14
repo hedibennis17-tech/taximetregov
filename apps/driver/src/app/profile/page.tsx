@@ -3,6 +3,7 @@
 import { AppShell } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui'
 import { useDriverProfile, money } from '@/lib/api'
+import { TaximetreGovLoader } from '@/components/brand/Logo'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -37,8 +38,8 @@ export default function ProfilePage() {
 
   if (loading) return (
     <AppShell>
-      <div className="flex items-center justify-center py-20">
-        <RefreshCw className="animate-spin text-qc-blue" size={24} />
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <TaximetreGovLoader message="Chargement du profil…" />
       </div>
     </AppShell>
   )

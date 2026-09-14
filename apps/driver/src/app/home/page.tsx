@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { Bell, ChevronRight, Clock, MapPin, RefreshCw } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { Amount, Card, SectionHeader, StatusDot } from '@/components/ui'
-import { useDriverProfile, useRevenue, useTrips, money, getToken } from '@/lib/api'
+import { useHomeData, money, getToken } from '@/lib/api'
 import { useEffect } from 'react'
 
 // Auto-setup: crée le profil driver si nouveau compte Supabase
 async function setupDriverProfile() {
-  const token = getToken()
+  const token = await getToken()
   if (!token) return
   try {
     await fetch('/api/auth/setup', {
@@ -43,12 +43,8 @@ function platformStatus(status: string) {
 
 export default function HomePage() {
   useEffect(() => { void setupDriverProfile() }, [])
-  const { profile, loading: pLoading, error: pError, refresh: pRefresh } = useDriverProfile()
-  const { revenue, loading: rLoading, refresh: rRefresh } = useRevenue('month')
-  const { trips, loading: tLoading } = useTrips('COMPLETED')
-  const loading = pLoading || rLoading
-
-  const refresh = () => { void pRefresh(); void rRefresh() }
+  const { profile, revenue, trips, loading, error: pError, refresh } = useHomeData('month')
+  const tLoading = false // trips inclus dans useHomeData
 
   if (loading) {
     return (

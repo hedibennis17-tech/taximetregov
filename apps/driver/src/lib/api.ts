@@ -36,10 +36,23 @@ export function getTokenSync(): string | null {
   return null
 }
 
+// ─── Token cache (évite N appels Supabase en parallèle) ──────
+
+let _tokenPromise: Promise<string | null> | null = null
+let _tokenExpiry = 0
+
+export function getCachedToken(): Promise<string | null> {
+  const now = Date.now()
+  if (_tokenPromise && now < _tokenExpiry) return _tokenPromise
+  _tokenExpiry = now + 55_000 // cache 55s (token JWT valide 60s min)
+  _tokenPromise = getToken()
+  return _tokenPromise
+}
+
 // ─── Fetch central ───────────────────────────────────────────
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = await getToken()
+  const token = await getCachedToken()
 
   const res = await fetch(path, {
     ...options,
@@ -202,6 +215,43 @@ export function useRevenue(period: 'week' | 'month' | 'year' = 'month') {
 
   useEffect(() => { void fetch_() }, [fetch_])
   return { revenue, loading, error, refresh: fetch_ }
+}
+
+// ─── Hook parallèle pour la page Home (1 seul état de loading) ─
+
+export function useHomeData(period: 'week' | 'month' | 'year' = 'month') {
+  const [profile, setProfile] = useState<DriverProfile | null>(null)
+  const [revenue, setRevenue] = useState<RevenueData | null>(null)
+  const [trips,   setTrips]   = useState<Trip[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error,   setError]   = useState<string | null>(null)
+
+  const fetch_ = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    // Warm up le token une seule fois avant les 3 fetches parallèles
+    await getCachedToken()
+    const [profileRes, revenueRes, tripsRes] = await Promise.allSettled([
+      apiFetch<{ profile: DriverProfile }>('/api/driver/profile'),
+      apiFetch<RevenueData>(`/api/revenue?period=${period}`),
+      apiFetch<{ trips: Trip[] }>('/api/trips?status=COMPLETED'),
+    ])
+    if (profileRes.status === 'fulfilled') setProfile(profileRes.value.profile)
+    else setError((profileRes.reason as Error).message)
+    if (revenueRes.status === 'fulfilled') setRevenue(revenueRes.value)
+    if (tripsRes.status === 'fulfilled')   setTrips(tripsRes.value.trips)
+    setLoading(false)
+  }, [period])
+
+  useEffect(() => { void fetch_() }, [fetch_])
+
+  const refresh = useCallback(() => {
+    // Invalider le cache token au refresh manuel
+    _tokenPromise = null
+    void fetch_()
+  }, [fetch_])
+
+  return { profile, revenue, trips, loading, error, refresh }
 }
 
 export function useTrips(status?: string) {

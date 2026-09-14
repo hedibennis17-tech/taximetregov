@@ -3,6 +3,7 @@
 import { AppShell, PageHeader } from '@/components/layout/AppShell'
 import { Card } from '@/components/ui'
 import { RefreshCw } from 'lucide-react'
+import { TaximetreGovLoader } from '@/components/brand/Logo'
 import { useRevenue, money } from '@/lib/api'
 import { useState } from 'react'
 
@@ -31,9 +32,8 @@ export default function RevenuePage() {
   if (loading) {
     return (
       <AppShell>
-        <div className="px-4 pt-4 pb-2"><h1 className="text-xl font-bold text-white">Mes revenus</h1><p className="text-xs text-slate-400 mt-0.5">Données réelles · Supabase</p></div>
-        <div className="py-16 text-center">
-          <RefreshCw className="mx-auto text-qc-blue animate-spin" size={24} />
+        <div className="min-h-[70vh] flex items-center justify-center">
+          <TaximetreGovLoader message="Chargement des revenus…" />
         </div>
       </AppShell>
     )
