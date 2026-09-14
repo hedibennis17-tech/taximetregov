@@ -2,97 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --qc-blue:        #003DA5;
-  --qc-blue-dark:   #001F5C;
-  --qc-blue-mid:    #1A56C4;
-  --qc-blue-light:  #3B82F6;
-  --qc-blue-pale:   #0A1E40;
-  --qc-red:         #C8102E;
-  --driver-green:   #10B981;
-  --driver-red:     #EF4444;
-  --driver-amber:   #F59E0B;
-
-  /* Surfaces sombres bleues */
-  --bg-app:         #050E1C;
-  --bg-surface:     #0A1628;
-  --bg-card:        #0F1F38;
-  --bg-card-hover:  #142544;
-  --bg-elevated:    #1A2E4A;
-  --border:         rgba(59,130,246,0.15);
-  --border-bright:  rgba(59,130,246,0.35);
-
-  --text-primary:   #F0F4FF;
-  --text-secondary: #8BA3CC;
-  --text-muted:     #4A6285;
-
-  --safe-top:    env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --qc-blue:       #003DA5;
+  --qc-blue-dark:  #001F5C;
+  --qc-blue-light: #3B82F6;
+  --qc-red:        #C8102E;
 }
 
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
 body {
-  background: var(--bg-app);
-  color: var(--text-primary);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.3s, color 0.3s;
 }
 
-/* Cards bleues */
-.gov-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-}
-.gov-card-bright {
-  background: linear-gradient(135deg, #0F2550 0%, #0A1628 100%);
-  border: 1px solid var(--border-bright);
-  border-radius: 16px;
+/* DARK */
+body, [data-theme="dark"] body {
+  background: #050E1C;
+  color: #F0F4FF;
 }
 
-/* Boutons */
-.gov-btn {
-  background: var(--qc-blue);
-  color: white;
-  font-weight: 700;
-  border-radius: 12px;
-  border: none;
-  padding: 14px 24px;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.15s;
+/* LIGHT */
+[data-theme="light"] body {
+  background: #F0F4FF;
+  color: #0A1628;
 }
-.gov-btn:active { transform: scale(0.98); background: var(--qc-blue-dark); }
 
-/* Taximètre */
 .taxi-display {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
-  letter-spacing: -0.02em;
 }
 
-/* Animations */
 @keyframes spin     { to { transform: rotate(360deg); } }
+@keyframes logo-spin { to { transform: rotate(360deg); } }
 @keyframes pulse-blue { 0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); } 70% { box-shadow: 0 0 0 10px rgba(59,130,246,0); } }
 @keyframes slide-up { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-.pulse-blue  { animation: pulse-blue 2s infinite; }
-.slide-up    { animation: slide-up 0.2s ease-out; }
-.pulse-green { animation: pulse-blue 2s infinite; }
-.pulse-red   { animation: pulse-blue 1.5s infinite; }
+.pulse-blue { animation: pulse-blue 2s infinite; }
+.slide-up   { animation: slide-up 0.2s ease-out; }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 2px; }
 
-/* Watermark */
 .qc-watermark::after {
   content: '⚜';
   position: fixed; bottom: 90px; right: 12px;
   font-size: 80px; opacity: 0.03; pointer-events: none;
-  color: var(--qc-blue-light); z-index: 0;
+  color: #3B82F6; z-index: 0;
 }
