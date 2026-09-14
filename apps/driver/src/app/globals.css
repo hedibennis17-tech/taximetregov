@@ -2,38 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ================================================================
-   TAXIMETER.GOV — Thème clair officiel Québec
-   Palette: Bleu QC #003DA5 · Blanc · Gris ardoise · Rouge #C8102E
-   Police: Inter (chiffres tabulaires) + system-ui
-================================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900&display=swap');
 
 :root {
-  /* Couleurs officielles Québec */
-  --qc-blue:       #003DA5;
-  --qc-blue-dark:  #002D7A;
-  --qc-blue-light: #1A56C4;
-  --qc-blue-pale:  #EBF0FA;
-  --qc-red:        #C8102E;
-  --qc-white:      #FFFFFF;
+  --qc-blue:        #003DA5;
+  --qc-blue-dark:   #001F5C;
+  --qc-blue-mid:    #1A56C4;
+  --qc-blue-light:  #3B82F6;
+  --qc-blue-pale:   #0A1E40;
+  --qc-red:         #C8102E;
+  --driver-green:   #10B981;
+  --driver-red:     #EF4444;
+  --driver-amber:   #F59E0B;
 
-  /* Thème clair */
-  --bg-primary:    #F4F6FA;
-  --bg-card:       #FFFFFF;
-  --bg-card-hover: #F8FAFF;
-  --border:        #DDE3EE;
-  --border-light:  #EDF0F7;
-  --text-primary:  #0A1628;
-  --text-secondary:#4A5568;
-  --text-muted:    #8A96A8;
+  /* Surfaces sombres bleues */
+  --bg-app:         #050E1C;
+  --bg-surface:     #0A1628;
+  --bg-card:        #0F1F38;
+  --bg-card-hover:  #142544;
+  --bg-elevated:    #1A2E4A;
+  --border:         rgba(59,130,246,0.15);
+  --border-bright:  rgba(59,130,246,0.35);
 
-  /* Fonctionnel */
-  --driver-green:  #00873A;
-  --driver-red:    #C8102E;
-  --driver-amber:  #D97706;
-  --driver-purple: #6B4EFF;
+  --text-primary:   #F0F4FF;
+  --text-secondary: #8BA3CC;
+  --text-muted:     #4A6285;
 
   --safe-top:    env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -42,83 +35,64 @@
 * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
 body {
-  background-color: var(--bg-primary);
+  background: var(--bg-app);
   color: var(--text-primary);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar discrète */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-/* ── Cards ──────────────────────────────────────────────────── */
+/* Cards bleues */
 .gov-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
 }
-
-.gov-card-blue {
-  background: linear-gradient(135deg, var(--qc-blue) 0%, var(--qc-blue-dark) 100%);
-  border: none;
+.gov-card-bright {
+  background: linear-gradient(135deg, #0F2550 0%, #0A1628 100%);
+  border: 1px solid var(--border-bright);
   border-radius: 16px;
-  color: white;
 }
 
-/* ── Boutons ─────────────────────────────────────────────────── */
-.gov-btn-primary {
+/* Boutons */
+.gov-btn {
   background: var(--qc-blue);
   color: white;
   font-weight: 700;
   border-radius: 12px;
+  border: none;
   padding: 14px 24px;
-  transition: background 0.15s, transform 0.1s;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s;
 }
-.gov-btn-primary:active { transform: scale(0.98); background: var(--qc-blue-dark); }
+.gov-btn:active { transform: scale(0.98); background: var(--qc-blue-dark); }
 
-.gov-btn-ghost {
-  background: transparent;
-  color: var(--qc-blue);
-  border: 1.5px solid var(--border);
-  font-weight: 600;
-  border-radius: 12px;
-  padding: 12px 20px;
-}
-
-/* ── Status badges ───────────────────────────────────────────── */
-.badge-active   { background: #E6F4ED; color: #00873A; font-weight: 600; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
-.badge-pending  { background: #FEF3C7; color: #D97706; font-weight: 600; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
-.badge-error    { background: #FEE2E2; color: #C8102E; font-weight: 600; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
-.badge-info     { background: var(--qc-blue-pale); color: var(--qc-blue); font-weight: 600; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
-
-/* ── Taximètre display ───────────────────────────────────────── */
+/* Taximètre */
 .taxi-display {
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
   font-feature-settings: "tnum";
+  letter-spacing: -0.02em;
 }
 
-/* ── Animations ──────────────────────────────────────────────── */
-@keyframes pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(0,135,58,0.3); } 70% { box-shadow: 0 0 0 8px rgba(0,135,58,0); } }
-@keyframes pulse-red   { 0%,100% { box-shadow: 0 0 0 0 rgba(200,16,46,0.3); } 70% { box-shadow: 0 0 0 8px rgba(200,16,46,0); } }
-.pulse-green { animation: pulse-green 2s infinite; }
-.pulse-red   { animation: pulse-red 1.5s infinite; }
-
+/* Animations */
+@keyframes spin     { to { transform: rotate(360deg); } }
+@keyframes pulse-blue { 0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); } 70% { box-shadow: 0 0 0 10px rgba(59,130,246,0); } }
 @keyframes slide-up { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-.slide-up { animation: slide-up 0.2s ease-out; }
+.pulse-blue  { animation: pulse-blue 2s infinite; }
+.slide-up    { animation: slide-up 0.2s ease-out; }
+.pulse-green { animation: pulse-blue 2s infinite; }
+.pulse-red   { animation: pulse-blue 1.5s infinite; }
 
-/* ── Bottom nav ──────────────────────────────────────────────── */
-.bottom-nav { padding-bottom: calc(0.75rem + var(--safe-bottom)); }
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
 
-/* ── Watermark fleur-de-lis ──────────────────────────────────── */
+/* Watermark */
 .qc-watermark::after {
   content: '⚜';
-  position: fixed; bottom: 80px; right: 12px;
-  font-size: 80px; opacity: 0.04; pointer-events: none;
-  color: var(--qc-blue); z-index: 0;
+  position: fixed; bottom: 90px; right: 12px;
+  font-size: 80px; opacity: 0.03; pointer-events: none;
+  color: var(--qc-blue-light); z-index: 0;
 }
