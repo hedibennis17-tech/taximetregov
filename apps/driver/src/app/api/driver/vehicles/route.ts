@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
     body:              `Votre ${body.year} ${body.make} ${body.model} (${body.licensePlateMasked}) a été soumis. En attente d'approbation administrative.`,
     status:            'UNREAD',
     priority:          'NORMAL',
-  }).catch(() => {})
+  })
 
-  return NextResponse.json({ ok: true, vehicle, vehicleNumber, isFirst, message: 'Véhicule soumis — en attente d\'approbation' })
+  return NextResponse.json({ ok: true, vehicle, vehicleNumber, isFirst, message: "Véhicule soumis — en attente d'approbation" })
 }
