@@ -275,8 +275,7 @@ export default function AdminDocumentsPage() {
           const sc = STATUS_CONF[doc.status]??STATUS_CONF['UPLOADED']!
           const needsAction = ['UPLOADED','PENDING_REVIEW','UNDER_REVIEW'].includes(doc.status)
           return (
-            <Card key={doc.id} className={`p-4 cursor-pointer hover:border-qc-blue transition-colors ${needsAction?'border-l-4 border-l-purple-500':doc.status==='APPROVED'?'border-l-4 border-l-green-500':doc.status==='REJECTED'?'border-l-4 border-l-red-500':''}`}
-              onClick={()=>setSelected(doc)}>
+            <div key={doc.id} onClick={()=>setSelected(doc)} className={`rounded-xl border border-slate-700 bg-slate-800/50 p-4 cursor-pointer hover:border-qc-blue transition-colors ${needsAction?'border-l-4 border-l-purple-500':doc.status==='APPROVED'?'border-l-4 border-l-green-500':doc.status==='REJECTED'?'border-l-4 border-l-red-500':''}`}>
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-lg shrink-0">
                   📄
@@ -306,7 +305,7 @@ export default function AdminDocumentsPage() {
                   <ChevronRight size={14} className="text-slate-500"/>
                 </div>
               </div>
-            </Card>
+            </div>
           )
         })}
       </div>
