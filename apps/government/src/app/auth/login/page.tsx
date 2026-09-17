@@ -4,6 +4,28 @@ import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import { GlobalLanguageLoader } from '@/components/language/GlobalLanguageLoader'
+
+const LANG_KEY = 'taximetregov_lang'
+function getLang(): 'fr'|'en' {
+  try { return (localStorage.getItem(LANG_KEY) as 'fr'|'en') ?? 'fr' } catch { return 'fr' }
+}
+function toggleLangLogin() {
+  const next = getLang() === 'fr' ? 'en' : 'fr'
+  try { localStorage.setItem(LANG_KEY, next) } catch {}
+  const domain = window.location.hostname
+  if (next === 'fr') {
+    const exp = 'expires=Thu,01 Jan 1970 00:00:00 UTC;'
+    document.cookie = `googtrans=;${exp}path=/;`
+    document.cookie = `googtrans=;${exp}path=/;domain=${domain}`
+    document.cookie = `googtrans=;${exp}path=/;domain=.${domain}`
+  } else {
+    document.cookie = `googtrans=/fr/${next};path=/;`
+    document.cookie = `googtrans=/fr/${next};path=/;domain=${domain}`
+    document.cookie = `googtrans=/fr/${next};path=/;domain=.${domain}`
+  }
+  window.location.reload()
+}
 
 type Stage = 'login' | 'activate' | 'mfa'
 
@@ -144,5 +166,5 @@ export default function GovernmentLoginPage() {
     </form>
   )
 
-  return <main className="min-h-screen bg-slate-950 px-6 py-16 text-white"><div className="mx-auto max-w-md"><div className="mb-8 text-center"><div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-qc-blue text-3xl">⚜</div><h1 className="text-2xl font-bold">TAXIMÈTRE.GOV</h1><p className="mt-1 text-sm text-slate-400">Portail administratif sécurisé</p></div><div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6"><div className="mb-5 flex items-center gap-3"><div className="rounded-xl bg-qc-blue/20 p-2 text-qc-blue-light">{stage === 'mfa' ? <KeyRound size={20} /> : stage === 'activate' ? <ShieldCheck size={20} /> : <LockKeyhole size={20} />}</div><div><h2 className="font-semibold">{stage === 'mfa' ? 'Authentification multifacteur' : stage === 'activate' ? 'Activation du compte' : 'Accès réservé'}</h2><p className="text-xs text-slate-400">Administrateurs autorisés uniquement</p></div></div>{notice && <p className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-200">{notice}</p>}{error && <p role="alert" className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}{form}</div><p className="mt-5 text-center text-xs text-slate-500">Les comptes sont créés par invitation d’un administrateur habilité. Les exigences de sécurité sont évaluées après la connexion.</p></div></main>
+  return <><GlobalLanguageLoader /><button onClick={toggleLangLogin} style={{position:"fixed",top:16,right:16,padding:"6px 12px",borderRadius:10,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",cursor:"pointer",display:"flex",alignItems:"center",gap:4}}><span style={{fontSize:11,fontWeight:800,letterSpacing:"0.05em",color:"white"}}>FR</span><span style={{fontSize:9,color:"rgba(255,255,255,0.30)"}}>|</span><span style={{fontSize:11,fontWeight:800,letterSpacing:"0.05em",color:"white"}}>EN</span></button><main className="min-h-screen bg-slate-950 px-6 py-16 text-white"><div className="mx-auto max-w-md"><div className="mb-8 text-center"><div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-qc-blue text-3xl">⚜</div><h1 className="text-2xl font-bold">TAXIMÈTRE.GOV</h1><p className="mt-1 text-sm text-slate-400">Portail administratif sécurisé</p></div><div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6"><div className="mb-5 flex items-center gap-3"><div className="rounded-xl bg-qc-blue/20 p-2 text-qc-blue-light">{stage === 'mfa' ? <KeyRound size={20} /> : stage === 'activate' ? <ShieldCheck size={20} /> : <LockKeyhole size={20} />}</div><div><h2 className="font-semibold">{stage === 'mfa' ? 'Authentification multifacteur' : stage === 'activate' ? 'Activation du compte' : 'Accès réservé'}</h2><p className="text-xs text-slate-400">Administrateurs autorisés uniquement</p></div></div>{notice && <p className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-200">{notice}</p>}{error && <p role="alert" className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}{form}</div><p className="mt-5 text-center text-xs text-slate-500">Les comptes sont créés par invitation d’un administrateur habilité. Les exigences de sécurité sont évaluées après la connexion.</p></div></main></>
 }

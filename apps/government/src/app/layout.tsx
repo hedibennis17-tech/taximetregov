@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Providers } from '@/components/layout/Providers'
+import { GlobalLanguageLoader } from '@/components/language/GlobalLanguageLoader'
 
 export const metadata: Metadata = {
   title: 'TAXIMÈTRE.GOV — Gouvernement du Québec',
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" suppressHydrationWarning>
       <body>
+        <GlobalLanguageLoader />
         <Providers>{children}</Providers>
       </body>
     </html>
