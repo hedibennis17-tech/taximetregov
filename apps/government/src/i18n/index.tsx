@@ -46,7 +46,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLangState(l)
     try { localStorage.setItem(LANG_KEY, l) } catch {}
     applyCookie(l)
-    setTimeout(() => { window.location.href = window.location.href }, 150)
+    if (l === 'fr') { window.location.reload() } else { window.dispatchEvent(new CustomEvent('taxgov:setlang', { detail: { lang: l } })) }
   }
 
   return (

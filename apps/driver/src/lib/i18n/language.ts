@@ -1,5 +1,5 @@
 // TAXIMETER.GOV — Gestion langue FR/EN
-// Même système que DepXpreS: cookie + GT Element + applyLang(select)
+// PAS de reload() — GT traduit en place via applyLang()
 export const LANG_KEY = 'taximetregov_lang'
 
 export function getLang(): 'fr' | 'en' {
@@ -18,16 +18,18 @@ export function setLang(lang: 'fr' | 'en') {
     document.cookie = `googtrans=;${exp}path=/;domain=${d}`
     document.cookie = `googtrans=;${exp}path=/;domain=.${d}`
     if (d.includes('vercel.app')) document.cookie = `googtrans=;${exp}path=/;domain=.vercel.app`
+    // Retour FR = reload obligatoire (GT ne peut pas "dé-traduire" sans reload)
+    window.location.reload()
   } else {
     const val = `/fr/${lang}`
     document.cookie = `googtrans=${val};path=/;`
     document.cookie = `googtrans=${val};path=/;domain=${d}`
     document.cookie = `googtrans=${val};path=/;domain=.${d}`
     if (d.includes('vercel.app')) document.cookie = `googtrans=${val};path=/;domain=.vercel.app`
+    // EN = PAS de reload — GT applique via applyLang() dans GlobalLanguageLoader
+    // Le reload causait le flash. On dispatch un event custom à la place.
+    window.dispatchEvent(new CustomEvent('taxgov:setlang', { detail: { lang } }))
   }
-
-  // Reload pour que GlobalLanguageLoader charge GT avec le bon cookie
-  window.location.reload()
 }
 
 export function toggleLang() {
