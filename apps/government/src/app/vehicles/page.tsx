@@ -303,7 +303,7 @@ export default function AdminVehiclesPage() {
                   <ChevronRight size={14} className="text-slate-500"/>
                 </div>
               </div>
-            </Card>
+            </div>
           )
         })}
       </div>
