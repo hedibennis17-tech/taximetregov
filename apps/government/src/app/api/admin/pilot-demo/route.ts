@@ -1,97 +1,196 @@
+// GET /api/admin/pilot-demo — Scénario pilote TAXIMETER.GOV — données synthétiques
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseAdminClient } from '@/lib/supabase/admin'
-import { apiError, requireGovernmentAdministrator } from '@/lib/supabase/authorization'
 
-export const dynamic = 'force-dynamic'
-
-const value = (input: unknown) => {
-  const number = Number(input ?? 0)
-  return Number.isFinite(number) ? number : 0
+function iso(daysAgo: number, hoursAgo = 0): string {
+  return new Date(Date.now() - (daysAgo * 86400 + hoursAgo * 3600) * 1000).toISOString()
 }
+function r2(n: number) { return Math.round(n * 100) / 100 }
+function pid(prefix: string, i: number) { return `${prefix}-${String(i).padStart(4,'0')}` }
 
-const text = (input: unknown) => String(input ?? '')
-
-export async function GET(request: NextRequest) {
-  try {
-    await requireGovernmentAdministrator(request)
-    const admin = getSupabaseAdminClient()
-
-    const [driversResult, presencesResult, activitiesResult, ledgerResult, accountsResult, providersResult, snapshotsResult, taxRecordsResult, tipsResult, settlementsResult, casesResult, alertsResult, reportsResult, statementsResult] = await Promise.all([
-      admin.from('driver_profiles').select('id, driver_number, first_name, last_name, status, identity_verification_status, onboarding_completed_at').like('driver_number', 'DEMO-%').order('driver_number'),
-      admin.from('driver_presences').select('driver_id, status, location_label, last_online_at, last_offline_at'),
-      admin.from('driver_activities').select('id, public_id, driver_id, provider_id, provider_account_id, activity_type_code, status, started_at, completed_at, gross_amount, fee_amount, tip_amount, tax_amount, net_amount, currency, reconciliation_status, data_quality_status').like('public_id', 'DEMO-%').order('started_at', { ascending: false }),
-      admin.from('revenue_ledger').select('id, driver_id, provider_id, source_type, activity_type, gross_amount, fee_amount, tip_amount, tax_amount, adjustment_amount, net_amount, currency, activity_date, is_settled, settled_at, source_reference').like('source_reference', 'DEMO-%').order('activity_date', { ascending: false }),
-      admin.from('driver_provider_accounts').select('id, driver_id, provider_id, public_provider_account_id, display_name, provider_account_status, last_sync_at').like('public_provider_account_id', 'DEMO-%'),
-      admin.from('providers').select('id, code, name, provider_type, provider_status'),
-      admin.from('provider_transaction_snapshots').select('id, provider_id, driver_id, provider_transaction_id, transaction_type, transaction_status, transaction_at, customer_total, currency, source_received_at').like('provider_transaction_id', 'DEMO-%').order('transaction_at', { ascending: false }),
-      admin.from('provider_tax_records').select('id, provider_id, driver_id, provider_reference, taxable_amount, reported_tax_amount, government_calculated_amount, variance_amount, tax_status, reporting_period_start, reporting_period_end').like('provider_reference', 'DEMO-%'),
-      admin.from('provider_tip_records').select('id, provider_id, driver_id, provider_tip_reference, tip_amount, tip_status, tip_received_at').like('provider_tip_reference', 'DEMO-%'),
-      admin.from('provider_settlements').select('id, provider_id, driver_id, provider_settlement_id, period_start, period_end, gross_customer_amount, driver_transport_earnings, tip_amount, provider_fee_amount, tax_amount, total_payable, amount_paid, currency, settlement_date, status').like('provider_settlement_id', 'DEMO-%'),
-      admin.from('reconciliation_cases').select('id, driver_id, provider_id, case_type, expected_amount, actual_amount, difference_amount, recon_case_status, exception_note, period_reference, created_at').eq('period_reference', 'DEMO-2026-01'),
-      admin.from('alerts').select('id, service_name, alert_severity, alert_status, title, message, triggered_value, threshold_value, fired_at').like('title', 'DEMO-%').order('fired_at', { ascending: false }),
-      admin.from('regulatory_reports').select('id, public_report_id, report_type, status, format, period_start, period_end, record_count, contains_pii, generated_at').like('public_report_id', 'DEMO-%'),
-      admin.from('driver_financial_statements').select('id, public_id, driver_id, statement_type, status, period_start, period_end, document_ref, generated_at').like('public_id', 'DEMO-%'),
-    ])
-
-    const results = [driversResult, presencesResult, activitiesResult, ledgerResult, accountsResult, providersResult, snapshotsResult, taxRecordsResult, tipsResult, settlementsResult, casesResult, alertsResult, reportsResult, statementsResult]
-    for (const result of results) if (result.error) throw result.error
-
-    const drivers = (driversResult.data ?? []) as Array<Record<string, unknown>>
-    const presences = (presencesResult.data ?? []) as Array<Record<string, unknown>>
-    const activities = (activitiesResult.data ?? []) as Array<Record<string, unknown>>
-    const ledger = (ledgerResult.data ?? []) as Array<Record<string, unknown>>
-    const providers = (providersResult.data ?? []) as Array<Record<string, unknown>>
-    const accounts = (accountsResult.data ?? []) as Array<Record<string, unknown>>
-    const snapshots = (snapshotsResult.data ?? []) as Array<Record<string, unknown>>
-    const taxRecords = (taxRecordsResult.data ?? []) as Array<Record<string, unknown>>
-    const tips = (tipsResult.data ?? []) as Array<Record<string, unknown>>
-    const settlements = (settlementsResult.data ?? []) as Array<Record<string, unknown>>
-    const cases = (casesResult.data ?? []) as Array<Record<string, unknown>>
-
-    const driverById = new Map(drivers.map((driver) => [text(driver.id), driver]))
-    const providerById = new Map(providers.map((provider) => [text(provider.id), provider]))
-    const presenceByDriverId = new Map(presences.map((presence) => [text(presence.driver_id), presence]))
-    const providerName = (id: unknown) => text(providerById.get(text(id))?.name) || 'Taxi / instrument numérique'
-    const driverName = (id: unknown) => {
-      const driver = driverById.get(text(id))
-      return driver ? `${text(driver.first_name)} ${text(driver.last_name)}`.trim() : 'Dossier pilote'
-    }
-
-    const gross = ledger.reduce((sum, line) => sum + value(line.gross_amount), 0)
-    const net = ledger.reduce((sum, line) => sum + value(line.net_amount), 0)
-    const tax = ledger.reduce((sum, line) => sum + value(line.tax_amount), 0)
-    const tipsTotal = ledger.reduce((sum, line) => sum + value(line.tip_amount), 0)
-
-    return NextResponse.json({
-      scenario: { code: 'PILOT-2026', label: 'Scénario pilote — données synthétiques', generatedAt: new Date().toISOString() },
-      metrics: {
-        drivers: drivers.length,
-        online: presences.filter((presence) => text(presence.status) === 'ONLINE').length,
-        activities: activities.length,
-        gross,
-        net,
-        tax,
-        tips: tipsTotal,
-        snapshots: snapshots.length,
-        alerts: (alertsResult.data ?? []).length,
-        openCases: cases.filter((item) => !['RESOLVED', 'CLOSED', 'MATCHED'].includes(text(item.recon_case_status))).length,
-      },
-      drivers: drivers.map((driver) => ({
-        id: text(driver.id), number: text(driver.driver_number), name: `${text(driver.first_name)} ${text(driver.last_name)}`.trim(), status: text(driver.status), verification: text(driver.identity_verification_status), presence: text(presenceByDriverId.get(text(driver.id))?.status) || 'OFFLINE', location: text(presenceByDriverId.get(text(driver.id))?.location_label), onboardingCompletedAt: driver.onboarding_completed_at,
-      })),
-      accounts: accounts.map((account) => ({ id: text(account.id), idPublic: text(account.public_provider_account_id), name: text(account.display_name), provider: providerName(account.provider_id), status: text(account.provider_account_status), lastSyncAt: account.last_sync_at })),
-      activities: activities.map((activity) => ({ id: text(activity.public_id), driver: driverName(activity.driver_id), provider: providerName(activity.provider_id), type: text(activity.activity_type_code), status: text(activity.status), startedAt: activity.started_at, gross: value(activity.gross_amount), fee: value(activity.fee_amount), tip: value(activity.tip_amount), tax: value(activity.tax_amount), net: value(activity.net_amount), currency: text(activity.currency), reconciliation: text(activity.reconciliation_status), quality: text(activity.data_quality_status) })),
-      transactions: snapshots.map((snapshot) => ({ id: text(snapshot.provider_transaction_id), driver: driverName(snapshot.driver_id), provider: providerName(snapshot.provider_id), type: text(snapshot.transaction_type), status: text(snapshot.transaction_status), at: snapshot.transaction_at, total: value(snapshot.customer_total), currency: text(snapshot.currency), receivedAt: snapshot.source_received_at })),
-      taxRecords: taxRecords.map((record) => ({ id: text(record.provider_reference), driver: driverName(record.driver_id), provider: providerName(record.provider_id), taxable: value(record.taxable_amount), providerTax: value(record.reported_tax_amount), calculatedTax: value(record.government_calculated_amount), variance: value(record.variance_amount), status: text(record.tax_status), start: record.reporting_period_start, end: record.reporting_period_end })),
-      tips: tips.map((tip) => ({ id: text(tip.provider_tip_reference), driver: driverName(tip.driver_id), provider: providerName(tip.provider_id), amount: value(tip.tip_amount), status: text(tip.tip_status), receivedAt: tip.tip_received_at })),
-      settlements: settlements.map((settlement) => ({ id: text(settlement.provider_settlement_id), driver: driverName(settlement.driver_id), provider: providerName(settlement.provider_id), start: settlement.period_start, end: settlement.period_end, gross: value(settlement.gross_customer_amount), earnings: value(settlement.driver_transport_earnings), fee: value(settlement.provider_fee_amount), tax: value(settlement.tax_amount), tip: value(settlement.tip_amount), paid: value(settlement.amount_paid), status: text(settlement.status), at: settlement.settlement_date })),
-      cases: cases.map((item) => ({ id: text(item.id), driver: driverName(item.driver_id), provider: providerName(item.provider_id), type: text(item.case_type), expected: value(item.expected_amount), actual: value(item.actual_amount), difference: value(item.difference_amount), status: text(item.recon_case_status), note: text(item.exception_note), period: text(item.period_reference), createdAt: item.created_at })),
-      alerts: (alertsResult.data ?? []).map((alert) => ({ id: text(alert.id), service: text(alert.service_name), severity: text(alert.alert_severity), status: text(alert.alert_status), title: text(alert.title), message: text(alert.message), triggered: value(alert.triggered_value), threshold: value(alert.threshold_value), at: alert.fired_at })),
-      reports: (reportsResult.data ?? []).map((report) => ({ id: text(report.public_report_id), type: text(report.report_type), status: text(report.status), format: text(report.format), start: report.period_start, end: report.period_end, records: value(report.record_count), containsPii: Boolean(report.contains_pii), generatedAt: report.generated_at })),
-      statements: (statementsResult.data ?? []).map((statement) => ({ id: text(statement.public_id), driver: driverName(statement.driver_id), type: text(statement.statement_type), status: text(statement.status), start: statement.period_start, end: statement.period_end, reference: text(statement.document_ref), generatedAt: statement.generated_at })),
-    })
-  } catch (error) {
-    const response = apiError(error)
-    return NextResponse.json(response.body, { status: response.status })
+export async function GET(req: NextRequest) {
+  const auth = req.headers.get('authorization')
+  if (!auth?.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
   }
+
+  // ── Chauffeurs pilotes ──────────────────────────────────────
+  const drivers = [
+    { id:'drv-001', number:'DRV-QC-0001', name:'Hedi Bennis',        status:'ACTIVE',    verification:'APPROVED', presence:'ONLINE',  location:'Laval, QC',     onboardingCompletedAt: iso(45) },
+    { id:'drv-002', number:'DRV-QC-0002', name:'Mohammed El-Amine',  status:'ACTIVE',    verification:'APPROVED', presence:'ONLINE',  location:'Montréal, QC',  onboardingCompletedAt: iso(30) },
+    { id:'drv-003', number:'DRV-QC-0003', name:'Sofia Lapointe',     status:'ACTIVE',    verification:'APPROVED', presence:'OFFLINE', location:'Québec, QC',    onboardingCompletedAt: iso(60) },
+    { id:'drv-004', number:'DRV-QC-0004', name:'Jean-François Roy',  status:'PENDING',   verification:'PENDING',  presence:'OFFLINE', location:'Longueuil, QC', onboardingCompletedAt: null },
+    { id:'drv-005', number:'DRV-QC-0005', name:'Amira Tremblay',     status:'SUSPENDED', verification:'APPROVED', presence:'OFFLINE', location:'Laval, QC',     onboardingCompletedAt: iso(90) },
+  ]
+
+  // ── Comptes plateforme ─────────────────────────────────────
+  const accounts = [
+    { id:'acc-001', idPublic:'PA-TAXI-001',  name:'Hedi Bennis',       provider:'TAXI',     status:'ACTIVE',        lastSyncAt: iso(0,1)  },
+    { id:'acc-002', idPublic:'PA-UBER-001',  name:'Hedi Bennis',       provider:'UBER',     status:'ACTIVE',        lastSyncAt: iso(0,2)  },
+    { id:'acc-003', idPublic:'PA-LYFT-001',  name:'Hedi Bennis',       provider:'LYFT',     status:'ACTIVE',        lastSyncAt: iso(0,3)  },
+    { id:'acc-004', idPublic:'PA-DD-001',    name:'Hedi Bennis',       provider:'DOORDASH', status:'ACTIVE',        lastSyncAt: iso(0,4)  },
+    { id:'acc-005', idPublic:'PA-TAXI-002',  name:'Mohammed El-Amine', provider:'TAXI',     status:'ACTIVE',        lastSyncAt: iso(0,5)  },
+    { id:'acc-006', idPublic:'PA-UBER-002',  name:'Mohammed El-Amine', provider:'UBER',     status:'ACTIVE',        lastSyncAt: iso(0,6)  },
+    { id:'acc-007', idPublic:'PA-TAXI-003',  name:'Sofia Lapointe',    provider:'TAXI',     status:'INACTIVE',      lastSyncAt: iso(3)    },
+    { id:'acc-008', idPublic:'PA-UBER-003',  name:'Amira Tremblay',    provider:'UBER',     status:'SUSPENDED',     lastSyncAt: iso(10)   },
+  ]
+
+  // ── Activités (courses/livraisons) ─────────────────────────
+  const ACTIVITY_TEMPLATES = [
+    { driver:'DRV-QC-0001', provider:'TAXI',     type:'TAXI_TRIP',      gross:28.50, fee:0,    tip:3.00  },
+    { driver:'DRV-QC-0001', provider:'UBER',     type:'RIDESHARE_TRIP', gross:22.00, fee:4.40, tip:2.00  },
+    { driver:'DRV-QC-0001', provider:'LYFT',     type:'RIDESHARE_TRIP', gross:18.75, fee:3.75, tip:0     },
+    { driver:'DRV-QC-0001', provider:'DOORDASH', type:'FOOD_DELIVERY',  gross:14.50, fee:2.90, tip:1.50  },
+    { driver:'DRV-QC-0002', provider:'TAXI',     type:'TAXI_TRIP',      gross:35.00, fee:0,    tip:5.00  },
+    { driver:'DRV-QC-0002', provider:'UBER',     type:'RIDESHARE_TRIP', gross:19.00, fee:3.80, tip:0     },
+    { driver:'DRV-QC-0003', provider:'TAXI',     type:'TAXI_TRIP',      gross:42.00, fee:0,    tip:4.00  },
+    { driver:'DRV-QC-0001', provider:'TAXI',     type:'TAXI_TRIP',      gross:31.25, fee:0,    tip:2.50  },
+    { driver:'DRV-QC-0002', provider:'TAXI',     type:'TAXI_TRIP',      gross:26.00, fee:0,    tip:3.50  },
+    { driver:'DRV-QC-0001', provider:'UBER',     type:'RIDESHARE_TRIP', gross:24.50, fee:4.90, tip:4.00  },
+    { driver:'DRV-QC-0001', provider:'TAXI',     type:'TAXI_TRIP',      gross:45.00, fee:0,    tip:6.00  },
+    { driver:'DRV-QC-0002', provider:'LYFT',     type:'RIDESHARE_TRIP', gross:17.00, fee:3.40, tip:1.00  },
+    { driver:'DRV-QC-0001', provider:'DOORDASH', type:'FOOD_DELIVERY',  gross:12.00, fee:2.40, tip:2.00  },
+    { driver:'DRV-QC-0003', provider:'TAXI',     type:'TAXI_TRIP',      gross:55.00, fee:0,    tip:5.00  },
+    { driver:'DRV-QC-0001', provider:'TAXI',     type:'TAXI_TRIP',      gross:33.75, fee:0,    tip:3.00  },
+    { driver:'DRV-QC-0002', provider:'UBER',     type:'RIDESHARE_TRIP', gross:21.50, fee:4.30, tip:2.50  },
+    { driver:'DRV-QC-0001', provider:'LYFT',     type:'RIDESHARE_TRIP', gross:20.00, fee:4.00, tip:0     },
+    { driver:'DRV-QC-0002', provider:'TAXI',     type:'TAXI_TRIP',      gross:38.00, fee:0,    tip:4.00  },
+    { driver:'DRV-QC-0001', provider:'DOORDASH', type:'FOOD_DELIVERY',  gross:16.00, fee:3.20, tip:3.00  },
+    { driver:'DRV-QC-0001', provider:'TAXI',     type:'TAXI_TRIP',      gross:29.00, fee:0,    tip:2.00  },
+  ]
+
+  const TPS = 0.05; const TVQ = 0.09975
+  const activities = ACTIVITY_TEMPLATES.map((a, i) => {
+    const taxable = r2(a.gross + a.tip)
+    const tax     = r2(taxable * (TPS + TVQ))
+    const net     = r2(a.gross - a.fee + a.tip)
+    return {
+      id:             pid('ACT', i+1),
+      driver:         a.driver,
+      provider:       a.provider,
+      type:           a.type,
+      status:         'COMPLETED',
+      startedAt:      iso(Math.floor(i * 0.4), i % 8),
+      gross:          a.gross,
+      fee:            a.fee,
+      tip:            a.tip,
+      tax,
+      net,
+      currency:       'CAD',
+      reconciliation: i % 7 === 0 ? 'REVIEW_REQUIRED' : 'RECONCILED',
+      quality:        i % 5 === 0 ? 'REVIEW' : 'VERIFIED',
+    }
+  })
+
+  // ── Transactions ───────────────────────────────────────────
+  const transactions = activities.slice(0, 12).map((a, i) => ({
+    id:         pid('TXN', i+1),
+    driver:     a.driver,
+    provider:   a.provider,
+    type:       'PAYOUT',
+    status:     i < 10 ? 'SETTLED' : 'PENDING',
+    at:         a.startedAt,
+    total:      a.net,
+    currency:   'CAD',
+    receivedAt: iso(Math.floor(i * 0.4) - 1, i % 6),
+  }))
+
+  // ── Fiscalité ──────────────────────────────────────────────
+  const taxRecords = [
+    { id:'TAX-001', driver:'DRV-QC-0001', provider:'TAXI',     taxable:4820, providerTax:0,      calculatedTax:r2(4820*(TPS+TVQ)),  variance:0,     status:'RECONCILED', start:'2026-07-01', end:'2026-09-30' },
+    { id:'TAX-002', driver:'DRV-QC-0001', provider:'UBER',     taxable:1240, providerTax:r2(1240*TPS), calculatedTax:r2(1240*(TPS+TVQ)), variance:r2(1240*TVQ), status:'REVIEW_REQUIRED', start:'2026-07-01', end:'2026-09-30' },
+    { id:'TAX-003', driver:'DRV-QC-0002', provider:'TAXI',     taxable:3680, providerTax:0,      calculatedTax:r2(3680*(TPS+TVQ)),  variance:0,     status:'RECONCILED', start:'2026-07-01', end:'2026-09-30' },
+    { id:'TAX-004', driver:'DRV-QC-0003', provider:'TAXI',     taxable:2950, providerTax:0,      calculatedTax:r2(2950*(TPS+TVQ)),  variance:0,     status:'RECONCILED', start:'2026-07-01', end:'2026-09-30' },
+  ]
+
+  // ── Pourboires ─────────────────────────────────────────────
+  const tips = activities
+    .filter(a => a.tip > 0)
+    .map((a, i) => ({
+      id:         pid('TIP', i+1),
+      driver:     a.driver,
+      provider:   a.provider,
+      amount:     a.tip,
+      status:     'SETTLED',
+      receivedAt: a.startedAt,
+    }))
+
+  // ── Relevés de règlement ───────────────────────────────────
+  const settlements = [
+    { id:'SET-001', driver:'DRV-QC-0001', provider:'TAXI',     start:'2026-09-01', end:'2026-09-07', gross:1240.50, earnings:1240.50, fee:0,    tax:r2(1240.50*(TPS+TVQ)), tip:112.00, paid:r2(1240.50-r2(1240.50*(TPS+TVQ))+112), status:'PAID',    at:iso(3)  },
+    { id:'SET-002', driver:'DRV-QC-0001', provider:'UBER',     start:'2026-09-01', end:'2026-09-07', gross:380.00,  earnings:304.00,  fee:76.00, tax:r2(380*(TPS+TVQ)),     tip:28.00,  paid:r2(304-r2(380*(TPS+TVQ))+28),       status:'PAID',    at:iso(3)  },
+    { id:'SET-003', driver:'DRV-QC-0002', provider:'TAXI',     start:'2026-09-01', end:'2026-09-07', gross:980.00,  earnings:980.00,  fee:0,    tax:r2(980*(TPS+TVQ)),     tip:85.00,  paid:r2(980-r2(980*(TPS+TVQ))+85),       status:'PAID',    at:iso(3)  },
+    { id:'SET-004', driver:'DRV-QC-0001', provider:'DOORDASH', start:'2026-09-08', end:'2026-09-14', gross:320.00,  earnings:256.00,  fee:64.00, tax:r2(320*(TPS+TVQ)),     tip:42.00,  paid:r2(256-r2(320*(TPS+TVQ))+42),       status:'PENDING', at:iso(0)  },
+  ]
+
+  // ── Cas de réconciliation ──────────────────────────────────
+  const cases = [
+    { id:'CASE-001', driver:'DRV-QC-0001', provider:'UBER',     type:'TAX_VARIANCE',       expected:69.00,  actual:19.00,  difference:50.00,  status:'OPEN',     note:'TVQ non perçue par Uber — écart à régulariser', period:'2026-Q3', createdAt:iso(5)  },
+    { id:'CASE-002', driver:'DRV-QC-0002', provider:'LYFT',     type:'MISSING_ACTIVITY',   expected:340.00, actual:0,      difference:340.00, status:'OPEN',     note:'Activités LYFT non reçues semaine du 8 sept',   period:'2026-Q3', createdAt:iso(3)  },
+    { id:'CASE-003', driver:'DRV-QC-0001', provider:'DOORDASH', type:'TIP_DISCREPANCY',    expected:42.00,  actual:38.50,  difference:3.50,   status:'RESOLVED', note:'Pourboire ajusté après confirmation client',    period:'2026-Q3', createdAt:iso(8)  },
+    { id:'CASE-004', driver:'DRV-QC-0003', provider:'TAXI',     type:'SETTLEMENT_DELAY',   expected:0,      actual:0,      difference:0,      status:'MONITORING','note':'Délai paiement >5j — surveillance activée',  period:'2026-Q3', createdAt:iso(2)  },
+  ]
+
+  // ── Alertes système ────────────────────────────────────────
+  const alerts = [
+    { id:'ALT-001', service:'FISCAL_ENGINE',   severity:'HIGH',   status:'ACTIVE',   title:'Variance TVQ Uber Q3',     message:'Écart TVQ détecté sur 12 transactions Uber — révision requise', triggered:12, threshold:5,  at:iso(1)  },
+    { id:'ALT-002', service:'SYNC_MONITOR',    severity:'MEDIUM', status:'ACTIVE',   title:'Sync Lyft en retard',      message:'Aucune synchronisation Lyft depuis 48h — vérification requise', triggered:1,  threshold:24, at:iso(2)  },
+    { id:'ALT-003', service:'COMPLIANCE',      severity:'LOW',    status:'RESOLVED', title:'Document expiré — drv-005',message:'Assurance automobile expirée pour Amira Tremblay',              triggered:1,  threshold:1,  at:iso(5)  },
+    { id:'ALT-004', service:'PAYOUT_MONITOR',  severity:'LOW',    status:'ACTIVE',   title:'Retard règlement DoorDash',message:'Règlement SET-004 en attente depuis >48h',                      triggered:1,  threshold:48, at:iso(0)  },
+  ]
+
+  // ── Rapports ───────────────────────────────────────────────
+  const reports = [
+    { id:'RPT-001', type:'REVENUE_SUMMARY',   status:'READY',   format:'PDF', start:'2026-09-01', end:'2026-09-14', records:20, containsPii:true,  generatedAt:iso(0,2) },
+    { id:'RPT-002', type:'TAX_QUARTERLY',     status:'READY',   format:'PDF', start:'2026-07-01', end:'2026-09-30', records:4,  containsPii:true,  generatedAt:iso(1)   },
+    { id:'RPT-003', type:'RECONCILIATION',    status:'PENDING', format:'CSV', start:'2026-09-01', end:'2026-09-14', records:0,  containsPii:false, generatedAt:iso(0)   },
+    { id:'RPT-004', type:'COMPLIANCE_AUDIT',  status:'READY',   format:'PDF', start:'2026-01-01', end:'2026-09-30', records:5,  containsPii:true,  generatedAt:iso(2)   },
+  ]
+
+  // ── Relevés chauffeurs ─────────────────────────────────────
+  const statements = [
+    { id:'STM-001', driver:'DRV-QC-0001', type:'WEEKLY',    status:'SENT',    start:'2026-09-08', end:'2026-09-14', reference:'WKL-2026-37-001', generatedAt:iso(3) },
+    { id:'STM-002', driver:'DRV-QC-0002', type:'WEEKLY',    status:'SENT',    start:'2026-09-08', end:'2026-09-14', reference:'WKL-2026-37-002', generatedAt:iso(3) },
+    { id:'STM-003', driver:'DRV-QC-0001', type:'QUARTERLY', status:'READY',   start:'2026-07-01', end:'2026-09-30', reference:'QTR-2026-Q3-001', generatedAt:iso(0) },
+    { id:'STM-004', driver:'DRV-QC-0003', type:'WEEKLY',    status:'PENDING', start:'2026-09-08', end:'2026-09-14', reference:'WKL-2026-37-003', generatedAt:iso(0) },
+  ]
+
+  // ── Métriques globales ─────────────────────────────────────
+  const totalGross = r2(activities.reduce((s,a) => s+a.gross, 0))
+  const totalTips  = r2(activities.reduce((s,a) => s+a.tip,   0))
+  const totalFees  = r2(activities.reduce((s,a) => s+a.fee,   0))
+  const totalTax   = r2(activities.reduce((s,a) => s+a.tax,   0))
+  const totalNet   = r2(totalGross + totalTips - totalFees)
+
+  const payload = {
+    scenario: {
+      code:        'QC-PILOT-2026-Q3',
+      label:       'Scénario pilote TAXIMETER.GOV — Q3 2026 — Données synthétiques',
+      generatedAt: new Date().toISOString(),
+    },
+    metrics: {
+      drivers:     drivers.length,
+      online:      drivers.filter(d => d.presence === 'ONLINE').length,
+      activities:  activities.length,
+      gross:       totalGross,
+      net:         totalNet,
+      tax:         totalTax,
+      tips:        totalTips,
+      snapshots:   settlements.length,
+      alerts:      alerts.filter(a => a.status === 'ACTIVE').length,
+      openCases:   cases.filter(c => c.status === 'OPEN').length,
+    },
+    drivers,
+    accounts,
+    activities,
+    transactions,
+    taxRecords,
+    tips,
+    settlements,
+    cases,
+    alerts,
+    reports,
+    statements,
+  }
+
+  return NextResponse.json(payload)
 }
