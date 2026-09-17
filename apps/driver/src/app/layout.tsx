@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme'
+import { GlobalLanguageLoader } from '@/components/language/GlobalLanguageLoader'
 
 export const metadata: Metadata = {
   title: 'TAXIMÈTRE.GOV — Driver',
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         `}</style>
       </head>
       <body className="min-h-screen overflow-x-hidden" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+        <GlobalLanguageLoader />
         <ThemeProvider>
           {children}
         </ThemeProvider>

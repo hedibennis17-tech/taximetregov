@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useTheme } from '@/lib/theme'
 import { useEffect, useState } from 'react'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import { getLang, toggleLang } from '@/lib/i18n/language'
 
 function useInitials() {
   const [ini, setIni] = useState('·')
@@ -21,6 +22,11 @@ export function AppShell({ children, showNav = true }: { children: React.ReactNo
   const { theme, toggle } = useTheme()
   const initials = useInitials()
   const dark = theme === 'dark'
+  const [lang, setLangState] = useState<'fr'|'en'>('fr')
+
+  useEffect(() => {
+    setLangState(getLang())
+  }, [])
 
   return (
     <div style={{ display:'flex', flexDirection:'column', minHeight:'100vh', background:'var(--bg)' }}>
@@ -59,6 +65,23 @@ export function AppShell({ children, showNav = true }: { children: React.ReactNo
               border:'1px solid rgba(245,200,66,0.35)',
               letterSpacing:'0.08em',
             }}>PILOTE</span>
+
+            {/* Toggle FR/EN */}
+            <button
+              onClick={() => { toggleLang(); setLangState(l => l === 'fr' ? 'en' : 'fr') }}
+              title={lang === 'fr' ? 'Switch to English' : 'Passer en français'}
+              style={{
+                height:32, borderRadius:10, padding:'0 8px',
+                background:'rgba(255,255,255,0.12)',
+                border:'1px solid rgba(255,255,255,0.20)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                cursor:'pointer', gap:3,
+              }}
+            >
+              <span style={{ fontSize:11, fontWeight:800, color: lang === 'fr' ? '#FFFFFF' : 'rgba(255,255,255,0.40)', letterSpacing:'0.05em' }}>FR</span>
+              <span style={{ fontSize:9, color:'rgba(255,255,255,0.30)' }}>|</span>
+              <span style={{ fontSize:11, fontWeight:800, color: lang === 'en' ? '#FFFFFF' : 'rgba(255,255,255,0.40)', letterSpacing:'0.05em' }}>EN</span>
+            </button>
 
             {/* Toggle thème */}
             <button

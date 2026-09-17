@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Eye, EyeOff, AlertCircle, Loader2, Sun, Moon } from 'lucide-react'
 import { TaximetreGovLogo } from '@/components/brand/Logo'
+import { GlobalLanguageLoader } from '@/components/language/GlobalLanguageLoader'
+import { getLang, toggleLang } from '@/lib/i18n/language'
 
 function useLoginTheme() {
   const [dark, setDark] = useState(false)
@@ -25,7 +27,10 @@ function useLoginTheme() {
 export default function LoginPage() {
   const router = useRouter()
   const { dark, toggle } = useLoginTheme()
+  const [lang, setLangState] = useState<'fr'|'en'>('fr')
   const [mode, setMode] = useState<'login'|'register'>('login')
+
+  useEffect(() => { setLangState(getLang()) }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPwd, setShowPwd] = useState(false)
@@ -59,18 +64,31 @@ export default function LoginPage() {
         ? 'radial-gradient(ellipse at 20% 50%, rgba(0,61,165,0.10) 0%, transparent 60%)'
         : 'radial-gradient(ellipse at 20% 50%, rgba(0,61,165,0.06) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(11,79,113,0.04) 0%, transparent 60%)',
     }}>
+      <GlobalLanguageLoader />
 
-      {/* Bouton toggle thème — coin haut droit */}
-      <button onClick={toggle} style={{
-        position:'fixed', top:16, right:16,
-        width:38, height:38, borderRadius:12,
-        background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,61,165,0.08)',
-        border: dark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,61,165,0.20)',
-        display:'flex', alignItems:'center', justifyContent:'center',
-        cursor:'pointer',
-      }}>
-        {dark ? <Sun size={16} color="#F5C842" /> : <Moon size={16} color="#003DA5" />}
-      </button>
+      {/* Boutons coin haut droit — thème + langue */}
+      <div style={{ position:'fixed', top:16, right:16, display:'flex', gap:8 }}>
+        {/* FR/EN */}
+        <button onClick={() => { toggleLang(); setLangState(l => l==='fr'?'en':'fr') }} style={{
+          height:38, borderRadius:12, padding:'0 10px',
+          background: dark?'rgba(255,255,255,0.08)':'rgba(0,61,165,0.08)',
+          border: dark?'1px solid rgba(255,255,255,0.15)':'1px solid rgba(0,61,165,0.20)',
+          display:'flex', alignItems:'center', gap:4, cursor:'pointer',
+        }}>
+          <span style={{ fontSize:12, fontWeight:800, color: lang==='fr'?(dark?'white':'#003DA5'):(dark?'rgba(255,255,255,0.35)':'rgba(0,61,165,0.35)'), letterSpacing:'0.05em' }}>FR</span>
+          <span style={{ fontSize:9, color:dark?'rgba(255,255,255,0.30)':'rgba(0,61,165,0.30)' }}>|</span>
+          <span style={{ fontSize:12, fontWeight:800, color: lang==='en'?(dark?'white':'#003DA5'):(dark?'rgba(255,255,255,0.35)':'rgba(0,61,165,0.35)'), letterSpacing:'0.05em' }}>EN</span>
+        </button>
+        {/* Thème */}
+        <button onClick={toggle} style={{
+          width:38, height:38, borderRadius:12,
+          background: dark?'rgba(255,255,255,0.08)':'rgba(0,61,165,0.08)',
+          border: dark?'1px solid rgba(255,255,255,0.15)':'1px solid rgba(0,61,165,0.20)',
+          display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer',
+        }}>
+          {dark ? <Sun size={16} color="#F5C842"/> : <Moon size={16} color="#003DA5"/>}
+        </button>
+      </div>
 
       {/* Card centrale */}
       <div style={{
