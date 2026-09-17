@@ -140,8 +140,7 @@ export default function DeclarationsPage() {
                 ].map((r, i) => (
                   <div key={r.l} className={`flex justify-between py-1.5 ${i > 0 ? 'border-t border-slate-700' : ''}`}>
                     <span className="text-[10px] text-slate-400">{r.l}</span>
-                    <span className="text-[10px] font-bold" style={typeof r.c === 'string' && r.c.startsWith('#') ? { color: r.c } : {}}
-                      className={`text-[10px] font-bold ${!r.c.startsWith('#') ? r.c : ''}`}>{r.v}</span>
+                    <span className={`text-[10px] font-bold ${!r.c.startsWith('#') ? r.c : ''}`} style={r.c.startsWith('#') ? { color: r.c } : {}}>{r.v}</span>
                   </div>
                 ))}
               </div>
