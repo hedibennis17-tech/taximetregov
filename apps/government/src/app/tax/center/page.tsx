@@ -18,32 +18,38 @@ interface TaxGovData {
   mode_pilote: boolean
 }
 
-// Données de démo affichées si API non disponible
+// Données de démo provinciales — Centre fiscal gouvernemental QC
+// ~10 000 chauffeurs actifs × 250$/jour × 90 jours Q3 = ~225M$ brut province
 const DEMO: TaxGovData = {
   summary: {
-    drivers_with_tax_account: 3, total_gross_revenue: 834.75,
-    total_tps_collected: 41.74, total_tvq_collected: 83.26, total_tax_solde: 112.32,
-    filings_accepted: 1, filings_draft: 1, periods_open: 1,
+    drivers_with_tax_account: 9847,
+    total_gross_revenue:      224_850_000,
+    total_tps_collected:       11_242_500,
+    total_tvq_collected:       22_428_938,
+    total_tax_solde:           31_847_210,
+    filings_accepted:          8_124,
+    filings_draft:             1_723,
+    periods_open:              3,
   },
   taxAccounts: [
-    { id:'acc-hedi', driver_id:'drv-hedi', tps_status:'REGISTERED', tvq_status:'REGISTERED', filing_frequency:'QUARTERLY', tax_account_status:'ACTIVE', tps_registration_masked:'DEMO-••••-TPS-HEDI', tvq_registration_masked:'DEMO-••••-TVQ-HEDI' },
-    { id:'acc-ahmed', driver_id:'drv-ahmed', tps_status:'REGISTERED', tvq_status:'REGISTERED', filing_frequency:'QUARTERLY', tax_account_status:'ACTIVE', tps_registration_masked:'DEMO-••••-TPS-AHME', tvq_registration_masked:'DEMO-••••-TVQ-AHME' },
+    { id:'acc-hedi',   driver_id:'drv-hedi',   tps_status:'REGISTERED', tvq_status:'REGISTERED', filing_frequency:'QUARTERLY', tax_account_status:'ACTIVE', tps_registration_masked:'DEMO-••••-TPS-HEDI', tvq_registration_masked:'DEMO-••••-TVQ-HEDI' },
+    { id:'acc-ahmed',  driver_id:'drv-ahmed',  tps_status:'REGISTERED', tvq_status:'REGISTERED', filing_frequency:'QUARTERLY', tax_account_status:'ACTIVE', tps_registration_masked:'DEMO-••••-TPS-AHME', tvq_registration_masked:'DEMO-••••-TVQ-AHME' },
     { id:'acc-sophie', driver_id:'drv-sophie', tps_status:'REGISTERED', tvq_status:'REGISTERED', filing_frequency:'QUARTERLY', tax_account_status:'ACTIVE', tps_registration_masked:'DEMO-••••-TPS-SOPH', tvq_registration_masked:'DEMO-••••-TVQ-SOPH' },
   ],
   allPeriods: [
-    { id:'per-q3', tax_account_id:'acc-hedi', period_start:'2026-07-01', period_end:'2026-09-30', filing_due_date:'2026-10-31', period_status:'OPEN', gross_revenue_taxi:'158.25', gross_revenue_rideshare:'75.50', gross_revenue_delivery:'46.50', gross_revenue_other:'0' },
-    { id:'per-q2', tax_account_id:'acc-hedi', period_start:'2026-04-01', period_end:'2026-06-30', filing_due_date:'2026-07-31', period_status:'FILED', gross_revenue_taxi:'143.50', gross_revenue_rideshare:'68.00', gross_revenue_delivery:'39.25', gross_revenue_other:'0' },
-    { id:'per-q3b', tax_account_id:'acc-ahmed', period_start:'2026-07-01', period_end:'2026-09-30', filing_due_date:'2026-10-31', period_status:'OPEN', gross_revenue_taxi:'134.75', gross_revenue_rideshare:'55.00', gross_revenue_delivery:'38.75', gross_revenue_other:'0' },
+    { id:'per-q3',  tax_account_id:'PROVINCE-QC', period_start:'2026-07-01', period_end:'2026-09-30', filing_due_date:'2026-10-31', period_status:'OPEN',  gross_revenue_taxi:'89940000', gross_revenue_rideshare:'78247500', gross_revenue_delivery:'56662500', gross_revenue_other:'0' },
+    { id:'per-q2',  tax_account_id:'PROVINCE-QC', period_start:'2026-04-01', period_end:'2026-06-30', filing_due_date:'2026-07-31', period_status:'FILED', gross_revenue_taxi:'81230000', gross_revenue_rideshare:'70850000', gross_revenue_delivery:'51420000', gross_revenue_other:'0' },
+    { id:'per-q1',  tax_account_id:'PROVINCE-QC', period_start:'2026-01-01', period_end:'2026-03-31', filing_due_date:'2026-04-30', period_status:'FILED', gross_revenue_taxi:'74180000', gross_revenue_rideshare:'64620000', gross_revenue_delivery:'47200000', gross_revenue_other:'0' },
   ],
   allFilings: [
-    { id:'fil-1', tax_account_id:'acc-hedi', tax_period_id:'per-q2', filing_status:'ACCEPTED', filing_type:'COMBINED_TPS_TVQ', gateway_mode:'SIMULATION', is_simulation:true, accepted_at:'2026-07-29T14:00:00Z', government_reference:'DEMO-REF-Q2-2026-HEDI' },
-    { id:'fil-2', tax_account_id:'acc-hedi', tax_period_id:'per-q3', filing_status:'DRAFT', filing_type:'COMBINED_TPS_TVQ', gateway_mode:'SIMULATION', is_simulation:true },
-    { id:'fil-3', tax_account_id:'acc-ahmed', tax_period_id:'per-q3b', filing_status:'DRAFT', filing_type:'COMBINED_TPS_TVQ', gateway_mode:'SIMULATION', is_simulation:true },
+    { id:'fil-q2', tax_account_id:'PROVINCE-QC', tax_period_id:'per-q2', filing_status:'ACCEPTED', filing_type:'COMBINED_TPS_TVQ', gateway_mode:'SIMULATION', is_simulation:true, accepted_at:'2026-07-29T14:00:00Z', government_reference:'DEMO-RQ-Q2-2026-QC-PILOTE' },
+    { id:'fil-q1', tax_account_id:'PROVINCE-QC', tax_period_id:'per-q1', filing_status:'ACCEPTED', filing_type:'COMBINED_TPS_TVQ', gateway_mode:'SIMULATION', is_simulation:true, accepted_at:'2026-04-28T10:00:00Z', government_reference:'DEMO-RQ-Q1-2026-QC-PILOTE' },
+    { id:'fil-q3', tax_account_id:'PROVINCE-QC', tax_period_id:'per-q3', filing_status:'DRAFT',    filing_type:'COMBINED_TPS_TVQ', gateway_mode:'SIMULATION', is_simulation:true },
   ],
   allCalcs: [
-    { id:'calc-1', tax_period_id:'per-q2', tps_collected:13.96, tps_balance:12.56, tvq_collected:27.77, tvq_balance:24.98, gross_revenue_taxable:277.25, is_estimate:false, calculation_status:'FINAL' },
-    { id:'calc-2', tax_period_id:'per-q3', tps_collected:14.01, tps_balance:12.57, tvq_collected:27.87, tvq_balance:25.00, gross_revenue_taxable:280.25, is_estimate:true, calculation_status:'ESTIMATE' },
-    { id:'calc-3', tax_period_id:'per-q3b', tps_collected:11.37, tps_balance:10.24, tvq_collected:22.63, tvq_balance:20.37, gross_revenue_taxable:227.50, is_estimate:true, calculation_status:'ESTIMATE' },
+    { id:'calc-q2', tax_period_id:'per-q2', tps_collected:10175000, tps_credits:812500, tps_balance:9362500, tvq_collected:20274263, tvq_credits:1618750, tvq_balance:18655513, gross_revenue_taxable:203500000, is_estimate:false, calculation_status:'FINAL' },
+    { id:'calc-q1', tax_period_id:'per-q1', tps_collected:9300000,  tps_credits:742000, tps_balance:8558000, tvq_collected:18527850, tvq_credits:1478210, tvq_balance:17049640, gross_revenue_taxable:186000000, is_estimate:false, calculation_status:'FINAL' },
+    { id:'calc-q3', tax_period_id:'per-q3', tps_collected:11242500, tps_credits:898000, tps_balance:10344500,tvq_collected:22394438, tvq_credits:1787750, tvq_balance:20606688, gross_revenue_taxable:224850000, is_estimate:true,  calculation_status:'ESTIMATE' },
   ],
   mode_pilote: true,
 }
@@ -110,15 +116,15 @@ export default function TaxCenterPage() {
       <div className="mx-4 mb-4 flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
         <AlertTriangle size={12} className="text-amber-400 shrink-0" />
         <p className="text-[9px] text-amber-400">
-          Mode pilote — Données synthétiques — Aucune intégration Revenu Québec active
+          Mode pilote — Données synthétiques provinciales QC (~9 847 chauffeurs) — Aucune intégration Revenu Québec active
           {usingDemo && ' · AFFICHAGE DEMO LOCAL'}
         </p>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 px-4 mb-4">
-        <KpiCard label="Dossiers fiscaux actifs" value={s.drivers_with_tax_account} icon={<span className="text-lg">🏛️</span>} />
-        <KpiCard label="Revenus bruts totaux" value={money(s.total_gross_revenue)} icon={<span className="text-lg">💰</span>} />
+        <KpiCard label="Chauffeurs inscrits (QC)" value={s.drivers_with_tax_account.toLocaleString('fr-CA')} icon={<span className="text-lg">🏛️</span>} />
+        <KpiCard label="Revenus bruts province QC" value={money(s.total_gross_revenue)} icon={<span className="text-lg">💰</span>} />
         <KpiCard label="TPS estimée (5%)" value={money(s.total_tps_collected)} icon={<span className="text-lg">📊</span>} />
         <KpiCard label="TVQ estimée (9,975%)" value={money(s.total_tvq_collected)} icon={<span className="text-lg">📊</span>} />
         <KpiCard label="Déclarations acceptées" value={s.filings_accepted} icon={<CheckCircle size={16} className="text-green-400" />} />
@@ -217,6 +223,7 @@ export default function TaxCenterPage() {
                       <div className="text-sm font-bold text-white">{p['period_start']} → {p['period_end']}</div>
                       <div className={`text-[10px] font-semibold ${ps.color}`}>{ps.label}</div>
                       <div className="text-[9px] text-slate-500">Échéance: {p['filing_due_date']}</div>
+                      <div className="text-[9px] text-blue-400 font-bold mt-1">🏛️ Province QC · ~9 847 chauffeurs</div>
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-green-400">{money(total)}</div>
