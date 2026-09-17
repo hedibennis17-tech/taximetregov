@@ -133,7 +133,7 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col z-30" style={{width:'var(--sidebar-w)'}}>
       <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-lg font-bold" style={{background:'var(--qc-blue)'}}>⚜</div>
+          <img src="/logo.png" alt="TAXIMETER.GOV" width={32} height={32} style={{objectFit:'contain',borderRadius:8}} />
           <div>
             <div className="text-xs font-bold tracking-widest text-qc-blue">TAXIMÈTRE.GOV</div>
             <div className="text-[9px] text-slate-400 tracking-wide">Gouvernement du Québec</div>
