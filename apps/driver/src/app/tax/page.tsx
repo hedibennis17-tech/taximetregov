@@ -40,10 +40,35 @@ function SeedFiscalButton({ t, onDone }: { t: ReturnType<typeof getThemeTokens>;
   )
 }
 
+interface TipEntry { date:string; source:string; activity_type:string; reference:string; gross_activity:number; tip_amount:number; tps_on_tip:number; tvq_on_tip:number; total_taxable:number; data_source:string }
+interface Reconciliation { total_client_paid:number; revenue_activity:number; tips_received:number; tps_collected:number; tvq_collected:number; platform_fees:number; net_driver:number; tax_remittance:number; status:string; source:string }
+interface Validation { check_no_double_count:boolean; check_tps_coherent:boolean; check_tvq_coherent:boolean; check_taxable_base:boolean; check_solde:boolean; all_ok:boolean }
+
 interface TaxData {
   hasAccount:boolean; taxAccount:Record<string,string>|null; currentPeriod:Record<string,string>|null
   allPeriods:Array<Record<string,string>>
-  fiscal:{ gross_revenue_taxable:number;tps_collected:number;tps_credits:number;tps_balance:number;tvq_collected:number;tvq_credits:number;tvq_balance:number;solde_total:number;is_estimate:boolean;calculation_status:string;tps_rate:string;tvq_rate:string }
+  fiscal:{
+    // Revenus distincts
+    base_revenue:number; tip_amount:number; total_gross:number; fee_amount:number; adjustments:number
+    // Base taxable
+    taxable_base:number; taxable_activity:number; taxable_tips:number
+    // TPS détaillée
+    tps_on_activity:number; tps_on_tips:number; tps_collected:number; tps_credits:number; tps_balance:number
+    // TVQ détaillée
+    tvq_on_activity:number; tvq_on_tips:number; tvq_collected:number; tvq_credits:number; tvq_balance:number
+    // Total
+    solde_total:number
+    // Par source
+    taxi_gross:number; rideshare_gross:number; delivery_gross:number
+    // Config tips
+    tips_included_in_gross:boolean; tips_taxable:boolean; nb_transactions:number
+    is_estimate:boolean; calculation_status:string; tps_rate:string; tvq_rate:string
+    // 10 mois
+    all_periods:{ base_revenue:number; tip_amount:number; total_gross:number; tps_collected:number; tvq_collected:number; solde:number }
+    // Ancien champ conservé pour compatibilité
+    gross_revenue_taxable?:number
+  }
+  tipHistory:TipEntry[]; reconciliation:Reconciliation; validation:Validation
   currentFiling:Record<string,string>|null; allFilings:Array<Record<string,string>>
   ruleSet:Record<string,string>; avertissement:string; mode_pilote:boolean; revenu_quebec_url:string
 }
@@ -53,6 +78,7 @@ const TABS = [
   { key:'calculator',  label:'Calcul',     emoji:'🧮' },
   { key:'declaration', label:'Décla.',     emoji:'📋' },
   { key:'pay',         label:'Paiement',   emoji:'💳' },
+  { key:'tips',        label:'Pourboires', emoji:'💝' },
   { key:'history',     label:'Historique', emoji:'📜' },
   { key:'obligations', label:'Obligations',emoji:'⏱️' },
 ]
@@ -99,9 +125,12 @@ export default function TaxPage() {
   const f      = data?.fiscal
   const period = data?.currentPeriod
   const filing = data?.currentFiling
+  // Rétrocompatibilité — gross est maintenant taxable_base (inclut tips taxables)
+  const gross_revenue_taxable = f?.taxable_base ?? f?.gross_revenue_taxable ?? 0
   const daysUntil = (d:string) => Math.ceil((new Date(d).getTime()-Date.now())/86400000)
   const urgent    = period ? daysUntil(period['filing_due_date']??'') < 30 : false
   const filingStatus = FILING_STATUS[filing?.['filing_status']??'DRAFT'] ?? FILING_STATUS['DRAFT']!
+  const TIP_TAX_TREATMENT_LABEL = 'Taxables en QC — TPS + TVQ'
 
   // ── Shared card style helper ──────────────────────────────
   const cs = cardStyle(t)
@@ -253,14 +282,69 @@ export default function TaxPage() {
                       </div>
                     </div>
 
-                    {/* Revenus par source */}
+                    {/* ── Répartition des revenus avec pourboires ── */}
                     <div style={{ ...cs, padding:'14px 16px' }}>
-                      <SectionTitle title="Revenus imposables" t={t} />
+                      <SectionTitle title="Répartition des revenus" t={t} />
+
+                      {/* Note anti-double comptage */}
+                      <div style={{ fontSize:9, padding:'6px 10px', borderRadius:8, background:'rgba(5,150,105,0.08)', border:'1px solid rgba(5,150,105,0.20)', marginBottom:12, color:t.green }}>
+                        ✓ Pourboires comptés séparément du revenu brut — aucun double comptage (schéma confirmé)
+                      </div>
+
                       {[
-                        { label:'Taxi',      val:parseFloat(period?.['gross_revenue_taxi']??'0'),      icon:'🚕' },
-                        { label:'Rideshare', val:parseFloat(period?.['gross_revenue_rideshare']??'0'), icon:'🚗' },
-                        { label:'Livraison', val:parseFloat(period?.['gross_revenue_delivery']??'0'),  icon:'📦' },
-                        { label:'Autres',    val:parseFloat(period?.['gross_revenue_other']??'0'),     icon:'💼' },
+                        { label:'Revenus d\'activité', val:f?.base_revenue??0, icon:'🚕', color:t.text, sub:'Courses & livraisons (SANS tips)' },
+                        { label:'Pourboires reçus',    val:f?.tip_amount??0,   icon:'💝', color:'#F5C842', sub:`${TIP_TAX_TREATMENT_LABEL} — base taxable distincte` },
+                        { label:'Frais plateforme',    val:-(f?.fee_amount??0),icon:'💸', color:t.red, sub:'Uber, Lyft, DoorDash…' },
+                        { label:'Ajustements',         val:f?.adjustments??0,  icon:'⚖️', color:t.text3, sub:'Corrections et remboursements' },
+                      ].map((r, idx) => (
+                        <div key={r.label} style={rowStyle(idx)}>
+                          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                            <span>{r.icon}</span>
+                            <div>
+                              <div style={{ fontSize:13, color:t.text, fontWeight:600 }}>{r.label}</div>
+                              <div style={{ fontSize:9, color:t.text3 }}>{r.sub}</div>
+                            </div>
+                          </div>
+                          <span style={{ fontSize:14, fontWeight:700, color: r.val < 0 ? t.red : r.color }}>{r.val < 0 ? `−${money(-r.val)}` : money(r.val)}</span>
+                        </div>
+                      ))}
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:10, marginTop:4, borderTop:`2px solid ${t.border}` }}>
+                        <div>
+                          <span style={{ fontSize:13, fontWeight:700, color:t.text }}>Total revenus chauffeur</span>
+                          <div style={{ fontSize:9, color:t.text3 }}>Base imposable: {money(f?.taxable_base??0)}</div>
+                        </div>
+                        <span style={{ fontSize:18, fontWeight:900, color:t.text }}>{money(f?.total_gross??0)}</span>
+                      </div>
+                    </div>
+
+                    {/* ── Pourboires — détail fiscal ── */}
+                    <div style={{ ...cs, padding:'14px 16px', borderLeft:`3px solid #F5C842` }}>
+                      <SectionTitle title="Pourboires · Traitement fiscal" t={t} />
+                      <div style={{ fontSize:10, color:t.amber, marginBottom:10, padding:'6px 10px', borderRadius:8, background:'rgba(245,198,66,0.08)', border:'1px solid rgba(245,198,66,0.20)' }}>
+                        💡 Au Québec, les pourboires reçus dans le cadre d'une activité commerciale sont assujettis à la TPS et à la TVQ.
+                      </div>
+                      {[
+                        { label:'Pourboires reçus (total)',       val:money(f?.tip_amount??0),        color:t.text },
+                        { label:'Inclus dans revenu brut?',       val:'NON — colonne séparée',        color:t.green },
+                        { label:'Pourboires imposables (QC)',     val:money(f?.taxable_tips??0),       color:t.text },
+                        { label:`TPS sur pourboires (${f?.tps_rate})`, val:money(f?.tps_on_tips??0),  color:'#7C3AED' },
+                        { label:`TVQ sur pourboires (${f?.tvq_rate})`, val:money(f?.tvq_on_tips??0),  color:'#7C3AED' },
+                        { label:'Total taxes sur pourboires',     val:money((f?.tps_on_tips??0)+(f?.tvq_on_tips??0)), color:t.amber },
+                      ].map((r, idx) => (
+                        <div key={r.label} style={rowStyle(idx)}>
+                          <span style={{ fontSize:11, color:t.text3 }}>{r.label}</span>
+                          <span style={{ fontSize:12, fontWeight:700, color:r.color }}>{r.val}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* ── Revenus par source ── */}
+                    <div style={{ ...cs, padding:'14px 16px' }}>
+                      <SectionTitle title="Revenus imposables par source" t={t} />
+                      {[
+                        { label:'Taxi',      val:f?.taxi_gross??parseFloat(period?.['gross_revenue_taxi']??'0'),      icon:'🚕' },
+                        { label:'Rideshare', val:f?.rideshare_gross??parseFloat(period?.['gross_revenue_rideshare']??'0'), icon:'🚗' },
+                        { label:'Livraison', val:f?.delivery_gross??parseFloat(period?.['gross_revenue_delivery']??'0'),  icon:'📦' },
                       ].filter(r => r.val > 0).map((r, idx) => (
                         <div key={r.label} style={rowStyle(idx)}>
                           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -271,8 +355,8 @@ export default function TaxPage() {
                         </div>
                       ))}
                       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:10, marginTop:4, borderTop:`2px solid ${t.border}` }}>
-                        <span style={{ fontSize:13, fontWeight:700, color:t.text }}>Total brut</span>
-                        <span style={{ fontSize:18, fontWeight:900, color:t.text }}>{money(f?.gross_revenue_taxable??0)}</span>
+                        <span style={{ fontSize:13, fontWeight:700, color:t.text }}>Base taxable totale</span>
+                        <span style={{ fontSize:18, fontWeight:900, color:t.text }}>{money(f?.taxable_base??0)}</span>
                       </div>
                     </div>
                   </>
@@ -285,7 +369,9 @@ export default function TaxPage() {
                     <div style={{ background: dark?'rgba(0,0,0,0.25)':'rgba(0,61,165,0.04)', borderRadius:14, padding:'14px', fontFamily:'monospace', fontSize:11, border:`1px solid ${t.border}` }}>
                       <div style={{ fontSize:9, fontWeight:800, color:t.accent, marginBottom:12, letterSpacing:'0.06em' }}>MOTEUR FISCAL TAXIMETER.GOV · {f?.is_estimate ? 'ESTIMATION' : f?.calculation_status}</div>
                       {[
-                        { label:'Revenus bruts imposables',     val:money(f?.gross_revenue_taxable??0),     color:t.text },
+                        { label:'Revenus d\'activité (courses)',  val:money(f?.base_revenue??0),         color:t.text,    sep:false },
+                        { label:'+ Pourboires (taxables QC)',    val:money(f?.tip_amount??0),           color:'#F5C842', sep:false },
+                        { label:'= Base imposable totale',       val:money(f?.taxable_base??0),          color:t.text,    sep:true  },
                         { label:`TPS perçue (${f?.tps_rate})`,  val:money(f?.tps_collected??0),            color:'#7C3AED', sep:false },
                         { label:`TVQ perçue (${f?.tvq_rate})`,  val:money(f?.tvq_collected??0),            color:'#7C3AED' },
                         { label:'Crédits TPS (CTI)',            val:`− ${money(f?.tps_credits??0)}`,       color:t.green, sep:true },
@@ -398,6 +484,128 @@ export default function TaxPage() {
                       <ExternalLink size={18} />
                     </a>
                     <p style={{ fontSize:9, color:t.text3, textAlign:'center', margin:0 }}>Aucune confirmation de paiement ne sera fabriquée · Mode pilote</p>
+                  </>
+                )}
+
+                {/* ── POURBOIRES ── */}
+                {tab === 'tips' && (
+                  <>
+                    {/* Résumé */}
+                    <div style={{ borderRadius:20, background:'linear-gradient(135deg,#7A5C00 0%,#92400E 100%)', padding:'18px', boxShadow:'0 6px 24px rgba(122,92,0,0.30)' }}>
+                      <div style={{ fontSize:9, fontWeight:800, color:'rgba(255,255,255,0.60)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:6 }}>💝 POURBOIRES 10 MOIS · DONNÉES PILOTE</div>
+                      <div style={{ fontSize:36, fontWeight:900, color:'#F5C842', letterSpacing:'-0.02em', marginBottom:12 }}>{money(f?.all_periods.tip_amount??0)}</div>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                        {[
+                          { label:'TPS sur tips',   val:money((f?.all_periods.tip_amount??0)*0.05) },
+                          { label:'TVQ sur tips',   val:money((f?.all_periods.tip_amount??0)*0.09975) },
+                          { label:'Période',        val:'Période active' },
+                          { label:'Base taxable',   val:money(f?.taxable_tips??0) },
+                        ].map(s => (
+                          <div key={s.label} style={{ background:'rgba(255,255,255,0.10)', borderRadius:10, padding:'8px 10px', border:'1px solid rgba(255,255,255,0.12)' }}>
+                            <div style={{ fontSize:9, color:'rgba(255,255,255,0.50)', marginBottom:3, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>{s.label}</div>
+                            <div style={{ fontSize:12, fontWeight:700, color:'white' }}>{s.val}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Note anti double comptage */}
+                    <div style={{ ...cs, padding:'12px 14px', borderLeft:`3px solid ${t.green}` }}>
+                      <div style={{ fontSize:10, fontWeight:800, color:t.green, marginBottom:6 }}>✓ Architecture fiscale — Aucun double comptage</div>
+                      {[
+                        { label:'gross_amount',  val:'Revenu de l\'activité (cours SANS tip)',  color:t.text },
+                        { label:'tip_amount',    val:'Pourboire — colonne SÉPARÉE',              color:'#F5C842' },
+                        { label:'tips_included_in_gross', val:`${f?.tips_included_in_gross?'OUI':'NON (confirmé schéma)'}`, color:t.green },
+                        { label:'Traitement QC', val:'Taxables TPS + TVQ',                      color:'#7C3AED' },
+                      ].map((r,idx) => (
+                        <div key={r.label} style={rowStyle(idx)}>
+                          <span style={{ fontSize:10, color:t.text3, fontFamily:'monospace' }}>{r.label}</span>
+                          <span style={{ fontSize:10, fontWeight:700, color:r.color }}>{r.val}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Calcul détaillé par période active */}
+                    <div style={{ ...cs, padding:'14px 16px' }}>
+                      <SectionTitle title="Calcul fiscal — période active" t={t} />
+                      <div style={{ background: dark?'rgba(0,0,0,0.25)':'rgba(245,198,66,0.04)', borderRadius:14, padding:'14px', fontFamily:'monospace', fontSize:11, border:`1px solid rgba(245,198,66,0.25)` }}>
+                        <div style={{ fontSize:9, fontWeight:800, color:'#B45309', marginBottom:12, letterSpacing:'0.06em' }}>MOTEUR POURBOIRES · QC · DONNÉES SYNTHÉTIQUES</div>
+                        {[
+                          { label:'Revenus d\'activité',           val:money(f?.base_revenue??0),     color:t.text,    sep:false },
+                          { label:'+ Pourboires reçus',           val:money(f?.tip_amount??0),        color:'#F5C842', sep:false },
+                          { label:'= Total chauffeur',            val:money(f?.total_gross??0),       color:t.text,    sep:true  },
+                          { label:'Base imposable (tips taxables)',val:money(f?.taxable_tips??0),     color:'#7C3AED', sep:true  },
+                          { label:`TPS tips (${f?.tps_rate})`,    val:money(f?.tps_on_tips??0),       color:'#7C3AED', sep:false },
+                          { label:`TVQ tips (${f?.tvq_rate})`,    val:money(f?.tvq_on_tips??0),       color:'#7C3AED', sep:false },
+                          { label:'Taxes totales sur tips',        val:money((f?.tps_on_tips??0)+(f?.tvq_on_tips??0)), color:t.amber, sep:true },
+                        ].map((r,i) => (
+                          <div key={r.label} style={{ display:'flex', justifyContent:'space-between', padding:'7px 0', borderTop:`1px solid ${r.sep?t.border:'transparent'}`, marginTop:r.sep?4:0 }}>
+                            <span style={{ color:t.text3, fontSize:10 }}>{r.label}</span>
+                            <span style={{ fontWeight:700, color:r.color }}>{r.val}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Historique des pourboires */}
+                    <div>
+                      <SectionTitle title={`Historique pourboires (${data?.tipHistory?.length??0} transactions)`} t={t} />
+                      {(!data?.tipHistory || data.tipHistory.length===0) ? (
+                        <div style={{ ...cs, padding:'28px 0', textAlign:'center', fontSize:12, color:t.text3 }}>Aucun pourboire enregistré pour la période</div>
+                      ) : (
+                        <div style={{ ...cs, overflow:'hidden' }}>
+                          {data.tipHistory.map((tip, idx) => (
+                            <div key={idx} style={{ padding:'11px 14px', borderTop:idx>0?`1px solid ${t.border}`:'none' }}>
+                              <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                                <span style={{ fontSize:18, flexShrink:0 }}>💝</span>
+                                <div style={{ flex:1, minWidth:0 }}>
+                                  <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:3 }}>
+                                    <span style={{ fontSize:11, fontWeight:700, color:t.text }}>{tip.source}</span>
+                                    <span style={{ fontSize:9, color:t.text3 }}>{tip.date}</span>
+                                    <span style={{ fontSize:8, padding:'1px 6px', borderRadius:20, background:'rgba(180,83,9,0.10)', color:t.amber, fontFamily:'monospace' }}>PILOTE</span>
+                                  </div>
+                                  <div style={{ fontSize:9, color:t.text3, marginBottom:4 }}>
+                                    Activité: {money(tip.gross_activity)} · Taxable total: {money(tip.total_taxable)}
+                                  </div>
+                                  <div style={{ display:'flex', gap:12 }}>
+                                    <span style={{ fontSize:10, color:t.text3 }}>TPS: <strong style={{color:'#7C3AED'}}>{money(tip.tps_on_tip)}</strong></span>
+                                    <span style={{ fontSize:10, color:t.text3 }}>TVQ: <strong style={{color:'#7C3AED'}}>{money(tip.tvq_on_tip)}</strong></span>
+                                  </div>
+                                </div>
+                                <div style={{ textAlign:'right', flexShrink:0 }}>
+                                  <div style={{ fontSize:15, fontWeight:800, color:'#F5C842' }}>+{money(tip.tip_amount)}</div>
+                                  <div style={{ fontSize:9, color:t.text3, marginTop:2 }}>pourboire</div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Validation mathématique */}
+                    {data?.validation && (
+                      <div style={{ ...cs, padding:'12px 14px' }}>
+                        <SectionTitle title="Validation de cohérence mathématique" t={t} />
+                        {[
+                          { label:'✓ Aucun double comptage tips',  ok:data.validation.check_no_double_count },
+                          { label:'✓ TPS cohérente (tips+activité)', ok:data.validation.check_tps_coherent },
+                          { label:'✓ TVQ cohérente (tips+activité)', ok:data.validation.check_tvq_coherent },
+                          { label:'✓ Base taxable cohérente',       ok:data.validation.check_taxable_base },
+                          { label:'✓ Solde total cohérent',         ok:data.validation.check_solde },
+                        ].map((v,idx) => (
+                          <div key={v.label} style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', borderTop:idx>0?`1px solid ${t.border}`:'none' }}>
+                            <span style={{ fontSize:11, color:t.text }}>{v.label}</span>
+                            <span style={{ fontSize:11, fontWeight:700, color:v.ok?t.green:t.red }}>{v.ok?'✓ OK':'✗ ERREUR'}</span>
+                          </div>
+                        ))}
+                        <div style={{ marginTop:10, padding:'8px 12px', borderRadius:10, background:data.validation.all_ok?'rgba(5,150,105,0.08)':'rgba(220,38,38,0.08)', border:`1px solid ${data.validation.all_ok?'rgba(5,150,105,0.25)':'rgba(220,38,38,0.25)'}` }}>
+                          <span style={{ fontSize:11, fontWeight:700, color:data.validation.all_ok?t.green:t.red }}>
+                            {data.validation.all_ok?'✅ Toutes les vérifications passent — données fiscales cohérentes':'❌ Anomalie détectée — révision requise'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
 
