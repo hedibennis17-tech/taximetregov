@@ -274,8 +274,7 @@ export default function AdminVehiclesPage() {
           const sc = STATUS_CONF[v.status] ?? STATUS_CONF['PENDING']!
           const needsReview = v.status==='PENDING'
           return (
-            <Card key={v.id} className={`p-4 cursor-pointer hover:border-qc-blue transition-colors ${needsReview?'border-l-4 border-l-amber-500':v.status==='ACTIVE'||v.status==='APPROVED'?'border-l-4 border-l-green-500':v.status==='REJECTED'?'border-l-4 border-l-red-500':''}`}
-              onClick={()=>setSelected(v)}>
+            <div key={v.id} onClick={()=>setSelected(v)} className={`rounded-xl border border-slate-700 bg-slate-800/50 p-4 cursor-pointer hover:border-qc-blue transition-colors ${needsReview?'border-l-4 border-l-amber-500':v.status==='ACTIVE'||v.status==='APPROVED'?'border-l-4 border-l-green-500':v.status==='REJECTED'?'border-l-4 border-l-red-500':''}`}>
               <div className="flex items-start gap-3">
                 <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-xl shrink-0">
                   {FUEL_ICON[v.fuel_type]??'🚗'}
