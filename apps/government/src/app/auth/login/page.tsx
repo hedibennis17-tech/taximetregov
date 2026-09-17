@@ -10,21 +10,24 @@ const LANG_KEY = 'taximetregov_lang'
 function getLang(): 'fr'|'en' {
   try { return (localStorage.getItem(LANG_KEY) as 'fr'|'en') ?? 'fr' } catch { return 'fr' }
 }
+function allDomains() {
+  const h = window.location.hostname
+  const parts = h.split('.')
+  const parent = parts.length >= 2 ? '.' + parts.slice(-2).join('.') : ''
+  return [h, '.' + h, parent, '.vercel.app'].filter(Boolean)
+}
 function toggleLangLogin() {
   const next = getLang() === 'fr' ? 'en' : 'fr'
   try { localStorage.setItem(LANG_KEY, next) } catch {}
-  const domain = window.location.hostname
   if (next === 'fr') {
     const exp = 'expires=Thu,01 Jan 1970 00:00:00 UTC;'
     document.cookie = `googtrans=;${exp}path=/;`
-    document.cookie = `googtrans=;${exp}path=/;domain=${domain}`
-    document.cookie = `googtrans=;${exp}path=/;domain=.${domain}`
+    allDomains().forEach(d => { document.cookie = `googtrans=;${exp}path=/;domain=${d}` })
   } else {
     document.cookie = `googtrans=/fr/${next};path=/;`
-    document.cookie = `googtrans=/fr/${next};path=/;domain=${domain}`
-    document.cookie = `googtrans=/fr/${next};path=/;domain=.${domain}`
+    allDomains().forEach(d => { document.cookie = `googtrans=/fr/${next};path=/;domain=${d}` })
   }
-  window.location.reload()
+  setTimeout(() => { window.location.href = window.location.href }, 150)
 }
 
 type Stage = 'login' | 'activate' | 'mfa'

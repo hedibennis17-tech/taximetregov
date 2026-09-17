@@ -1,5 +1,4 @@
 // TAXIMETER.GOV — Gestion langue FR/EN
-// Technique DepXpreS: cookie googtrans + fresh navigation = traduction automatique
 export const LANG_KEY = 'taximetregov_lang'
 
 export function getLang(): 'fr' | 'en' {
@@ -7,27 +6,34 @@ export function getLang(): 'fr' | 'en' {
   try { return (localStorage.getItem(LANG_KEY) as 'fr' | 'en') ?? 'fr' } catch { return 'fr' }
 }
 
+function allDomains(): string[] {
+  const h = window.location.hostname
+  const parts = h.split('.')
+  // ex: taximetregov-driver-hedi.vercel.app → ['.vercel.app', 'taximetregov-driver-hedi.vercel.app', '.taximetregov-driver-hedi.vercel.app']
+  const parent = parts.length >= 2 ? '.' + parts.slice(-2).join('.') : ''
+  return [h, '.' + h, parent, '.vercel.app'].filter(Boolean)
+}
+
 export function setLang(lang: 'fr' | 'en') {
   if (typeof window === 'undefined') return
   try { localStorage.setItem(LANG_KEY, lang) } catch {}
 
-  const domain = window.location.hostname
   if (lang === 'fr') {
-    // Effacer cookie → retour français natif
     const exp = 'expires=Thu,01 Jan 1970 00:00:00 UTC;'
     document.cookie = `googtrans=;${exp}path=/;`
-    document.cookie = `googtrans=;${exp}path=/;domain=${domain}`
-    document.cookie = `googtrans=;${exp}path=/;domain=.${domain}`
+    allDomains().forEach(d => {
+      document.cookie = `googtrans=;${exp}path=/;domain=${d}`
+    })
   } else {
-    // Poser cookie AVANT navigation
-    document.cookie = `googtrans=/fr/${lang};path=/;`
-    document.cookie = `googtrans=/fr/${lang};path=/;domain=${domain}`
-    document.cookie = `googtrans=/fr/${lang};path=/;domain=.${domain}`
+    const val = `/fr/${lang}`
+    document.cookie = `googtrans=${val};path=/;`
+    allDomains().forEach(d => {
+      document.cookie = `googtrans=${val};path=/;domain=${d}`
+    })
   }
 
-  // Fresh navigation — Google CDN lit le cookie et traduit automatiquement
-  // C'est la technique exacte de DepXpreS (pas un simple reload)
-  setTimeout(() => { window.location.href = window.location.href }, 100)
+  // Fresh load — Google CDN lit le cookie et traduit
+  setTimeout(() => { window.location.href = window.location.href }, 150)
 }
 
 export function toggleLang() {
@@ -37,9 +43,16 @@ export function toggleLang() {
 export function purgeOnLogout() {
   try { localStorage.removeItem(LANG_KEY) } catch {}
   if (typeof document === 'undefined') return
-  const domain = window.location.hostname
   const exp = 'expires=Thu,01 Jan 1970 00:00:00 UTC;'
   document.cookie = `googtrans=;${exp}path=/;`
-  document.cookie = `googtrans=;${exp}path=/;domain=${domain}`
-  document.cookie = `googtrans=;${exp}path=/;domain=.${domain}`
+  allDomains().forEach(d => {
+    document.cookie = `googtrans=;${exp}path=/;domain=${d}`
+  })
+}
+
+function allDomains(): string[] {
+  const h = window.location.hostname
+  const parts = h.split('.')
+  const parent = parts.length >= 2 ? '.' + parts.slice(-2).join('.') : ''
+  return [h, '.' + h, parent, '.vercel.app'].filter(Boolean)
 }

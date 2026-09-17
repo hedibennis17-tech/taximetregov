@@ -7,18 +7,24 @@ type Lang = 'fr' | 'en'
 const translations = { fr, en }
 const LANG_KEY = 'taximetregov_lang'
 
-function setCookie(lang: Lang) {
+function allDomains(): string[] {
+  if (typeof window === 'undefined') return []
+  const h = window.location.hostname
+  const parts = h.split('.')
+  const parent = parts.length >= 2 ? '.' + parts.slice(-2).join('.') : ''
+  return [h, '.' + h, parent, '.vercel.app'].filter(Boolean)
+}
+
+function applyCookie(lang: Lang) {
   if (typeof document === 'undefined') return
-  const d = window.location.hostname
   if (lang === 'fr') {
     const exp = 'expires=Thu,01 Jan 1970 00:00:00 UTC;'
     document.cookie = `googtrans=;${exp}path=/;`
-    document.cookie = `googtrans=;${exp}path=/;domain=${d}`
-    document.cookie = `googtrans=;${exp}path=/;domain=.${d}`
+    allDomains().forEach(d => { document.cookie = `googtrans=;${exp}path=/;domain=${d}` })
   } else {
-    document.cookie = `googtrans=/fr/${lang};path=/;`
-    document.cookie = `googtrans=/fr/${lang};path=/;domain=${d}`
-    document.cookie = `googtrans=/fr/${lang};path=/;domain=.${d}`
+    const val = `/fr/${lang}`
+    document.cookie = `googtrans=${val};path=/;`
+    allDomains().forEach(d => { document.cookie = `googtrans=${val};path=/;domain=${d}` })
   }
 }
 
@@ -39,9 +45,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   function setLang(l: Lang) {
     setLangState(l)
     try { localStorage.setItem(LANG_KEY, l) } catch {}
-    setCookie(l)
-    // Fresh navigation — technique DepXpreS
-    setTimeout(() => { window.location.href = window.location.href }, 100)
+    applyCookie(l)
+    setTimeout(() => { window.location.href = window.location.href }, 150)
   }
 
   return (
