@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
         rl.activity_date,
         rl.is_settled,
         rl.source_reference,
-        dp.public_driver_id,
+        dp.driver_number,
         dp.first_name,
         dp.last_name
       FROM revenue_ledger rl

@@ -70,7 +70,7 @@ export default function TransactionsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-xs font-semibold text-white">{tx.first_name} {tx.last_name}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{tx.public_driver_id}</span>
+                      <span className="text-[10px] text-slate-400 font-mono">{tx.driver_number}</span>
                     </div>
                     <div className="flex items-center gap-3 text-[10px] text-slate-400">
                       <span>{tx.source_type}</span>

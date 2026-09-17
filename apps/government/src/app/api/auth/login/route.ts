@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
     // Récupérer le profil driver si applicable
     const driverProfile = await db.execute(sql`
-      SELECT id, public_driver_id, verification_status
+      SELECT id, driver_number, status
       FROM driver_profiles
       WHERE user_id = ${user.id}
       LIMIT 1
@@ -89,8 +89,8 @@ export async function POST(req: NextRequest) {
 
     const driver = driverProfile[0] as {
       id: string
-      public_driver_id: string
-      verification_status: string
+      driver_number: string
+      status: string
     } | undefined
 
     return apiSuccess({
@@ -102,8 +102,8 @@ export async function POST(req: NextRequest) {
       },
       driver: driver ? {
         id:               driver.id,
-        publicDriverId:   driver.public_driver_id,
-        verificationStatus: driver.verification_status,
+        publicDriverId:   driver.driver_number,
+        verificationStatus: driver.status,
       } : null,
     })
 

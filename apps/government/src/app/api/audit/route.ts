@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
           al.actor_public_id,
           al.actor_role,
           u.email as actor_email,
-          dp.public_driver_id as subject_driver_public_id
+          dp.driver_number as subject_driver_public_id
         FROM audit_logs al
         LEFT JOIN users u ON u.id = al.actor_id
         LEFT JOIN driver_profiles dp ON dp.id = al.subject_driver_id

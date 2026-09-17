@@ -29,7 +29,7 @@ interface DashboardData {
   byProvider: Array<{ provider: string; transactions: string; gross: string; tips: string; fees: string; net: string; drivers: string; last_activity: string }>
   byService: Array<{ service_type: string; transactions: string; gross: string; tips: string; net: string }>
   reconciliation: { total_cases: string; resolved: string; open_cases: string; critical: string; high: string }
-  exceptions: Array<{ id: string; case_type: string; severity: string; status: string; expected_amount: string; actual_amount: string; difference_amount: string; currency: string; created_at: string; public_driver_id: string | null; first_name: string | null; last_name: string | null; provider_name: string | null }>
+  exceptions: Array<{ id: string; case_type: string; severity: string; status: string; expected_amount: string; actual_amount: string; difference_amount: string; currency: string; created_at: string; driver_number: string | null; first_name: string | null; last_name: string | null; provider_name: string | null }>
   generatedAt: string
 }
 

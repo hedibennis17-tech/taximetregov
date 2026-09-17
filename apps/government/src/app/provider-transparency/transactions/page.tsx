@@ -19,7 +19,7 @@ interface Transaction {
   id: string; source_type: string; activity_type: string; entry_type: string
   gross_amount: string; fee_amount: string; tip_amount: string; net_amount: string
   currency: string; activity_date: string; is_settled: boolean
-  source_reference: string | null; public_driver_id: string
+  source_reference: string | null; driver_number: string
   first_name: string; last_name: string
 }
 
@@ -47,7 +47,7 @@ export default function TransactionsExplorerPage() {
         `/api/transactions?${params}`
       )
       setTransactions(data.transactions.filter(t =>
-        !search || `${t.first_name} ${t.last_name} ${t.public_driver_id} ${t.source_reference ?? ''}`.toLowerCase().includes(search.toLowerCase())
+        !search || `${t.first_name} ${t.last_name} ${t.driver_number} ${t.source_reference ?? ''}`.toLowerCase().includes(search.toLowerCase())
       ))
       setTotal(data.total)
     } catch { /* silencieux */ } finally { setLoading(false) }
@@ -134,7 +134,7 @@ export default function TransactionsExplorerPage() {
                     <div>
                       <div className="font-semibold text-white text-sm">{tx.first_name} {tx.last_name}</div>
                       <div className="flex items-center gap-1.5 text-[9px] text-slate-400">
-                        <span className="font-mono">{tx.public_driver_id}</span>
+                        <span className="font-mono">{tx.driver_number}</span>
                         {tx.source_reference && <><span className="text-slate-700">·</span><span className="font-mono">{tx.source_reference}</span></>}
                       </div>
                     </div>
