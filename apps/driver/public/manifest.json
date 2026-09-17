@@ -1,0 +1,13 @@
+{
+  "name": "TAXIMETER.GOV — Chauffeur",
+  "short_name": "TaxiGov",
+  "description": "Application chauffeur TAXIMETER.GOV — Gouvernement du Québec",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050E1C",
+  "theme_color": "#003DA5",
+  "icons": [
+    { "src": "/logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

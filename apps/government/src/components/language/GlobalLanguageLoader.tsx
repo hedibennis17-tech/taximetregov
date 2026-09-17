@@ -1,8 +1,8 @@
 'use client'
 /**
  * TAXIMETER.GOV — Traduction silencieuse FR/EN
- * Copie exacte du système DepXpreS qui fonctionne en production
- * Technique: script Google Translate Element + select.goog-te-combo + cookie
+ * Fix flash: GT chargé UNE seule fois via flag global window.__GT_LOADED__
+ * Même système DepXpreS — copie exacte
  */
 import { useEffect } from 'react'
 const LANG_KEY = 'taximetregov_lang'
@@ -11,6 +11,8 @@ declare global {
   interface Window {
     google?: Record<string, unknown>
     googleTranslateElementInit?: () => void
+    __GT_LOADED__?: boolean
+    __GT_LANG__?: string
   }
 }
 
@@ -35,63 +37,29 @@ export function GlobalLanguageLoader() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    // 1. CSS masquage immédiat avant tout render
-    const styleId = 'taxgov-hide-gt'
-    if (!document.getElementById(styleId)) {
+    // 1. CSS masquage — toujours injecté
+    if (!document.getElementById('taxgov-hide-gt')) {
       const style = document.createElement('style')
-      style.id = styleId
+      style.id = 'taxgov-hide-gt'
       style.textContent = HIDE_CSS
       document.head.insertBefore(style, document.head.firstChild)
     }
 
-    // 2. Lire langue sauvegardée
+    // 2. Lire langue
     let savedLang = 'fr'
     try { savedLang = localStorage.getItem(LANG_KEY) ?? 'fr' } catch {}
 
     if (savedLang === 'fr') {
       eraseCookie()
+      // Si on était en EN, retour FR = effacer cookie sans reload
+      // (le reload a déjà eu lieu via setLang)
       return
     }
 
-    // 3. Poser le cookie AVANT de charger GT
+    // 3. Cookie
     setCookie(savedLang)
 
-    // 4. Charger Google Translate Element en mode silencieux
-    if (!(window.google as Record<string, unknown>)?.translate) {
-      let container = document.getElementById('gt-silent-container')
-      if (!container) {
-        container = document.createElement('div')
-        container.id = 'gt-silent-container'
-        container.style.cssText = 'display:none;position:absolute;top:-9999px;left:-9999px;'
-        document.body.appendChild(container)
-      }
-
-      window.googleTranslateElementInit = () => {
-        try {
-          // @ts-expect-error GT global
-          new window.google.translate.TranslateElement({
-            pageLanguage: 'fr',
-            autoDisplay: false, // ← CRITIQUE: pas d'affichage auto
-            gaTrack: false,
-            gaId: '',
-          }, 'gt-silent-container')
-
-          // Déclencher la traduction via le select caché — même timing que DepXpreS
-          setTimeout(() => applyLang(savedLang), 800)
-        } catch {}
-      }
-
-      const script = document.createElement('script')
-      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
-      script.async = true
-      script.defer = true
-      script.onerror = () => {}
-      document.head.appendChild(script)
-    } else {
-      applyLang(savedLang)
-    }
-
-    // 5. Killer interval — masquer tout widget GT résiduel
+    // 4. Lancer killer interval (toujours, pour masquer le widget si GT est déjà chargé)
     let count = 0
     const interval = setInterval(() => {
       try {
@@ -106,26 +74,70 @@ export function GlobalLanguageLoader() {
       if (++count >= 40) clearInterval(interval)
     }, 300)
 
-    // 6. Corrections post-traduction (termes métier taxi mal traduits par GT)
-    const corrections: Record<string, Array<[RegExp, string]>> = {
-      en: [
-        [/\bCourse\b/g, 'Ride'], [/\bCourses\b/g, 'Rides'],
-        [/\bSalaire\b/gi, 'Revenue'], [/\bRiz\b/gi, 'Ride'],
-        [/\bRace\b/g, 'Ride'], [/\bRaces\b/g, 'Rides'],
-      ],
+    // 5. Si GT déjà chargé (navigation Next.js côté client) — juste appliquer
+    if (window.__GT_LOADED__ && window.__GT_LANG__ === savedLang) {
+      // Déjà traduit, rien à faire — évite le re-flash
+      clearInterval(interval)
+      return () => clearInterval(interval)
     }
+
+    if (window.__GT_LOADED__ && window.__GT_LANG__ !== savedLang) {
+      // Langue différente — appliquer
+      applyLang(savedLang)
+      window.__GT_LANG__ = savedLang
+      return () => clearInterval(interval)
+    }
+
+    // 6. Premier chargement — charger le script GT UNE seule fois
+    if (!document.getElementById('gt-script')) {
+      let container = document.getElementById('gt-silent-container')
+      if (!container) {
+        container = document.createElement('div')
+        container.id = 'gt-silent-container'
+        container.style.cssText = 'display:none;position:absolute;top:-9999px;left:-9999px;'
+        document.body.appendChild(container)
+      }
+
+      window.googleTranslateElementInit = () => {
+        try {
+          // @ts-expect-error GT global
+          new window.google.translate.TranslateElement({
+            pageLanguage: 'fr',
+            autoDisplay: false,
+            gaTrack: false,
+            gaId: '',
+          }, 'gt-silent-container')
+
+          window.__GT_LOADED__ = true
+          window.__GT_LANG__ = savedLang
+          setTimeout(() => applyLang(savedLang), 800)
+        } catch {}
+      }
+
+      const script = document.createElement('script')
+      script.id = 'gt-script'
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+      script.async = true
+      script.defer = true
+      script.onerror = () => {}
+      document.head.appendChild(script)
+    }
+
+    // 7. Corrections post-traduction
+    const corrections: Array<[RegExp, string]> = [
+      [/\bCourse\b/g, 'Ride'], [/\bCourses\b/g, 'Rides'],
+      [/\bSalaire\b/gi, 'Revenue'], [/\bRiz\b/gi, 'Ride'],
+      [/\bRace\b/g, 'Ride'], [/\bRaces\b/g, 'Rides'],
+    ]
 
     const fixTexts = () => {
       if (savedLang === 'fr') return
-      const rules = corrections[savedLang]
-      if (!rules) return
       try {
         const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
           acceptNode: (node) => {
             const p = node.parentElement
             if (!p) return NodeFilter.FILTER_REJECT
-            const tag = p.tagName
-            if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT
+            if (['SCRIPT','STYLE'].includes(p.tagName)) return NodeFilter.FILTER_REJECT
             if (p.closest(".notranslate,[translate='no']")) return NodeFilter.FILTER_REJECT
             return NodeFilter.FILTER_ACCEPT
           }
@@ -135,7 +147,7 @@ export function GlobalLanguageLoader() {
         while ((n = walker.nextNode())) nodes.push(n as Text)
         nodes.forEach(node => {
           let txt = node.nodeValue ?? ''
-          rules.forEach(([rx, rep]) => { txt = txt.replace(rx, rep) })
+          corrections.forEach(([rx, rep]) => { txt = txt.replace(rx, rep) })
           if (txt !== node.nodeValue) node.nodeValue = txt
         })
       } catch {}
@@ -143,15 +155,14 @@ export function GlobalLanguageLoader() {
 
     let fixTimer: ReturnType<typeof setTimeout>
     const obs = new MutationObserver(() => { clearTimeout(fixTimer); fixTimer = setTimeout(fixTexts, 150) })
-    setTimeout(fixTexts, 800)
-    setTimeout(fixTexts, 1500)
-    setTimeout(fixTexts, 2500)
+    setTimeout(fixTexts, 900)
+    setTimeout(fixTexts, 1600)
     setTimeout(() => {
       if (document.body) obs.observe(document.body, { childList: true, subtree: true, characterData: true })
-    }, 1000)
+    }, 1200)
 
     return () => { clearInterval(interval); obs.disconnect(); clearTimeout(fixTimer) }
-  }, [])
+  }, []) // ← VIDE: s'exécute UNE seule fois au montage
 
   return null
 }
@@ -162,7 +173,6 @@ function setCookie(lang: string) {
   document.cookie = `googtrans=${val};path=/;`
   document.cookie = `googtrans=${val};path=/;domain=${d}`
   document.cookie = `googtrans=${val};path=/;domain=.${d}`
-  // Vercel: poser aussi sur .vercel.app
   if (d.includes('vercel.app')) {
     document.cookie = `googtrans=${val};path=/;domain=.vercel.app`
   }
