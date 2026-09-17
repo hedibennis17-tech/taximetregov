@@ -135,6 +135,30 @@ export default function PlatformsPage() {
             )
           })}
         </div>
+
+        {/* Architecture Webhook — Schéma gouvernemental */}
+        <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-white">Architecture Webhook — Méthode de connexion</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">Chauffeur → Entreprise → TAXIMETER.GOV · Données synthétiques</div>
+            </div>
+            <span className="text-[9px] text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full font-bold shrink-0">MODE PILOTE</span>
+          </div>
+          <div className="p-4">
+            <img
+              src="/webhook-architecture.png"
+              alt="Architecture Webhook TAXIMETER.GOV — Chauffeur → Fournisseur → API Gateway → Revenue Ledger → Moteur Fiscal → Audit — Mode Pilote Données Synthétiques"
+              className="w-full h-auto rounded-xl border border-slate-700"
+              style={{ maxWidth: '100%', display: 'block' }}
+            />
+            <div className="mt-3 p-2.5 bg-amber-500/8 border border-amber-500/20 rounded-lg">
+              <div className="text-[9px] text-amber-400 font-bold">
+                PILOTE · DONNÉES SYNTHÉTIQUES · AUCUNE TRANSMISSION OFFICIELLE — Ce schéma représente l'architecture cible sous réserve des ententes, autorisations, API et exigences de sécurité applicables avec les fournisseurs et Revenu Québec.
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </AppShell>
   )
