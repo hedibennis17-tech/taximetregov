@@ -58,7 +58,7 @@ export const DEMO_TRANSACTIONS = [
   { id:'TX-DEMO-1028', actId:'ACT-DEMO-028', whId:'WH-DEMO-0023', driver:'DEMO-DRV-002', provider:'UBER_EATS', service:'Livraison',  at:d('2026-09-15T13:30:00Z'), clientAmt:27.21,  base:16.60,  tip:2.00,  fee:3.32,  adj:0,    refund:0,     period:'2026-Q3', status:'RECONCILED',       rec:'REC-DEMO-005' },
   { id:'TX-DEMO-1029', actId:'ACT-DEMO-029', whId:'WH-DEMO-0024', driver:'DEMO-DRV-001', provider:'UBER',      service:'UberX',      at:d('2026-09-15T10:00:00Z'), clientAmt:44.83,  base:28.40,  tip:4.00,  fee:5.68,  adj:0,    refund:0,     period:'2026-Q3', status:'RECONCILED',       rec:'REC-DEMO-001' },
   { id:'TX-DEMO-1030', actId:'ACT-DEMO-030', whId:'WH-DEMO-0025', driver:'DEMO-DRV-003', provider:'LYFT',      service:'Standard',   at:d('2026-09-15T08:30:00Z'), clientAmt:16.29,  base:10.40,  tip:1.00,  fee:2.08,  adj:0,    refund:0,     period:'2026-Q3', status:'RECONCILED',       rec:'REC-DEMO-002' },
-]
+].map(tx => {
   const tps = r2((tx.base + tx.tip) * TPS)
   const tvq = r2((tx.base + tx.tip) * TVQ)
   const driverNet = r2(tx.base + tx.tip - tx.fee + tx.adj + tx.refund)
