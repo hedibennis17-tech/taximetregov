@@ -7,12 +7,12 @@ import { RequireAdminSession } from '@/components/auth/RequireAdminSession'
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <RequireAdminSession>
-      <div className="min-h-screen" style={{background:"#D6E4F7"}}>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
         <Sidebar />
         <Topbar />
         <main
           className="pt-14 min-h-screen"
-          style={{ marginLeft: 'var(--sidebar-w)', background: '#E0ECF9' }}
+          style={{ marginLeft: 'var(--sidebar-w)' }}
         >
           <div className="p-6">
             {children}

@@ -18,7 +18,7 @@ interface NavItem { label:string; href?:string; icon:React.ElementType; badge?:n
 function NavSection({ title, items }: { title:string; items:NavItem[] }) {
   return (
     <div className="mb-1">
-      <div className="px-3 py-1 text-[9px] font-semibold tracking-widest uppercase" style={{color:"rgba(255,255,255,0.40)"}}>{title}</div>
+      <div className="px-3 py-1 text-[9px] font-semibold tracking-widest uppercase text-slate-400">{title}</div>
       {items.map(item=><NavItemRow key={item.label} item={item} depth={0}/>)}
     </div>
   )
@@ -33,7 +33,7 @@ function NavItemRow({ item, depth }: { item:NavItem; depth:number }) {
   if (hasChildren) return (
     <div>
       <button onClick={()=>setOpen(o=>!o)}
-        className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] transition-all ${depth>0?'pl-7':''} text-white/75 hover:bg-white/10 hover:text-white`}>
+        className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] transition-all ${depth>0?'pl-7':''} text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-qc-blue`}>
         <Icon size={13} className="shrink-0"/><span className="flex-1 text-left font-medium">{item.label}</span>
         {open?<ChevronDown size={10}/>:<ChevronRight size={10}/>}
       </button>
@@ -43,7 +43,7 @@ function NavItemRow({ item, depth }: { item:NavItem; depth:number }) {
   return (
     <Link href={item.href||'#'}
       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] transition-all ${depth>0?'pl-7':''}
-        ${isActive?'bg-white/18 text-white font-semibold':'text-white/75 hover:bg-white/10 hover:text-white'}`}>
+        ${isActive?'bg-qc-blue text-white font-semibold shadow-sm':'text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-qc-blue'}`}>
       <Icon size={13} className="shrink-0"/>
       <span className="flex-1 font-medium">{item.label}</span>
       {item.badge!=null&&item.badge>0&&<span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${isActive?'bg-white/20 text-white':'bg-red-100 text-red-600'}`}>{item.badge}</span>}
@@ -130,21 +130,21 @@ export function Sidebar() {
     ]},
   ]
   return (
-    <aside className="fixed left-0 top-0 h-screen flex flex-col z-30" style={{width:'var(--sidebar-w)',background:'#002D7A'}}>
-      <div className="px-4 py-3" style={{borderBottom:"1px solid rgba(255,255,255,0.10)"}}>
+    <aside className="fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col z-30" style={{width:'var(--sidebar-w)'}}>
+      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <img src="/logo.png" alt="TAXIMETER.GOV" width={32} height={32} style={{objectFit:'contain',borderRadius:8}} />
           <div>
-            <div className="text-xs font-bold tracking-widest text-white">TAXIMÈTRE.GOV</div>
-            <div className="text-[9px] tracking-wide" style={{color:"rgba(255,255,255,0.55)"}}>Gouvernement du Québec</div>
+            <div className="text-xs font-bold tracking-widest text-qc-blue">TAXIMÈTRE.GOV</div>
+            <div className="text-[9px] text-slate-400 tracking-wide">Gouvernement du Québec</div>
           </div>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
         {sections.map(s=><NavSection key={s.title} title={s.title} items={s.items}/>)}
       </nav>
-      <div className="px-3 py-2 mx-2 mb-3 rounded-lg" style={{background:"rgba(245,166,35,0.15)",border:"1px solid rgba(245,166,35,0.35)"}}>
-        <div className="text-[9px] font-bold tracking-widest text-center" style={{color:"#F5A623"}}>⚠ DONNÉES DE DÉMONSTRATION — PILOT</div>
+      <div className="px-3 py-2 mx-2 mb-3 rounded-lg bg-amber-50 border border-amber-200">
+        <div className="text-[9px] font-bold text-amber-700 tracking-widest text-center">⚠ DONNÉES DE DÉMONSTRATION — PILOT</div>
       </div>
     </aside>
   )
