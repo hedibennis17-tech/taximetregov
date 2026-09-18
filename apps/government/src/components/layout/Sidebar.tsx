@@ -144,7 +144,7 @@ export function Sidebar() {
         {sections.map(s=><NavSection key={s.title} title={s.title} items={s.items}/>)}
       </nav>
       <div className="px-3 py-2 mx-2 mb-3 rounded-lg" style={{background:"rgba(245,166,35,0.15)",border:"1px solid rgba(245,166,35,0.35)"}}>
-        <div className="text-[9px] font-bold tracking-widest text-center" style={{color:"#F5A623"}} className="">⚠ DONNÉES DE DÉMONSTRATION — PILOT</div>
+        <div className="text-[9px] font-bold tracking-widest text-center" style={{color:"#F5A623"}}>⚠ DONNÉES DE DÉMONSTRATION — PILOT</div>
       </div>
     </aside>
   )
