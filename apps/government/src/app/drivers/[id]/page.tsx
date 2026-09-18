@@ -1,267 +1,381 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
-import { Card, KpiCard, StatusBadge } from '@/components/ui'
-import { useDriverDetail, money, statusConfig } from '@/lib/api'
+import { useDriverDetail, money } from '@/lib/api'
 import { useParams } from 'next/navigation'
-import { RefreshCw, ArrowLeft, FileText, CheckCircle, Clock, XCircle, AlertTriangle, Shield } from 'lucide-react'
+import { RefreshCw, ArrowLeft, CheckCircle, Clock, XCircle, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
 
-const DOC_STATUS: Record<string,{label:string;color:string;cls:string}> = {
-  APPROVED:      { label:'Valide',       color:'#059669', cls:'text-green-400 bg-green-500/10 border border-green-500/20'  },
-  PENDING_REVIEW:{ label:'En révision',  color:'#003DA5', cls:'text-blue-400 bg-blue-500/10 border border-blue-500/20'    },
-  UNDER_REVIEW:  { label:'En révision',  color:'#003DA5', cls:'text-blue-400 bg-blue-500/10 border border-blue-500/20'    },
-  UPLOADED:      { label:'Soumis',       color:'#7C3AED', cls:'text-purple-400 bg-purple-500/10 border border-purple-500/20'},
-  DRAFT:         { label:'Brouillon',    color:'#4A6A9A', cls:'text-slate-400 bg-slate-500/10 border border-slate-500/20'  },
-  REJECTED:      { label:'Rejeté',       color:'#DC2626', cls:'text-red-400 bg-red-500/10 border border-red-500/20'        },
-  EXPIRED:       { label:'Expiré',       color:'#DC2626', cls:'text-red-400 bg-red-500/10 border border-red-500/20'        },
+const TPS=0.05; const TVQ=0.09975; const r2=(n:number)=>Math.round(n*100)/100
+const fmtDate=(s:string|null)=>{ if(!s) return '—'; return new Intl.DateTimeFormat('fr-CA',{year:'numeric',month:'short',day:'numeric'}).format(new Date(s)) }
+
+// DEMO data pour affichage si Supabase ne retourne rien
+const DEMO_DETAIL: Record<string, {
+  profile: { id:string; driver_number:string; first_name:string; last_name:string; email:string; status:string; identity_verification_status:string; created_at:string; city:string }
+  vehicle: { make:string; model:string; year:number; color:string; plate:string; status:string; insurance_expiry:string; inspection_due:string }
+  services: { name:string; icon:string; authorized:boolean; reason:string; docRequired:string }[]
+  docs: { type:string; label:string; status:string; expires:string|null; number:string }[]
+  revenue: { source_type:string; gross:string; tips:string; net:string; count:string }[]
+  platforms: { provider:string; icon:string; status:string; lastSync:string; events:number }[]
+  taxAccount: { tps_status:string; tvq_status:string; filing_frequency:string } | null
+  fiscal: { brut:number; tips:number; tps:number; tvq:number; tpsCredits:number; tvqCredits:number; tpsNet:number; tvqNet:number; solde:number }
+  audit: { at:string; action:string; obj:string; by:string; note:string }[]
+}> = {
+  'drv-demo-001': {
+    profile:{ id:'drv-demo-001', driver_number:'DRV-QC-0001', first_name:'Jean', last_name:'Tremblay', email:'jean.tremblay.demo@taximetregov.qc', status:'ACTIVE', identity_verification_status:'APPROVED', created_at:'2026-01-15T09:00:00Z', city:'Montréal' },
+    vehicle:{ make:'Toyota', model:'Camry', year:2022, color:'Blanc', plate:'DEMO-ABC-001', status:'ACTIVE', insurance_expiry:'2027-03-15', inspection_due:'2027-09-01' },
+    services:[
+      {name:'Taxi', icon:'🚕', authorized:true,  reason:'Licence valide · Assurance valide · Véhicule conforme', docRequired:'Toutes licences en règle'},
+      {name:'Rideshare', icon:'🚗', authorized:true, reason:'Autorisation VTC active', docRequired:'Toutes autorisations en règle'},
+      {name:'Livraison', icon:'📦', authorized:false, reason:'Permis livraison non soumis', docRequired:'Permis livraison requis'},
+    ],
+    docs:[
+      {type:'DRIVER_LICENSE',      label:'Permis de conduire',  status:'APPROVED', expires:'2029-06-15', number:'DEMO-DL-001'},
+      {type:'VEHICLE_REGISTRATION',label:'Immatriculation',     status:'APPROVED', expires:'2027-03-15', number:'DEMO-VR-001'},
+      {type:'INSURANCE',           label:'Assurance',           status:'APPROVED', expires:'2027-03-15', number:'DEMO-INS-001'},
+      {type:'VEHICLE_INSPECTION',  label:'Inspection mécanique',status:'APPROVED', expires:'2027-09-01', number:'DEMO-VEH-001'},
+      {type:'TAXI_AUTHORIZATION',  label:'Autorisation taxi',   status:'APPROVED', expires:'2027-01-01', number:'DEMO-TAXI-001'},
+    ],
+    revenue:[
+      {source_type:'TAXI',      gross:'17120', tips:'1712', net:'16294', count:'125'},
+      {source_type:'RIDESHARE', gross:'14980', tips:'1498', net:'11984', count:'187'},
+      {source_type:'DELIVERY',  gross:'10700', tips:'1070', net:'8560',  count:'0'},
+    ],
+    platforms:[
+      {provider:'UBER',     icon:'⬛', status:'SIMULATION', lastSync:'Il y a 2h',   events:89 },
+      {provider:'LYFT',     icon:'🟣', status:'SIMULATION', lastSync:'Il y a 4h',   events:67 },
+      {provider:'TAXI',     icon:'🚕', status:'SIMULATION', lastSync:'Il y a 1h',   events:125},
+    ],
+    taxAccount:{ tps_status:'REGISTERED', tvq_status:'REGISTERED', filing_frequency:'QUARTERLY' },
+    fiscal:{ brut:42800, tips:4280, tps:r2((42800+4280)*TPS), tvq:r2((42800+4280)*TVQ), tpsCredits:r2(42800*0.20*TPS), tvqCredits:r2(42800*0.20*TVQ), tpsNet:r2((42800+4280)*TPS-42800*0.20*TPS), tvqNet:r2((42800+4280)*TVQ-42800*0.20*TVQ), solde:r2(((42800+4280)*TPS-42800*0.20*TPS)+((42800+4280)*TVQ-42800*0.20*TVQ)) },
+    audit:[
+      {at:'2026-09-17T08:41:00Z', action:'REVENUE_LEDGER_UPDATED', obj:'RL-TAXI-DRV-QC-0001',  by:'SYSTEM',       note:'Activité taxi enregistrée'},
+      {at:'2026-09-05T14:00:00Z', action:'DOCUMENT_APPROVED',      obj:'DOC-DL-DRV-QC-0001',   by:'ADMIN-GOV-01', note:'Permis de conduire vérifié et approuvé'},
+      {at:'2026-01-15T09:00:00Z', action:'DRIVER_CREATED',         obj:'DRV-QC-0001',            by:'SYSTEM',       note:'Profil chauffeur créé'},
+    ],
+  },
 }
 
-function fmtDate(d:string|null) {
-  if (!d) return '—'
-  return new Intl.DateTimeFormat('fr-CA',{year:'numeric',month:'short',day:'numeric'}).format(new Date(d))
+const DOC_STATUS_CONF: Record<string,{label:string;color:string;bg:string}> = {
+  APPROVED:      {label:'Approuvé',    color:'#059669', bg:'rgba(5,150,105,0.12)'},
+  PENDING_REVIEW:{label:'En révision', color:'#003DA5', bg:'rgba(0,61,165,0.10)'},
+  UNDER_REVIEW:  {label:'En révision', color:'#003DA5', bg:'rgba(0,61,165,0.10)'},
+  REJECTED:      {label:'Rejeté',      color:'#DC2626', bg:'rgba(220,38,38,0.10)'},
+  EXPIRED:       {label:'Expiré',      color:'#DC2626', bg:'rgba(220,38,38,0.10)'},
+  UPLOADED:      {label:'Soumis',      color:'#7C3AED', bg:'rgba(124,58,237,0.12)'},
 }
 
-function daysUntil(d:string|null) {
-  if (!d) return null
-  return Math.ceil((new Date(d).getTime()-Date.now())/86400000)
-}
+const TABS = ['Identité','Véhicule','Documents','Services','Revenus','Fiscalité','Plateformes','Audit'] as const
+type Tab = typeof TABS[number]
 
 export default function DriverDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { driverDetail, loading, error, refresh } = useDriverDetail(id)
+  const [tab, setTab] = useState<Tab>('Identité')
+
+  const demo = DEMO_DETAIL[id]
 
   if (loading) return (
     <AppShell>
-      <div className="py-20 text-center"><RefreshCw className="mx-auto animate-spin text-qc-blue" size={24} /></div>
+      <div className="py-20 text-center"><RefreshCw className="mx-auto animate-spin text-qc-blue" size={24}/></div>
     </AppShell>
   )
 
-  if (!driverDetail || error) return (
+  // Use Supabase data OR DEMO fallback
+  type DriverProfile = { id: string; driver_number: string; first_name: string; last_name: string; email: string; status: string; identity_verification_status: string; created_at: string }
+  const profile = (driverDetail as {profile?: DriverProfile} | null)?.profile ?? demo?.profile
+  if (!profile) return (
     <AppShell>
-      <div className="px-6 py-8 text-center">
-        <p className="text-sm text-red-400 mb-4">{error ?? 'Chauffeur introuvable.'}</p>
-        <Link href="/drivers" className="text-xs text-qc-blue hover:underline">← Retour à la liste</Link>
+      <div className="px-6 py-8">
+        <Link href="/drivers" className="flex items-center gap-2 text-xs text-qc-blue mb-4"><ArrowLeft size={12}/> Retour</Link>
+        <p className="text-sm text-red-400 mb-2">Chauffeur non trouvé dans Supabase.</p>
+        <p className="text-xs text-slate-400">Lancez le seed: <code className="text-blue-400">POST /api/admin/seed-pilots</code></p>
       </div>
     </AppShell>
   )
 
-  const d = driverDetail as {
-    profile: { id: string; driver_number: string; first_name: string; last_name: string; email: string; status: string; identity_verification_status: string; created_at: string }
-    revenue: { source_type: string; gross: string; tips: string; net: string; count: string }[]
-    trips:   { public_trip_id: string; trip_status: string; distance_meters: number; final_amount: string; started_at: string }[]
-    platforms: { provider_code: string; display_name: string; connection_status: string; connected_at: string }[]
-    documents: { label: string; status: string; expires_at: string | null; issued_at?: string | null; doc_number_last4?: string | null; public_document_id?: string }[]
-    taxAccount: { tps_status: string; tvq_status: string; filing_frequency: string } | null
+  const dd = demo ?? {
+    profile, vehicle:null, services:[], docs:[], revenue:[], platforms:[], taxAccount:null,
+    fiscal:{brut:0,tips:0,tps:0,tvq:0,tpsCredits:0,tvqCredits:0,tpsNet:0,tvqNet:0,solde:0},
+    audit:[]
   }
 
-  const status = statusConfig[d.profile.status] ?? { label: d.profile.status, color: 'bg-slate-100 text-slate-600' }
-  const totalRevenue = d.revenue.reduce((sum, r) => sum + parseFloat(r.gross || '0'), 0)
+  type Revenue = { source_type: string; gross: string; tips: string; net: string; count: string }
+  const revenueData = (driverDetail as {revenue?: Revenue[]} | null)?.revenue ?? dd.revenue
+  const totalBrut = revenueData.reduce((s: number, r: Revenue) => s + parseFloat(r.gross||'0'), 0)
+  const totalTips = revenueData.reduce((s: number, r: Revenue) => s + parseFloat(r.tips||'0'), 0)
 
-  const docStats = {
-    total:   d.documents.length,
-    valid:   d.documents.filter(doc => doc.status === 'APPROVED').length,
-    warning: d.documents.filter(doc => { const days = daysUntil(doc.expires_at); return days !== null && days <= 30 && days > 0 }).length,
-    expired: d.documents.filter(doc => doc.status === 'EXPIRED' || (daysUntil(doc.expires_at) ?? 1) <= 0).length,
-  }
+  const statusColor = profile.status === 'ACTIVE' ? 'text-green-400' : profile.status === 'SUSPENDED' ? 'text-red-400' : 'text-amber-400'
+  const verifColor  = profile.identity_verification_status === 'APPROVED' ? 'text-green-400' : profile.identity_verification_status === 'UNDER_REVIEW' ? 'text-blue-400' : 'text-amber-400'
 
   return (
     <AppShell>
-      {/* Header */}
-      <div className="px-4 md:px-6 pt-4 pb-2">
-        <Link href="/drivers" className="flex items-center gap-2 text-xs text-slate-400 hover:text-white mb-4 transition-colors">
-          <ArrowLeft size={14} /> Retour aux chauffeurs
-        </Link>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-white">{d.profile.first_name} {d.profile.last_name}</h1>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-sm text-slate-400 font-mono">{d.profile.driver_number}</span>
-              <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${status.color}`}>{status.label}</span>
-            </div>
-            <div className="text-xs text-slate-500 mt-1">{d.profile.email}</div>
-          </div>
-          <button onClick={() => void refresh()} className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-400 hover:border-qc-blue">
-            <RefreshCw size={14} /> Actualiser
-          </button>
-        </div>
-      </div>
-
-      <div className="px-4 md:px-6 space-y-5 pb-8">
-
-        {/* Revenus */}
-        <div>
-          <div className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Revenus (3 derniers mois)</div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <KpiCard label="Total brut" value={money(totalRevenue)} color="green" large />
-            {d.revenue.slice(0, 3).map(r => (
-              <KpiCard key={r.source_type} label={r.source_type} value={money(r.gross)} color="blue" />
-            ))}
-          </div>
+      <div className="px-4 md:px-6 pb-8">
+        {/* Back */}
+        <div className="flex items-center gap-3 py-4">
+          <Link href="/drivers" className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white"><ArrowLeft size={12}/> Chauffeurs</Link>
+          <span className="text-slate-700">›</span>
+          <span className="text-xs text-white">{profile.first_name} {profile.last_name}</span>
         </div>
 
-        {/* Compte fiscal */}
-        {d.taxAccount && (
-          <Card className="p-4">
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Compte fiscal</div>
-            <div className="grid grid-cols-3 gap-3 text-xs">
-              <div><div className="text-slate-400">TPS</div><div className="text-white font-semibold">{d.taxAccount.tps_status}</div></div>
-              <div><div className="text-slate-400">TVQ</div><div className="text-white font-semibold">{d.taxAccount.tvq_status}</div></div>
-              <div><div className="text-slate-400">Déclaration</div><div className="text-white font-semibold">{d.taxAccount.filing_frequency}</div></div>
+        {/* Header chauffeur */}
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 mb-4">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-xl bg-qc-blue flex items-center justify-center text-lg font-black text-white shrink-0">
+              {profile.first_name[0]}{profile.last_name[0]}
             </div>
-          </Card>
-        )}
-
-        {/* ── DOSSIER DOCUMENTAIRE — section enrichie ── */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-4 rounded bg-qc-blue" />
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-300">Dossier gouvernemental</span>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h1 className="text-lg font-bold text-white">{profile.first_name} {profile.last_name}</h1>
+                <span className={`text-xs font-bold ${statusColor}`}>{profile.status}</span>
+                <span className={`text-[10px] font-bold ${verifColor}`}>{profile.identity_verification_status}</span>
+              </div>
+              <div className="text-[10px] text-slate-400 font-mono mb-2">{profile.driver_number} · {profile.email}</div>
+              <div className="flex flex-wrap gap-2">
+                {dd.services.filter(s=>s.authorized).map(s=>(
+                  <span key={s.name} className="text-[9px] text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full font-bold">{s.icon} {s.name}</span>
+                ))}
+                {totalBrut>0 && <span className="text-[9px] text-slate-300 bg-slate-800 px-2 py-0.5 rounded-full font-bold">{money(totalBrut)} revenus Q3</span>}
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-3 py-1">
-              🏛️ MODE PILOTE
+            <div className="text-right shrink-0">
+              <div className="text-[9px] text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full font-bold mb-2">PILOTE</div>
+              <button onClick={refresh} className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer"><RefreshCw size={11} className="text-slate-400"/></button>
             </div>
           </div>
+        </div>
 
-          {/* Stats docs */}
-          {d.documents.length > 0 && (
-            <div className="grid grid-cols-4 gap-2 mb-4">
+        {/* Tabs */}
+        <div className="flex gap-1 overflow-x-auto mb-4">
+          {TABS.map(t=>(
+            <button key={t} onClick={()=>setTab(t)} className="shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all" style={{
+              background:tab===t?'#003DA5':'rgba(255,255,255,0.04)',
+              color:tab===t?'white':'#94A3B8',
+              borderColor:tab===t?'#003DA5':'rgba(255,255,255,0.08)',
+            }}>{t}</button>
+          ))}
+        </div>
+
+        {/* ── IDENTITÉ ── */}
+        {tab==='Identité'&&(
+          <div className="space-y-3">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+              <div className="text-[9px] font-bold text-slate-400 uppercase mb-3">Dossier professionnel gouvernemental (DEMO)</div>
               {[
-                { label:'Total',   val:docStats.total,   color:'text-blue-400',  bg:'bg-blue-500/10'  },
-                { label:'Valides', val:docStats.valid,   color:'text-green-400', bg:'bg-green-500/10' },
-                { label:'Alertes', val:docStats.warning, color:'text-amber-400', bg:'bg-amber-500/10' },
-                { label:'Expirés', val:docStats.expired, color:'text-red-400',   bg:'bg-red-500/10'   },
-              ].map(s => (
-                <div key={s.label} className={`${s.bg} rounded-xl p-3 text-center border border-white/5`}>
-                  <div className={`text-xl font-black ${s.color}`}>{s.val}</div>
-                  <div className="text-[9px] text-slate-400 mt-1 uppercase tracking-wider">{s.label}</div>
+                {l:'Driver ID',         v:profile.id.slice(0,20)+'…'},
+                {l:'No. chauffeur',     v:profile.driver_number},
+                {l:'Nom complet',       v:`${profile.first_name} ${profile.last_name}`},
+                {l:'Email',             v:profile.email},
+                {l:'Statut',           v:profile.status, c:statusColor},
+                {l:'Vérification',     v:profile.identity_verification_status, c:verifColor},
+                {l:'Membre depuis',    v:fmtDate(profile.created_at)},
+                {l:'Ville / Zone',     v:(dd.profile as {city?:string}).city||'—'},
+              ].map(r=>(
+                <div key={r.l} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0">
+                  <span className="text-[10px] text-slate-400">{r.l}</span>
+                  <span className={`text-[10px] font-bold ${r.c||'text-white'} font-mono`}>{r.v}</span>
                 </div>
               ))}
             </div>
-          )}
-
-          {/* Alerte expiration */}
-          {docStats.warning > 0 && (
-            <div className="mb-3 flex items-start gap-3 p-3 rounded-xl bg-amber-500/8 border border-amber-500/25 border-l-4 border-l-amber-500">
-              <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />
-              <div>
-                <div className="text-xs font-bold text-amber-400 mb-1">Renouvellement requis</div>
-                {d.documents.filter(doc => { const days = daysUntil(doc.expires_at); return days !== null && days <= 30 && days > 0 }).map((doc, i) => (
-                  <div key={i} className="text-[11px] text-amber-300/80">• {doc.label} — expire dans {daysUntil(doc.expires_at)}j</div>
+            {/* Chaîne complète */}
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+              <div className="text-[9px] font-bold text-slate-400 uppercase mb-3">Chaîne de données TAXIMETER.GOV</div>
+              <div className="flex flex-col gap-1">
+                {[
+                  {label:`${profile.first_name} ${profile.last_name}`, id:profile.driver_number, color:'text-blue-400'},
+                  {label:'Véhicule', id:dd.vehicle?`${dd.vehicle.make} ${dd.vehicle.model} ${dd.vehicle.year}`:'—', color:'text-slate-300'},
+                  {label:'Documents', id:`${dd.docs.filter(d=>d.status==='APPROVED').length}/${dd.docs.length} approuvés`, color:'text-green-400'},
+                  {label:'Revenue Ledger Q3', id:money(totalBrut), color:'text-green-400'},
+                  {label:'TPS estimée', id:money(r2(totalBrut*TPS)), color:'text-purple-400'},
+                  {label:'TVQ estimée', id:money(r2(totalBrut*TVQ)), color:'text-purple-400'},
+                ].map((item,i)=>(
+                  <div key={item.label} className="flex items-center gap-2">
+                    {i>0&&<div className="w-px h-3 bg-slate-700 ml-3"/>}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-400">{item.label}:</span>
+                      <span className={`text-[10px] font-bold ${item.color}`}>{item.id}</span>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Liste documents */}
-          {d.documents.length === 0 ? (
-            <Card className="py-8 text-center">
-              <FileText size={32} className="mx-auto mb-3 text-slate-500" />
-              <p className="text-sm text-slate-400">Aucun document dans le dossier.</p>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {d.documents.map((doc, i) => {
-                const sc = DOC_STATUS[doc.status] ?? DOC_STATUS['DRAFT']!
-                const days = daysUntil(doc.expires_at)
-                const isWarning = days !== null && days <= 30 && days > 0
-                const isExpired = days !== null && days <= 0
-
-                return (
-                  <Card key={i} className={`p-3 flex items-center gap-3 border-l-2 ${isExpired ? 'border-l-red-500' : isWarning ? 'border-l-amber-500' : 'border-l-blue-600'}`}>
-                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-lg shrink-0">
-                      📄
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-xs font-bold text-white truncate">{doc.label}</span>
-                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold shrink-0 ${sc.cls}`}>{sc.label}</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-3">
-                        {doc.expires_at
-                          ? <span className={isExpired ? 'text-red-400' : isWarning ? 'text-amber-400' : ''}>
-                              Exp. {fmtDate(doc.expires_at)}{days !== null && days > 0 && days <= 60 && ` (${days}j)`}
-                            </span>
-                          : <span>Sans expiration</span>
-                        }
-                        {doc.doc_number_last4 && <span className="font-mono">••••{doc.doc_number_last4}</span>}
-                        {doc.public_document_id && <span className="text-slate-500 truncate">{doc.public_document_id}</span>}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      {doc.status === 'APPROVED' && <CheckCircle size={14} className="text-green-400" />}
-                      {isWarning && <AlertTriangle size={14} className="text-amber-400" />}
-                      {isExpired && <XCircle size={14} className="text-red-400" />}
-                      {['PENDING_REVIEW','UNDER_REVIEW','UPLOADED'].includes(doc.status) && <Clock size={14} className="text-blue-400" />}
-                    </div>
-                  </Card>
-                )
-              })}
+        {/* ── VÉHICULE ── */}
+        {tab==='Véhicule'&&dd.vehicle&&(
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl">🚗</span>
+              <div>
+                <div className="text-sm font-bold text-white">{dd.vehicle.year} {dd.vehicle.make} {dd.vehicle.model}</div>
+                <div className="text-[10px] text-slate-400">{dd.vehicle.color} · {dd.vehicle.plate}</div>
+              </div>
+              <span className={`ml-auto text-[9px] px-2 py-0.5 rounded-full font-bold ${dd.vehicle.status==='ACTIVE'?'text-green-400 bg-green-500/10':'text-amber-400 bg-amber-500/10'}`}>{dd.vehicle.status}</span>
             </div>
-          )}
-
-          {/* Note pilote */}
-          <div className="mt-3 flex items-start gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
-            <span className="text-sm">⚠</span>
-            <p className="text-[10px] text-amber-400/80 leading-relaxed">
-              Données synthétiques — Mode pilote TAXIMETER.GOV. Aucune transmission officielle réelle. Documents de démonstration uniquement.
-            </p>
+            {[
+              {l:'Assurance expiration',    v:fmtDate(dd.vehicle.insurance_expiry), c: new Date(dd.vehicle.insurance_expiry)<new Date()?'text-red-400':'text-green-400'},
+              {l:'Inspection prochaine',    v:fmtDate(dd.vehicle.inspection_due), c:'text-slate-300'},
+              {l:'Plaque (DEMO)',           v:dd.vehicle.plate, c:'text-slate-300'},
+            ].map(r=>(
+              <div key={r.l} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0">
+                <span className="text-[10px] text-slate-400">{r.l}</span>
+                <span className={`text-[10px] font-bold ${r.c}`}>{r.v}</span>
+              </div>
+            ))}
+            <Link href="/vehicles" className="text-[10px] text-blue-400 flex items-center gap-1 mt-2 hover:underline">→ Voir dans Admin Véhicules</Link>
           </div>
-        </div>
+        )}
 
-        {/* Plateformes */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-4 rounded bg-qc-blue" />
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Plateformes connectées</span>
-          </div>
-          {d.platforms.length === 0 ? (
-            <Card className="py-6 text-center"><p className="text-sm text-slate-400">Aucune plateforme connectée.</p></Card>
-          ) : (
-            <div className="space-y-2">
-              {d.platforms.map((p, i) => (
-                <Card key={i} className="p-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-xs font-semibold text-white">{p.display_name}</div>
-                    {p.connected_at && <div className="text-[10px] text-slate-400">Connectée: {fmtDate(p.connected_at)}</div>}
+        {/* ── DOCUMENTS ── */}
+        {tab==='Documents'&&(
+          <div className="space-y-2">
+            {dd.docs.map(doc=>{
+              const sc = DOC_STATUS_CONF[doc.status] ?? DOC_STATUS_CONF['UPLOADED']!
+              const daysLeft = doc.expires ? Math.ceil((new Date(doc.expires).getTime()-Date.now())/86400000) : null
+              return (
+                <div key={doc.type} className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl shrink-0">📄</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-xs font-bold text-white">{doc.label}</span>
+                        <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
+                        {daysLeft !== null && daysLeft < 90 && <span className="text-[8px] text-amber-400 bg-amber-500/10 px-1.5 rounded-full">⏳ {daysLeft}j restants</span>}
+                      </div>
+                      <div className="text-[9px] text-slate-400">{doc.number} · Expire: {fmtDate(doc.expires)}</div>
+                    </div>
                   </div>
-                  <span className={`text-[10px] px-2 py-1 rounded-full font-semibold ${p.connection_status === 'CONNECTED' ? 'text-green-400 bg-green-500/10' : 'text-slate-400 bg-slate-500/10'}`}>
-                    {p.connection_status}
-                  </span>
-                </Card>
+                </div>
+              )
+            })}
+            <div className="p-2 text-[9px] text-amber-400 bg-amber-500/8 border border-amber-500/15 rounded-lg">PILOTE · Documents synthétiques · Aucun document officiel</div>
+          </div>
+        )}
+
+        {/* ── SERVICES ── */}
+        {tab==='Services'&&(
+          <div className="space-y-2">
+            {dd.services.map(s=>(
+              <div key={s.name} className={`bg-slate-900 border rounded-xl p-4 ${s.authorized?'border-green-500/25':'border-amber-500/25'}`}>
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-2xl">{s.icon}</span>
+                  <div>
+                    <div className="text-sm font-bold text-white">{s.name}</div>
+                    <div className={`text-[10px] font-bold ${s.authorized?'text-green-400':'text-amber-400'}`}>{s.authorized?'✓ Autorisé':'⚠ Non autorisé'}</div>
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-300 mt-1">{s.reason}</div>
+                <div className="text-[9px] text-slate-500 mt-0.5">Requis: {s.docRequired}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── REVENUS ── */}
+        {tab==='Revenus'&&(
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                {l:'Brut Q3', v:money(totalBrut), c:'text-green-400', bg:'bg-green-500/8'},
+                {l:'Pourboires', v:money(totalTips), c:'', bg:'bg-yellow-500/8', style:{color:'#F5C842'}},
+                {l:'Activités', v:revenueData.reduce((s: number,r: Revenue)=>s+parseInt(r.count||'0'),0).toString(), c:'text-blue-400', bg:'bg-blue-500/8'},
+              ].map(s=>(
+                <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center border border-white/5`}>
+                  <div className="text-sm font-black" style={(s as {style?:object}).style}>{s.v}</div>
+                  <div className="text-[9px] text-slate-400 mt-1">{s.l}</div>
+                </div>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Courses récentes */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-4 rounded bg-qc-blue" />
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Courses récentes</span>
+            {revenueData.map((r: Revenue)=>(
+              <div key={r.source_type} className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+                <div className="flex justify-between mb-2">
+                  <div className="text-xs font-bold text-white">
+                    {r.source_type==='TAXI'?'🚕':r.source_type==='RIDESHARE'?'🚗':'📦'} {r.source_type}
+                  </div>
+                  <div className="text-xs font-black text-green-400">{money(parseFloat(r.gross))}</div>
+                </div>
+                {[
+                  {l:'Pourboires', v:money(parseFloat(r.tips))},
+                  {l:'Net', v:money(parseFloat(r.net))},
+                  {l:'Activités', v:r.count},
+                ].map(row=>(
+                  <div key={row.l} className="flex justify-between text-[10px] py-1 border-t border-slate-800">
+                    <span className="text-slate-400">{row.l}</span><span className="text-white font-bold">{row.v}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
-          {d.trips.length === 0 ? (
-            <Card className="py-6 text-center"><p className="text-sm text-slate-400">Aucune course.</p></Card>
-          ) : (
-            <div className="space-y-2">
-              {d.trips.slice(0,5).map((trip, i) => (
-                <Card key={i} className="p-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-xs font-semibold text-white font-mono">{trip.public_trip_id}</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
-                      {(trip.distance_meters/1000).toFixed(1)} km · {fmtDate(trip.started_at)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-white">{money(trip.final_amount)}</div>
-                    <div className={`text-[9px] font-bold mt-0.5 ${trip.trip_status==='COMPLETED'?'text-green-400':'text-slate-400'}`}>{trip.trip_status}</div>
-                  </div>
-                </Card>
+        )}
+
+        {/* ── FISCALITÉ ── */}
+        {tab==='Fiscalité'&&(
+          <div className="space-y-3">
+            <div className="p-2.5 text-[9px] text-amber-400 bg-amber-500/8 border border-amber-500/20 rounded-lg">ESTIMATION · MODE PILOTE · À VALIDER AVANT TOUTE TRANSMISSION OFFICIELLE</div>
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+              <div className="text-[9px] font-bold text-slate-400 uppercase mb-3">Calcul TPS/TVQ — Q3 2026 (pilote)</div>
+              {[
+                {l:'Revenus bruts',               v:money(dd.fiscal.brut),        c:'text-white'},
+                {l:'+ Pourboires taxables',        v:money(dd.fiscal.tips),        c:'#F5C842'},
+                {l:'= Base taxable',               v:money(dd.fiscal.brut+dd.fiscal.tips), c:'text-green-400'},
+                {l:'TPS collectée (5%)',           v:money(dd.fiscal.tps),         c:'text-purple-400'},
+                {l:'TVQ collectée (9,975%)',       v:money(dd.fiscal.tvq),         c:'text-purple-400'},
+                {l:'Crédits TPS (CTI ~20% frais)',v:`− ${money(dd.fiscal.tpsCredits)}`, c:'text-slate-400'},
+                {l:'Crédits TVQ (CTI ~20% frais)',v:`− ${money(dd.fiscal.tvqCredits)}`, c:'text-slate-400'},
+                {l:'TPS NETTE À REMETTRE',         v:money(dd.fiscal.tpsNet),      c:'text-purple-300'},
+                {l:'TVQ NETTE À REMETTRE',         v:money(dd.fiscal.tvqNet),      c:'text-purple-300'},
+                {l:'SOLDE TOTAL ESTIMÉ',           v:money(dd.fiscal.solde),       c:'text-green-300'},
+              ].map((r,i)=>(
+                <div key={r.l} className={`flex justify-between py-1.5 ${i>0?'border-t border-slate-800':''}`}>
+                  <span className="text-[10px] text-slate-400">{r.l}</span>
+                  <span className={`text-[10px] font-bold ${r.c.startsWith('#')?'':r.c}`} style={r.c.startsWith('#')?{color:r.c}:{}}>{r.v}</span>
+                </div>
               ))}
             </div>
-          )}
-        </div>
+            <Link href="/tax/center" className="block text-center text-[10px] text-blue-400 hover:underline">→ Voir Centre Fiscal Gouvernemental</Link>
+          </div>
+        )}
 
+        {/* ── PLATEFORMES ── */}
+        {tab==='Plateformes'&&(
+          <div className="space-y-2">
+            <div className="p-2.5 text-[9px] text-amber-400 bg-amber-500/8 border border-amber-500/20 rounded-lg">SIMULATION — AUCUNE CONNEXION RÉELLE AUX PLATEFORMES</div>
+            {dd.platforms.map(p=>(
+              <div key={p.provider} className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{p.icon}</span>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold text-white">{p.provider}</div>
+                    <div className="text-[9px] text-slate-400">Dernière sync: {p.lastSync} · {p.events} événements</div>
+                  </div>
+                  <span className="text-[9px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full font-bold">{p.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── AUDIT ── */}
+        {tab==='Audit'&&(
+          <div className="space-y-2">
+            {dd.audit.map((a,i)=>(
+              <div key={i} className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-base shrink-0">📋</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-[10px] font-bold text-white">{a.action}</span>
+                      <span className="text-[8px] text-blue-400 bg-blue-500/10 px-1.5 rounded-full">{a.by}</span>
+                    </div>
+                    <div className="text-[9px] text-slate-400">{a.obj} · {new Date(a.at).toLocaleString('fr-CA')}</div>
+                    <div className="text-[9px] text-slate-500 mt-0.5">{a.note}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </AppShell>
   )
