@@ -1,313 +1,226 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
-import { Card } from '@/components/ui'
-import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, CheckCircle, XCircle, AlertTriangle, Clock, FileText, ChevronRight, X } from 'lucide-react'
+import { PageHeader } from '@/components/ui'
+import { useState } from 'react'
+import { CheckCircle, Clock, XCircle, AlertTriangle, X, ChevronDown, ChevronUp } from 'lucide-react'
+import Link from 'next/link'
 
-interface Doc {
-  id:string; public_document_id:string; label:string; status:string
-  issued_at:string|null; expires_at:string|null; doc_number_last4:string|null
-  notes:string|null; created_at:string; daysPending:number; daysUntil:number|null
-  alertLevel:'ok'|'warning'|'expired'
-  verif:{verification_status:string;review_notes:string|null;rejection_note:string|null}|null
-  driver:{id:string;first_name:string;last_name:string;driver_number:string}|null
-  document_types:{code:string;label:string;label_fr:string|null}|null
-  isPilot:boolean
-}
-interface Stats { toReview:number; approved:number; rejected:number; expiringSOon:number; expired:number }
+const PILOT = 'PILOTE · DONNÉES SYNTHÉTIQUES · AUCUNE TRANSMISSION OFFICIELLE'
 
-const FILTERS = [
-  {key:'',              label:'Tous',              color:'#003DA5'},
-  {key:'UPLOADED',      label:'À vérifier',        color:'#7C3AED'},
-  {key:'UNDER_REVIEW',  label:'En révision',       color:'#003DA5'},
-  {key:'APPROVED',      label:'Approuvés',         color:'#059669'},
-  {key:'REJECTED',      label:'Refusés',           color:'#DC2626'},
+const DEMO_DOCUMENTS = [
+  // Jean Tremblay — DRV-QC-0001 (5 docs)
+  { id:'DOC-001', driver:'Jean Tremblay', driverNum:'DRV-QC-0001', driverId:'drv-demo-001', type:'DRIVER_LICENSE',       label:'Permis de conduire',     status:'APPROVED',      issued:'2020-06-15', expires:'2029-06-15', version:1, submittedAt:'2026-01-18', verifiedBy:'Admin GOV-01', verifiedAt:'2026-01-20', note:'Classe 5 — conforme' },
+  { id:'DOC-002', driver:'Jean Tremblay', driverNum:'DRV-QC-0001', driverId:'drv-demo-001', type:'VEHICLE_REGISTRATION', label:'Immatriculation véhicule',status:'APPROVED',      issued:'2022-03-15', expires:'2027-03-15', version:1, submittedAt:'2026-01-18', verifiedBy:'Admin GOV-01', verifiedAt:'2026-01-20', note:null },
+  { id:'DOC-003', driver:'Jean Tremblay', driverNum:'DRV-QC-0001', driverId:'drv-demo-001', type:'INSURANCE',            label:'Assurance automobile',   status:'APPROVED',      issued:'2026-03-15', expires:'2027-03-15', version:2, submittedAt:'2026-03-16', verifiedBy:'Admin GOV-02', verifiedAt:'2026-03-18', note:'Renouvellement mars 2026 — v2' },
+  { id:'DOC-004', driver:'Jean Tremblay', driverNum:'DRV-QC-0001', driverId:'drv-demo-001', type:'VEHICLE_INSPECTION',   label:'Inspection mécanique',   status:'APPROVED',      issued:'2025-09-01', expires:'2027-09-01', version:1, submittedAt:'2025-09-02', verifiedBy:'Admin GOV-01', verifiedAt:'2025-09-05', note:null },
+  { id:'DOC-005', driver:'Jean Tremblay', driverNum:'DRV-QC-0001', driverId:'drv-demo-001', type:'TAXI_AUTHORIZATION',   label:'Autorisation taxi',      status:'APPROVED',      issued:'2024-01-20', expires:'2027-01-20', version:1, submittedAt:'2024-01-21', verifiedBy:'Admin GOV-01', verifiedAt:'2024-01-22', note:null },
+  // Marie Gagnon — DRV-QC-0002
+  { id:'DOC-006', driver:'Marie Gagnon',  driverNum:'DRV-QC-0002', driverId:'drv-demo-002', type:'DRIVER_LICENSE',       label:'Permis de conduire',     status:'APPROVED',      issued:'2019-08-10', expires:'2028-08-10', version:1, submittedAt:'2026-02-08', verifiedBy:'Admin GOV-01', verifiedAt:'2026-02-10', note:null },
+  { id:'DOC-007', driver:'Marie Gagnon',  driverNum:'DRV-QC-0002', driverId:'drv-demo-002', type:'INSURANCE',            label:'Assurance automobile',   status:'APPROVED',      issued:'2026-01-15', expires:'2027-01-15', version:1, submittedAt:'2026-01-16', verifiedBy:'Admin GOV-02', verifiedAt:'2026-01-18', note:null },
+  { id:'DOC-008', driver:'Marie Gagnon',  driverNum:'DRV-QC-0002', driverId:'drv-demo-002', type:'VTC_AUTHORIZATION',    label:'Autorisation VTC',       status:'APPROVED',      issued:'2024-03-01', expires:'2027-03-01', version:1, submittedAt:'2024-03-02', verifiedBy:'Admin GOV-01', verifiedAt:'2024-03-05', note:null },
+  // Karim Hassan — DRV-QC-0003
+  { id:'DOC-009', driver:'Karim Hassan',  driverNum:'DRV-QC-0003', driverId:'drv-demo-003', type:'DRIVER_LICENSE',       label:'Permis de conduire',     status:'APPROVED',      issued:'2021-04-20', expires:'2030-04-20', version:1, submittedAt:'2026-03-03', verifiedBy:'Admin GOV-01', verifiedAt:'2026-03-06', note:null },
+  { id:'DOC-010', driver:'Karim Hassan',  driverNum:'DRV-QC-0003', driverId:'drv-demo-003', type:'INSURANCE',            label:'Assurance automobile',   status:'APPROVED',      issued:'2026-02-01', expires:'2027-02-01', version:1, submittedAt:'2026-02-02', verifiedBy:'Admin GOV-02', verifiedAt:'2026-02-04', note:null },
+  // Sophie Martin — DRV-QC-0004 (en attente)
+  { id:'DOC-011', driver:'Sophie Martin', driverNum:'DRV-QC-0004', driverId:'drv-demo-004', type:'DRIVER_LICENSE',       label:'Permis de conduire',     status:'PENDING_REVIEW',issued:'2018-11-05', expires:'2027-11-05', version:1, submittedAt:'2026-08-22', verifiedBy:null,            verifiedAt:null,          note:'En attente de vérification' },
+  { id:'DOC-012', driver:'Sophie Martin', driverNum:'DRV-QC-0004', driverId:'drv-demo-004', type:'INSURANCE',            label:'Assurance automobile',   status:'PENDING_REVIEW',issued:'2026-08-01', expires:'2027-08-01', version:1, submittedAt:'2026-08-22', verifiedBy:null,            verifiedAt:null,          note:null },
+  // Marc Leblanc — DRV-QC-0007 (suspendu)
+  { id:'DOC-013', driver:'Marc Leblanc',  driverNum:'DRV-QC-0007', driverId:'drv-demo-007', type:'INSURANCE',            label:'Assurance automobile',   status:'EXPIRED',       issued:'2025-03-01', expires:'2026-03-01', version:1, submittedAt:'2025-03-02', verifiedBy:'Admin GOV-01', verifiedAt:'2025-03-05', note:'EXPIRÉE — suspension du compte' },
+  // Nadia Patel — DRV-QC-0006 (expiration prochaine)
+  { id:'DOC-014', driver:'Nadia Patel',   driverNum:'DRV-QC-0006', driverId:'drv-demo-006', type:'DRIVER_LICENSE',       label:'Permis de conduire',     status:'APPROVED',      issued:'2019-10-15', expires:'2026-10-15', version:1, submittedAt:'2025-12-01', verifiedBy:'Admin GOV-01', verifiedAt:'2025-12-03', note:'⚠ Expire dans 28 jours' },
+  { id:'DOC-015', driver:'Nadia Patel',   driverNum:'DRV-QC-0006', driverId:'drv-demo-006', type:'INSURANCE',            label:'Assurance automobile',   status:'APPROVED',      issued:'2026-04-01', expires:'2027-04-01', version:1, submittedAt:'2026-04-02', verifiedBy:'Admin GOV-02', verifiedAt:'2026-04-04', note:null },
+  // Amira Tremblay — DRV-QC-0008 (en révision)
+  { id:'DOC-016', driver:'Amira Tremblay',driverNum:'DRV-QC-0008', driverId:'drv-demo-008', type:'DRIVER_LICENSE',       label:'Permis de conduire',     status:'UNDER_REVIEW',  issued:'2022-07-10', expires:'2031-07-10', version:1, submittedAt:'2026-05-07', verifiedBy:null,            verifiedAt:null,          note:'Révision administrative en cours' },
 ]
 
-const STATUS_CONF: Record<string,{label:string;color:string;bg:string}> = {
-  APPROVED:      {label:'Valide',          color:'#059669',bg:'rgba(5,150,105,0.12)'},
-  UPLOADED:      {label:'À vérifier',      color:'#7C3AED',bg:'rgba(124,58,237,0.12)'},
-  PENDING_REVIEW:{label:'En révision',     color:'#003DA5',bg:'rgba(0,61,165,0.12)'},
-  UNDER_REVIEW:  {label:'En révision',     color:'#003DA5',bg:'rgba(0,61,165,0.12)'},
-  REJECTED:      {label:'Refusé',          color:'#DC2626',bg:'rgba(220,38,38,0.12)'},
-  EXPIRED:       {label:'Expiré',          color:'#DC2626',bg:'rgba(220,38,38,0.12)'},
+const STATUS_CONF: Record<string,{label:string;color:string;bg:string;bdr:string}> = {
+  APPROVED:      {label:'Approuvé',    color:'#059669',bg:'rgba(5,150,105,0.12)', bdr:'rgba(5,150,105,0.30)'},
+  PENDING_REVIEW:{label:'En révision', color:'#003DA5', bg:'rgba(0,61,165,0.10)',  bdr:'rgba(0,61,165,0.30)'},
+  UNDER_REVIEW:  {label:'En révision', color:'#003DA5', bg:'rgba(0,61,165,0.10)',  bdr:'rgba(0,61,165,0.30)'},
+  UPLOADED:      {label:'Soumis',      color:'#7C3AED', bg:'rgba(124,58,237,0.12)',bdr:'rgba(124,58,237,0.30)'},
+  REJECTED:      {label:'Rejeté',      color:'#DC2626', bg:'rgba(220,38,38,0.10)', bdr:'rgba(220,38,38,0.25)'},
+  EXPIRED:       {label:'Expiré',      color:'#DC2626', bg:'rgba(220,38,38,0.10)', bdr:'rgba(220,38,38,0.25)'},
 }
-
-const REJECTION_REASONS = [
-  'Document illisible','Document expiré','Mauvais type de document',
-  'Informations manquantes','Format invalide','Non vérifiable',
-  'Informations incohérentes','Document incomplet',
-]
-
-function fmtDate(d:string|null) {
-  if (!d) return '—'
-  return new Intl.DateTimeFormat('fr-CA',{year:'numeric',month:'short',day:'numeric'}).format(new Date(d))
+const TYPE_ICONS: Record<string,string> = {
+  DRIVER_LICENSE:'🪪', VEHICLE_REGISTRATION:'🚗', INSURANCE:'🛡️',
+  VEHICLE_INSPECTION:'🔧', TAXI_AUTHORIZATION:'🚕', VTC_AUTHORIZATION:'🚙',
+  DELIVERY_PERMIT:'📦', IDENTITY_VERIFICATION:'👤', OTHER:'📄',
 }
+const fmtDate = (s:string|null) => s ? new Intl.DateTimeFormat('fr-CA',{year:'numeric',month:'short',day:'numeric'}).format(new Date(s)) : '—'
 
-// ── Modal vérification ────────────────────────────────────────
-function ReviewModal({doc,token,onClose,onDone}:{doc:Doc;token:string;onClose:()=>void;onDone:()=>void}) {
-  const [decision,setDecision] = useState<'APPROVE'|'REJECT'|'CORRECTION_REQUIRED'|null>(null)
-  const [note,setNote]         = useState('')
-  const [reason,setReason]     = useState('')
-  const [loading,setLoading]   = useState(false)
-  const [error,setError]       = useState<string|null>(null)
+const FILTER_STATUS = ['Tous','APPROVED','PENDING_REVIEW','UNDER_REVIEW','EXPIRED']
+const FILTER_TYPES  = ['Tous types','DRIVER_LICENSE','VEHICLE_REGISTRATION','INSURANCE','VEHICLE_INSPECTION','TAXI_AUTHORIZATION','VTC_AUTHORIZATION']
 
-  async function submit() {
-    if ((decision==='REJECT'||decision==='CORRECTION_REQUIRED')&&!note) {
-      setError('Motif obligatoire pour refus ou correction'); return
-    }
-    setLoading(true); setError(null)
-    try {
-      const res = await fetch('/api/admin/documents/review', {
-        method:'POST',
-        headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
-        body: JSON.stringify({ documentId:doc.id, decision, note, rejectionReason:reason||undefined }),
-      })
-      const json = await res.json() as {success:boolean;error?:string}
-      if (!json.success) throw new Error(json.error)
-      onDone()
-    } catch(e) { setError((e as Error).message) }
-    finally { setLoading(false) }
+export default function DocumentsPage() {
+  const [filterStatus, setFilterStatus] = useState('Tous')
+  const [filterType,   setFilterType]   = useState('Tous types')
+  const [search,       setSearch]       = useState('')
+  const [selectedDoc,  setSelectedDoc]  = useState<typeof DEMO_DOCUMENTS[0]|null>(null)
+
+  const filtered = DEMO_DOCUMENTS.filter(d => {
+    if (filterStatus !== 'Tous' && d.status !== filterStatus) return false
+    if (filterType !== 'Tous types' && d.type !== filterType) return false
+    if (search && !`${d.driver} ${d.driverNum} ${d.label}`.toLowerCase().includes(search.toLowerCase())) return false
+    return true
+  })
+
+  const stats = {
+    total:    DEMO_DOCUMENTS.length,
+    approved: DEMO_DOCUMENTS.filter(d=>d.status==='APPROVED').length,
+    pending:  DEMO_DOCUMENTS.filter(d=>['PENDING_REVIEW','UNDER_REVIEW','UPLOADED'].includes(d.status)).length,
+    alerts:   DEMO_DOCUMENTS.filter(d=>['REJECTED','EXPIRED'].includes(d.status)).length,
+    expiring: DEMO_DOCUMENTS.filter(d=>d.expires && Math.ceil((new Date(d.expires).getTime()-Date.now())/86400000)<60 && d.status==='APPROVED').length,
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={onClose}>
-      <div className="w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
-        <div className="w-10 h-1 rounded bg-slate-600 mx-auto mb-4"/>
-        {/* Header doc */}
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <div className="text-base font-bold text-white">{doc.label}</div>
-            <div className="text-[10px] text-slate-400 mt-1">{doc.public_document_id} · {doc.driver?.first_name} {doc.driver?.last_name}</div>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-xl bg-slate-800 border border-slate-600 cursor-pointer"><X size={14} className="text-slate-400"/></button>
-        </div>
-
-        {/* Infos doc */}
-        <Card className="p-3 mb-4 space-y-2">
-          {[
-            {label:'Chauffeur',    val:`${doc.driver?.first_name} ${doc.driver?.last_name} · ${doc.driver?.driver_number}`},
-            {label:'Type',         val:doc.document_types?.label_fr??doc.document_types?.label??'—'},
-            {label:'Émis le',      val:fmtDate(doc.issued_at)},
-            {label:'Expire le',    val:fmtDate(doc.expires_at)},
-            {label:'Soumis il y a',val:`${doc.daysPending} jour(s)`},
-            {label:'Numéro',       val:doc.doc_number_last4?`••••${doc.doc_number_last4}`:'—'},
-          ].map(r=>(
-            <div key={r.label} className="flex justify-between text-xs">
-              <span className="text-slate-400">{r.label}</span>
-              <span className="text-slate-900 dark:text-white font-semibold">{r.val}</span>
-            </div>
-          ))}
-        </Card>
-
-        {/* Notes précédentes */}
-        {doc.verif?.review_notes&&(
-          <Card className="p-3 mb-4 border-l-2 border-l-blue-500">
-            <div className="text-[10px] font-bold text-slate-400 mb-1">NOTES PRÉCÉDENTES</div>
-            <div className="text-xs text-slate-300">{doc.verif.review_notes}</div>
-          </Card>
-        )}
-
-        {doc.isPilot&&(
-          <div className="mb-4 p-3 rounded-xl bg-amber-500/8 border border-amber-500/25">
-            <div className="text-[10px] text-amber-400">⚠ Données synthétiques — Mode pilote TAXIMETER.GOV</div>
-          </div>
-        )}
-
-        {/* Décision */}
-        <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Décision</div>
-        <div className="flex flex-col gap-2 mb-4">
-          {[
-            {val:'APPROVE'             as const, label:'✅ Approuver', color:'#059669', bg:'rgba(5,150,105,0.12)',  bdr:'rgba(5,150,105,0.30)'},
-            {val:'REJECT'              as const, label:'❌ Rejeter',   color:'#DC2626', bg:'rgba(220,38,38,0.12)',  bdr:'rgba(220,38,38,0.30)'},
-            {val:'CORRECTION_REQUIRED' as const, label:'🟠 Demander correction', color:'#B45309', bg:'rgba(180,83,9,0.10)', bdr:'rgba(180,83,9,0.30)'},
-          ].map(d=>(
-            <button key={d.val} onClick={()=>setDecision(d.val)} style={{
-              padding:'12px 16px',borderRadius:12,fontSize:13,fontWeight:700,cursor:'pointer',textAlign:'left',
-              background:decision===d.val?d.bg:'transparent',
-              border:`1.5px solid ${decision===d.val?d.bdr:'rgba(255,255,255,0.08)'}`,
-              color:decision===d.val?d.color:'#94A3B8',
-            }}>{d.label}</button>
-          ))}
-        </div>
-
-        {/* Motif */}
-        {decision&&decision!=='APPROVE'&&(
-          <>
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Motif (obligatoire)</div>
-            <select value={reason} onChange={e=>setReason(e.target.value)} className="w-full mb-3 p-2 rounded-lg bg-slate-800 border border-slate-600 text-xs text-white">
-              <option value="">Sélectionner un motif…</option>
-              {REJECTION_REASONS.map(r=><option key={r} value={r}>{r}</option>)}
-            </select>
-            <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Précision (obligatoire)…" rows={3}
-              className="w-full mb-4 p-3 rounded-xl bg-slate-800 border border-slate-600 text-xs text-white resize-none outline-none"/>
-          </>
-        )}
-        {decision==='APPROVE'&&(
-          <>
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Note (optionnelle)</div>
-            <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Commentaire interne…" rows={2}
-              className="w-full mb-4 p-3 rounded-xl bg-slate-800 border border-slate-600 text-xs text-white resize-none outline-none"/>
-          </>
-        )}
-
-        {error&&<div className="mb-3 p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-xs text-red-400">{error}</div>}
-
-        <button onClick={()=>void submit()} disabled={!decision||loading} className={`w-full p-3 rounded-xl text-sm font-bold transition-all ${!decision||loading?'bg-slate-700 text-slate-500 cursor-not-allowed':'bg-qc-blue hover:bg-blue-700 text-white cursor-pointer'}`}>
-          {loading?'Traitement…':'Confirmer la décision'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ── Page Admin Documents ──────────────────────────────────────
-export default function AdminDocumentsPage() {
-  const [docs,setDocs]         = useState<Doc[]>([])
-  const [stats,setStats]       = useState<Stats|null>(null)
-  const [filter,setFilter]     = useState('')
-  const [loading,setLoading]   = useState(true)
-  const [error,setError]       = useState<string|null>(null)
-  const [selected,setSelected] = useState<Doc|null>(null)
-  const [token,setToken]       = useState('')
-
-  const load = useCallback(async () => {
-    setLoading(true); setError(null)
-    try {
-      // Récupérer le token gov depuis les cookies (l'auth gov utilise ses propres sessions)
-      const qs = filter?`?status=${filter}`:''
-      const res = await fetch(`/api/admin/documents${qs}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      })
-      const json = await res.json() as {success:boolean;data:{documents:Doc[];stats:Stats;total:number};error?:string}
-      if (!json.success) throw new Error(json.error)
-      setDocs(json.data.documents)
-      setStats(json.data.stats)
-    } catch(e) { setError((e as Error).message) }
-    finally { setLoading(false) }
-  }, [filter, token])
-
-  // Récupérer token depuis le storage (gov app)
-  useEffect(()=>{
-    const stored = typeof window !== 'undefined'
-      ? (localStorage.getItem('sb-access-token') ?? sessionStorage.getItem('sb-access-token') ?? '')
-      : ''
-    setToken(stored)
-  }, [])
-
-  useEffect(()=>{ void load() }, [load])
-
-  const toReview = docs.filter(d=>['UPLOADED','PENDING_REVIEW','UNDER_REVIEW'].includes(d.status))
-
-  return (
     <AppShell>
-      {selected&&token&&(
-        <ReviewModal doc={selected} token={token} onClose={()=>setSelected(null)} onDone={()=>{ setSelected(null); void load() }}/>
-      )}
-
-      <div className="px-4 pt-4 pb-2 flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-white">File de vérification</h1>
-          <p className="text-xs text-slate-400 mt-1">Dossiers documentaires · TAXIMETER.GOV Admin</p>
-        </div>
-        <button onClick={()=>void load()} className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-400 hover:border-qc-blue">
-          <RefreshCw size={13}/> Actualiser
-        </button>
-      </div>
-
-      {/* Stats */}
-      {stats&&(
-        <div className="px-4 mb-4 grid grid-cols-4 gap-2">
-          {[
-            {label:'À vérifier',   val:stats.toReview,    color:'text-purple-400', bg:'bg-purple-500/10'},
-            {label:'Approuvés',    val:stats.approved,    color:'text-green-400',  bg:'bg-green-500/10' },
-            {label:'Refusés',      val:stats.rejected,    color:'text-red-400',    bg:'bg-red-500/10'   },
-            {label:'Expirent',     val:stats.expiringSOon,color:'text-amber-400',  bg:'bg-amber-500/10' },
-          ].map(s=>(
-            <div key={s.label} className={`${s.bg} rounded-xl p-3 text-center border border-white/5`}>
-              <div className={`text-xl font-black ${s.color}`}>{s.val}</div>
-              <div className="text-[9px] text-slate-400 mt-1">{s.label}</div>
+      {/* Modal détail document */}
+      {selectedDoc && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/60" onClick={()=>setSelectedDoc(null)}>
+          <div className="w-full max-h-[88vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
+            <div className="w-10 h-1 rounded bg-slate-300 dark:bg-slate-600 mx-auto mb-4"/>
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <div className="text-base font-bold text-slate-800 dark:text-white">{selectedDoc.label}</div>
+                <div className="text-[10px] text-slate-400 font-mono mt-0.5">{selectedDoc.id} · v{selectedDoc.version}</div>
+              </div>
+              <button onClick={()=>setSelectedDoc(null)} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 cursor-pointer">
+                <X size={14} className="text-slate-500"/>
+              </button>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Alerte urgence */}
-      {toReview.length>0&&(
-        <div className="mx-4 mb-4 flex items-center gap-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 border-l-4 border-l-purple-500">
-          <Clock size={16} className="text-purple-400 shrink-0"/>
-          <div>
-            <div className="text-xs font-bold text-purple-400">{toReview.length} document(s) en attente de vérification</div>
-            <div className="text-[10px] text-slate-400 mt-0.5">Cliquez pour ouvrir et traiter</div>
+            <div className="mb-3 p-2 rounded-lg text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/8 border border-amber-200 dark:border-amber-500/20">{PILOT}</div>
+            {(() => {
+              const sc = STATUS_CONF[selectedDoc.status]??STATUS_CONF['UPLOADED']!
+              return <div className="flex items-center gap-2 p-2.5 rounded-lg mb-4" style={{background:sc.bg}}>
+                <span className="text-xs font-bold" style={{color:sc.color}}>{sc.label}</span>
+              </div>
+            })()}
+            <div className="space-y-0 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 mb-4">
+              {[
+                {l:'Chauffeur',       v:selectedDoc.driver},
+                {l:'No. chauffeur',   v:selectedDoc.driverNum},
+                {l:'Type document',   v:selectedDoc.type},
+                {l:'Date d\'émission',v:fmtDate(selectedDoc.issued)},
+                {l:'Date d\'expiration',v:fmtDate(selectedDoc.expires)},
+                {l:'Soumis le',       v:fmtDate(selectedDoc.submittedAt)},
+                {l:'Vérifié par',     v:selectedDoc.verifiedBy??'En attente'},
+                {l:'Vérifié le',      v:fmtDate(selectedDoc.verifiedAt)},
+                {l:'Version',         v:`v${selectedDoc.version}`},
+                {l:'Note',            v:selectedDoc.note??'—'},
+              ].map(r=>(
+                <div key={r.l} className="flex justify-between py-1.5 border-b border-slate-200 dark:border-slate-700 last:border-0">
+                  <span className="text-[10px] text-slate-500">{r.l}</span>
+                  <span className="text-[10px] font-semibold text-slate-800 dark:text-slate-200 text-right max-w-[60%]">{r.v}</span>
+                </div>
+              ))}
+            </div>
+            {/* Actions admin */}
+            {['PENDING_REVIEW','UNDER_REVIEW','UPLOADED'].includes(selectedDoc.status) && (
+              <div className="space-y-2">
+                <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Actions administratives (DEMO)</div>
+                <div className="flex gap-2">
+                  <button className="flex-1 py-2 bg-green-600 text-white text-xs font-bold rounded-xl hover:bg-green-700 cursor-pointer">✅ Approuver</button>
+                  <button className="flex-1 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 cursor-pointer">❌ Refuser</button>
+                  <button className="flex-1 py-2 bg-amber-500 text-white text-xs font-bold rounded-xl hover:bg-amber-600 cursor-pointer">📝 Correction</button>
+                </div>
+                <div className="p-2 text-[9px] text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/8 border border-blue-200 dark:border-blue-500/20 rounded-lg">Actions en mode démo — aucune modification réelle</div>
+              </div>
+            )}
+            <Link href={`/drivers/${selectedDoc.driverId}`} className="block mt-3 text-center text-[10px] text-qc-blue hover:underline">→ Voir dossier complet du chauffeur</Link>
           </div>
         </div>
       )}
 
-      {/* Filtres */}
-      <div className="px-4 mb-4 flex gap-2 overflow-x-auto">
-        {FILTERS.map(f=>(
-          <button key={f.key} onClick={()=>setFilter(f.key)} style={{
-            padding:'7px 14px',borderRadius:20,fontSize:11,fontWeight:700,
-            border:'none',cursor:'pointer',whiteSpace:'nowrap',transition:'all 0.15s',
-            background:filter===f.key?f.color:'rgba(255,255,255,0.06)',
-            color:filter===f.key?'#FFFFFF':'#94A3B8',
-            boxShadow:filter===f.key?`0 4px 12px ${f.color}40`:'none',
-          }}>{f.label} {f.key&&stats?`(${
-            f.key==='UPLOADED'?stats.toReview:
-            f.key==='APPROVED'?stats.approved:
-            f.key==='REJECTED'?stats.rejected:0
-          })`:''}</button>
-        ))}
-      </div>
+      <PageHeader title="Centre de documents" subtitle="Dossiers documentaires · Approbation · Vérification · TAXIMETER.GOV"/>
+      <div className="px-4 md:px-6 pb-8 space-y-4">
+        <div className="p-2.5 rounded-xl text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/8 border border-amber-200 dark:border-amber-500/20">{PILOT}</div>
 
-      {/* Liste */}
-      <div className="px-4 pb-8 space-y-3">
-        {loading&&<div className="py-12 text-center"><RefreshCw size={20} className="mx-auto animate-spin text-qc-blue"/></div>}
-        {error&&<Card className="p-4 text-center text-sm text-red-400">{error}</Card>}
-        {!loading&&docs.length===0&&(
-          <Card className="py-12 text-center">
-            <FileText size={32} className="mx-auto mb-3 text-slate-500"/>
-            <p className="text-sm text-slate-400">Aucun document {filter?'avec ce filtre':'trouvé'}</p>
-          </Card>
+        {/* KPI */}
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            {l:'Total docs',     v:stats.total,    c:'text-blue-600 dark:text-blue-400',  bg:'bg-blue-50 dark:bg-blue-500/10',   e:'📄'},
+            {l:'Approuvés',      v:stats.approved, c:'text-green-600 dark:text-green-400',bg:'bg-green-50 dark:bg-green-500/10', e:'✅'},
+            {l:'En révision',    v:stats.pending,  c:'text-amber-600 dark:text-amber-400',bg:'bg-amber-50 dark:bg-amber-500/10', e:'⏳'},
+            {l:'Alertes',        v:stats.alerts+stats.expiring, c:'text-red-600 dark:text-red-400', bg:'bg-red-50 dark:bg-red-500/10', e:'🚨'},
+          ].map(s=>(
+            <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center`}>
+              <div className="text-xl mb-1">{s.e}</div>
+              <div className={`text-xl font-black ${s.c}`}>{s.v}</div>
+              <div className="text-[9px] text-slate-500 mt-1">{s.l}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Workflow */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+          <div className="text-[9px] font-bold text-slate-400 uppercase mb-3">Workflow de validation documentaire</div>
+          <div className="flex flex-wrap gap-1 text-[9px]">
+            {['Chauffeur soumet','→','SOUMIS','→','Contrôle auto','→','EN VÉRIFICATION','→','Admin GOV','→','APPROUVÉ / REFUSÉ','→','Conformité mise à jour','→','Audit créé'].map((s,i)=>(
+              <span key={i} className={s==='→'?'text-slate-400':'px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 whitespace-nowrap'}>{s}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* File révision */}
+        {stats.pending > 0 && (
+          <div className="p-3 bg-blue-50 dark:bg-blue-500/8 border border-blue-200 dark:border-blue-500/20 rounded-xl">
+            <div className="text-xs font-bold text-blue-700 dark:text-blue-400 mb-2">📋 File de vérification ({stats.pending} document(s))</div>
+            {DEMO_DOCUMENTS.filter(d=>['PENDING_REVIEW','UNDER_REVIEW','UPLOADED'].includes(d.status)).map(d=>(
+              <button key={d.id} onClick={()=>setSelectedDoc(d)} className="w-full flex items-center justify-between py-1.5 border-b border-blue-100 dark:border-blue-500/10 last:border-0 hover:bg-blue-100 dark:hover:bg-blue-500/10 rounded px-1 transition-colors cursor-pointer">
+                <span className="text-[10px] text-blue-700 dark:text-blue-300">{d.driver} — {d.label}</span>
+                <span className="text-[9px] text-blue-500 dark:text-blue-400">Soumis {fmtDate(d.submittedAt)} →</span>
+              </button>
+            ))}
+          </div>
         )}
 
-        {docs.map(doc=>{
-          const sc = STATUS_CONF[doc.status]??STATUS_CONF['UPLOADED']!
-          const needsAction = ['UPLOADED','PENDING_REVIEW','UNDER_REVIEW'].includes(doc.status)
-          return (
-            <div key={doc.id} onClick={()=>setSelected(doc)} className={`rounded-xl border border-slate-700 bg-slate-50/80 dark:bg-slate-800/50 p-4 cursor-pointer hover:border-qc-blue transition-colors ${needsAction?'border-l-4 border-l-purple-500':doc.status==='APPROVED'?'border-l-4 border-l-green-500':doc.status==='REJECTED'?'border-l-4 border-l-red-500':''}`}>
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-lg shrink-0">
-                  📄
-                </div>
+        {/* Filtres */}
+        <div className="space-y-2">
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Chauffeur, type de document…"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-qc-blue text-slate-800 dark:text-white"/>
+          <div className="flex gap-1.5 flex-wrap">
+            {FILTER_STATUS.map(f=>(
+              <button key={f} onClick={()=>setFilterStatus(f)} className="px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all" style={{
+                background:filterStatus===f?'#003DA5':'transparent', color:filterStatus===f?'white':'#64748B',
+                borderColor:filterStatus===f?'#003DA5':'rgba(148,163,184,0.30)',
+              }}>{f==='Tous'?`Tous (${DEMO_DOCUMENTS.length})`:STATUS_CONF[f]?.label??f}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Liste */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-800 dark:text-white">{filtered.length} document(s)</span>
+            <span className="text-[9px] text-amber-600 dark:text-amber-400">Cliquer → détail + actions admin</span>
+          </div>
+          {filtered.map(doc=>{
+            const sc = STATUS_CONF[doc.status]??STATUS_CONF['UPLOADED']!
+            const daysLeft = doc.expires ? Math.ceil((new Date(doc.expires).getTime()-Date.now())/86400000) : null
+            return (
+              <div key={doc.id} onClick={()=>setSelectedDoc(doc)}
+                className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                style={{borderLeft:`3px solid ${sc.bdr}`}}>
+                <span className="text-xl shrink-0">{TYPE_ICONS[doc.type]??'📄'}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="text-sm font-bold text-white truncate">{doc.label}</span>
-                    <span style={{fontSize:9,fontWeight:700,padding:'2px 8px',borderRadius:20,background:sc.bg,color:sc.color}}>{sc.label}</span>
-                    {doc.isPilot&&<span className="text-[8px] text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full">PILOTE</span>}
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">{doc.label}</span>
+                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
+                    {daysLeft!==null && daysLeft<60 && daysLeft>0 && <span className="text-[8px] text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-1.5 rounded-full font-bold">⏳ {daysLeft}j</span>}
+                    <span className="text-[8px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 rounded-full">v{doc.version}</span>
                   </div>
-                  <div className="text-[11px] text-slate-400">
-                    👤 {doc.driver?.first_name} {doc.driver?.last_name} · {doc.driver?.driver_number}
-                  </div>
-                  <div className="flex items-center gap-3 mt-1.5 text-[10px] text-slate-500">
-                    <span>📅 Soumis il y a {doc.daysPending}j</span>
-                    {doc.expires_at&&<span className={doc.alertLevel==='warning'?'text-amber-400':''}>
-                      Exp. {fmtDate(doc.expires_at)}{doc.daysUntil!==null&&doc.daysUntil<=30&&` (${doc.daysUntil}j)`}
-                    </span>}
-                  </div>
-                  {doc.verif?.rejection_note&&<div className="mt-1 text-[10px] text-red-400">Motif: {doc.verif.rejection_note}</div>}
+                  <Link href={`/drivers/${doc.driverId}`} onClick={e=>e.stopPropagation()} className="text-[9px] text-qc-blue hover:underline font-semibold">{doc.driver} · {doc.driverNum}</Link>
+                  {doc.note && <div className="text-[9px] text-slate-400 italic mt-0.5">{doc.note}</div>}
                 </div>
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  {needsAction&&<div className="flex items-center gap-1 text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-1 rounded-lg"><Clock size={10}/> Vérifier</div>}
-                  {doc.status==='APPROVED'&&<CheckCircle size={16} className="text-green-400"/>}
-                  {doc.status==='REJECTED'&&<XCircle size={16} className="text-red-400"/>}
-                  {doc.alertLevel==='warning'&&<AlertTriangle size={14} className="text-amber-400"/>}
-                  <ChevronRight size={14} className="text-slate-500"/>
+                <div className="text-right shrink-0">
+                  <div className="text-[10px] text-slate-500">Expire:</div>
+                  <div className={`text-[10px] font-bold ${daysLeft!==null&&daysLeft<0?'text-red-600 dark:text-red-400':daysLeft!==null&&daysLeft<60?'text-orange-500':'text-slate-600 dark:text-slate-400'}`}>{fmtDate(doc.expires)}</div>
+                  {doc.verifiedBy && <div className="text-[8px] text-slate-400 mt-0.5">✓ {doc.verifiedBy}</div>}
                 </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </AppShell>
   )
