@@ -11,8 +11,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Sidebar />
         <Topbar />
         <main
-          className="pt-14 min-h-screen" style={{background:"#E0ECF9"}}
-          style={{ marginLeft: 'var(--sidebar-w)' }}
+          className="pt-14 min-h-screen"
+          style={{ marginLeft: 'var(--sidebar-w)', background: '#E0ECF9' }}
         >
           <div className="p-6">
             {children}
