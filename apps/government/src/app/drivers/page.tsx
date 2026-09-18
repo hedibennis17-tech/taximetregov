@@ -53,21 +53,23 @@ export default function DriversPage() {
     status: filter || undefined, search: search || undefined,
   })
 
-  const drivers = (supaDrivers.length === 0 && !loading) ? DEMO_DRIVERS : supaDrivers
+  type AnyDriver = { id:string; driver_number:string; first_name:string; last_name:string; email:string; status:string; identity_verification_status:string; city?:string; services?:string[]; gross?:number; tips?:number; platforms?:number; last_active?:string }
+
+  const drivers = (supaDrivers.length === 0 && !loading) ? DEMO_DRIVERS as AnyDriver[] : supaDrivers as unknown as AnyDriver[]
   const showPilot = supaDrivers.length === 0
 
   const filtered = filter
-    ? drivers.filter((d: typeof DEMO_DRIVERS[0]) => d.status === filter)
+    ? drivers.filter((d: AnyDriver) => d.status === filter)
     : search
-    ? drivers.filter((d: typeof DEMO_DRIVERS[0]) => `${d.first_name} ${d.last_name} ${d.driver_number} ${d.email}`.toLowerCase().includes(search.toLowerCase()))
+    ? drivers.filter((d: AnyDriver) => `${d.first_name} ${d.last_name} ${d.driver_number} ${d.email}`.toLowerCase().includes(search.toLowerCase()))
     : drivers
 
   const stats = {
-    total:   drivers.length,
-    active:  drivers.filter((d: typeof DEMO_DRIVERS[0]) => d.status==='ACTIVE').length,
-    pending: drivers.filter((d: typeof DEMO_DRIVERS[0]) => d.status==='PENDING').length,
-    suspended:drivers.filter((d: typeof DEMO_DRIVERS[0]) => d.status==='SUSPENDED').length,
-    verified: drivers.filter((d: typeof DEMO_DRIVERS[0]) => d.identity_verification_status==='APPROVED').length,
+    total:    drivers.length,
+    active:   drivers.filter((d: AnyDriver) => d.status==='ACTIVE').length,
+    pending:  drivers.filter((d: AnyDriver) => d.status==='PENDING').length,
+    suspended:drivers.filter((d: AnyDriver) => d.status==='SUSPENDED').length,
+    verified: drivers.filter((d: AnyDriver) => d.identity_verification_status==='APPROVED').length,
   }
 
   return (
@@ -99,9 +101,9 @@ export default function DriversPage() {
         {/* Stats revenus globaux demo */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            {l:'Revenus bruts Q3 (pilote)',  v:money(drivers.reduce((s: number,d: typeof DEMO_DRIVERS[0])=>s+(d.gross||0),0)), c:'text-green-400', bg:'bg-green-500/8'},
-            {l:'TPS estimée (pilote)',        v:money(r2(drivers.reduce((s: number,d: typeof DEMO_DRIVERS[0])=>s+(d.gross||0),0)*TPS)), c:'text-purple-400', bg:'bg-purple-500/8'},
-            {l:'TVQ estimée (pilote)',        v:money(r2(drivers.reduce((s: number,d: typeof DEMO_DRIVERS[0])=>s+(d.gross||0),0)*TVQ)), c:'text-purple-400', bg:'bg-purple-500/8'},
+            {l:'Revenus bruts Q3 (pilote)',  v:money(drivers.reduce((s: number,d: AnyDriver)=>s+(d.gross||0),0)), c:'text-green-400', bg:'bg-green-500/8'},
+            {l:'TPS estimée (pilote)',        v:money(r2(drivers.reduce((s: number,d: AnyDriver)=>s+(d.gross||0),0)*TPS)), c:'text-purple-400', bg:'bg-purple-500/8'},
+            {l:'TVQ estimée (pilote)',        v:money(r2(drivers.reduce((s: number,d: AnyDriver)=>s+(d.gross||0),0)*TVQ)), c:'text-purple-400', bg:'bg-purple-500/8'},
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-xl p-3 border border-white/5`}>
               <div className={`text-sm font-black ${s.c}`}>{s.v}</div>
@@ -141,7 +143,7 @@ export default function DriversPage() {
             </div>
           </div>
 
-          {filtered.map((d: typeof DEMO_DRIVERS[0])=>{
+          {filtered.map((d: AnyDriver)=>{
             const sc = STATUS_CONF[d.status] ?? STATUS_CONF['PENDING']!
             const vc = VERIF_CONF[d.identity_verification_status] ?? VERIF_CONF['PENDING']!
             const gross = d.gross || 0
