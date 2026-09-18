@@ -627,7 +627,7 @@ export default function EnterpriseProfilePage() {
                     <div className="text-[9px] text-slate-400">{a.type} · {fmtDt(a.at)}</div>
                     <div className="text-[9px] text-slate-500 mt-0.5 italic">{a.desc}</div>
                   </div>
-                  <span className={`text-[8px] font-bold shrink-0 px-1.5 py-0.5 rounded-full ${a.status==='IN_PROGRESS'?'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10':'a.status==="INFO"'?'text-slate-400 bg-slate-100':'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-500/10'}`}>{a.status}</span>
+                  <span className={`text-[8px] font-bold shrink-0 px-1.5 py-0.5 rounded-full ${a.status==='IN_PROGRESS'?'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10':a.status==='INFO'?'text-slate-400 bg-slate-100':'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-500/10'}`}>{a.status}</span>
                 </div>
               </div>
             )):<div className="text-center py-8 text-[10px] text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-500/8 rounded-2xl border border-green-200 dark:border-green-500/20"><CheckCircle size={20} className="mx-auto mb-2"/><div>Aucune alerte active</div></div>}
