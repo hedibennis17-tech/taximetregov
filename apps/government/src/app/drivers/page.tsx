@@ -175,7 +175,7 @@ export default function DriversPage() {
                     ? <><div className="text-xs font-bold text-green-400">{money(gross)}</div><div className="text-[9px] text-slate-400">revenus Q3</div></>
                     : <div className="text-[9px] text-slate-500">Pas encore actif</div>
                   }
-                  {d.platforms > 0 && <div className="text-[9px] text-blue-400">{d.platforms} plateforme(s)</div>}
+                  {(d.platforms ?? 0) > 0 && <div className="text-[9px] text-blue-400">{d.platforms} plateforme(s)</div>}
                   <div className="text-[8px] text-slate-600">{d.last_active}</div>
                 </div>
               </Link>
