@@ -23,7 +23,7 @@ export function Topbar() {
   const initials = administrator?.email.slice(0, 2).toUpperCase() ?? 'GA'
 
   return (
-    <header className="fixed top-0 right-0 h-14 flex items-center px-4 gap-3 z-20" style={{left:"var(--sidebar-w)",background:"#003DA5",boxShadow:"0 2px 8px rgba(0,45,122,0.4)"}} style={{ left: 'var(--sidebar-w)' }}>
+    <header className="fixed top-0 right-0 h-14 flex items-center px-4 gap-3 z-20" style={{left:'var(--sidebar-w)',background:'#003DA5',boxShadow:'0 2px 8px rgba(0,45,122,0.4)'}}>
       <div className="flex-1 max-w-lg"><div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${searchOpen ? 'border-white/40 bg-white/20' : 'border-white/20 bg-white/12'}`}><Search size={14} className="text-slate-400" /><input type="text" placeholder={t.search} className="flex-1 bg-transparent text-sm outline-none text-slate-700 dark:text-slate-200 placeholder-slate-400" onFocus={() => setSearchOpen(true)} onBlur={() => setSearchOpen(false)} /></div></div>
       <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 border border-green-200"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /><span className="text-[10px] font-semibold text-green-700">SESSION SÉCURISÉE</span></div>
       <div className="px-2 py-1 rounded text-[10px] font-bold tracking-widest text-white" style={{ background: 'var(--qc-blue)' }}>{t.environment}</div>

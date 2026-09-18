@@ -130,7 +130,7 @@ export function Sidebar() {
     ]},
   ]
   return (
-    <aside className="fixed left-0 top-0 h-screen flex flex-col z-30" style={{width:"var(--sidebar-w)",background:"#002D7A"}} style={{width:'var(--sidebar-w)'}}>
+    <aside className="fixed left-0 top-0 h-screen flex flex-col z-30" style={{width:'var(--sidebar-w)',background:'#002D7A'}}>
       <div className="px-4 py-3" style={{borderBottom:"1px solid rgba(255,255,255,0.10)"}}>
         <div className="flex items-center gap-2">
           <img src="/logo.png" alt="TAXIMETER.GOV" width={32} height={32} style={{objectFit:'contain',borderRadius:8}} />
