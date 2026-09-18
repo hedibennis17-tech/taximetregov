@@ -150,7 +150,8 @@ export default function DriverDetailPage() {
     audit:[],
   }
 
-  const compColor = profile.compliance==='CONFORME'?'text-green-600 dark:text-green-400':profile.compliance==='SUSPENDU'?'text-red-600 dark:text-red-400':'text-amber-600 dark:text-amber-400'
+  const p = profile as unknown as { compliance?:string; compliance_pct?:number; phone?:string; city?:string; address?:string }
+  const compColor = p.compliance==='CONFORME'?'text-green-600 dark:text-green-400':p.compliance==='SUSPENDU'?'text-red-600 dark:text-red-400':'text-amber-600 dark:text-amber-400'
   const statusColor = profile.status==='ACTIVE'?'text-green-600 dark:text-green-400':profile.status==='SUSPENDED'?'text-red-600 dark:text-red-400':'text-amber-600 dark:text-amber-400'
 
   return (
@@ -246,12 +247,12 @@ export default function DriverDetailPage() {
                 {l:'Identifiant',          v:profile.driver_number},
                 {l:'Nom complet',          v:`${profile.first_name} ${profile.last_name}`},
                 {l:'Email (DEMO)',         v:profile.email},
-                {l:'Téléphone (DEMO)',     v:(profile as {phone?:string}).phone??'—'},
-                {l:'Ville',               v:(profile as {city?:string}).city??'—'},
-                {l:'Adresse (DEMO)',       v:(profile as {address?:string}).address??'—'},
+                {l:'Téléphone (DEMO)',     v:p.phone??'—'},
+                {l:'Ville',               v:p.city??'—'},
+                {l:'Adresse (DEMO)',       v:p.address??'—'},
                 {l:'Statut',              v:profile.status, c:statusColor},
                 {l:'Vérification identité',v:profile.identity_verification_status, c:profile.identity_verification_status==='APPROVED'?'text-green-600 dark:text-green-400':'text-amber-600 dark:text-amber-400'},
-                {l:'Conformité',          v:(profile as {compliance?:string}).compliance??'—', c:compColor},
+                {l:'Conformité',          v:p.compliance??'—', c:compColor},
                 {l:'Membre depuis',       v:fmtDate(profile.created_at)},
               ].map(r=>(
                 <div key={r.l} className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
@@ -530,8 +531,8 @@ export default function DriverDetailPage() {
               <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-500/8 border border-green-200 dark:border-green-500/20">
                 <CheckCircle size={20} className="text-green-600 dark:text-green-400 shrink-0"/>
                 <div>
-                  <div className="text-sm font-bold text-green-700 dark:text-green-400">{(profile as {compliance?:string}).compliance??'CONFORME'}</div>
-                  <div className="text-[9px] text-green-600 dark:text-green-400">{(profile as {compliance_pct?:number}).compliance_pct??100}% des critères satisfaits</div>
+                  <div className="text-sm font-bold text-green-700 dark:text-green-400">{p.compliance??'CONFORME'}</div>
+                  <div className="text-[9px] text-green-600 dark:text-green-400">{p.compliance_pct??100}% des critères satisfaits</div>
                 </div>
               </div>
               {[
