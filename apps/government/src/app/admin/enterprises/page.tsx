@@ -1,5 +1,5 @@
-import React from 'react'
 'use client'
+import React from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 import Link from 'next/link'
 import { useState } from 'react'
