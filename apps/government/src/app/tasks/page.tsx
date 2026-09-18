@@ -26,10 +26,10 @@ export default function TasksPage() {
   })
 
   const stats = {
-    open:     tasks.filter(t=>!['DONE','CANCELLED'].includes(t.status)).length,
-    inProg:   tasks.filter(t=>t.status==='IN_PROGRESS').length,
-    approval: tasks.filter(t=>t.status==='APPROVAL').length,
-    done:     tasks.filter(t=>t.status==='DONE').length,
+    open:     tasks.filter((t: typeof TASKS[0])=>!['DONE','CANCELLED'].includes(t.status)).length,
+    inProg:   tasks.filter((t: typeof TASKS[0])=>t.status==='IN_PROGRESS').length,
+    approval: tasks.filter((t: typeof TASKS[0])=>t.status==='APPROVAL').length,
+    done:     tasks.filter((t: typeof TASKS[0])=>t.status==='DONE').length,
   }
 
   function markDone(id: string) {
@@ -80,7 +80,7 @@ export default function TasksPage() {
           {[{v:'ALL',l:'Toutes'},{v:'TODO',l:'À faire'},{v:'IN_PROGRESS',l:'En cours'},{v:'PENDING',l:'En attente'},{v:'APPROVAL',l:'À approuver'},{v:'DONE',l:'Terminées'}].map(f=>(
             <button key={f.v} onClick={()=>setStatus(f.v)} className="px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all cursor-pointer" style={{background:status===f.v?'#003DA5':'transparent',color:status===f.v?'white':'#64748B',borderColor:status===f.v?'#003DA5':'rgba(148,163,184,0.30)'}}>{f.l}</button>
           ))}
-          <select value={priority} onChange={e=>setPriority(e.target.value)} className="px-3 py-1.5 rounded-xl text-[10px] font-bold border bg-transparent text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 outline-none cursor-pointer">
+          <select value={priority} onChange={(e: React.ChangeEvent<HTMLSelectElement>)=>setPriority(e.target.value)} className="px-3 py-1.5 rounded-xl text-[10px] font-bold border bg-transparent text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 outline-none cursor-pointer">
             <option value="ALL">Toutes priorités</option>
             {['CRITICAL','HIGH','MEDIUM','LOW'].map(p=><option key={p}>{p}</option>)}
           </select>
@@ -92,7 +92,7 @@ export default function TasksPage() {
             <span className="text-xs font-bold text-slate-800 dark:text-white">{filtered.length} tâche(s)</span>
             <span className="text-[9px] text-slate-400">DEMO · Aucune action réelle</span>
           </div>
-          {filtered.map(t => {
+          {filtered.map((t: typeof TASKS[0])=> {
             const sc = TASK_STATUS[t.status]!
             const pc = PRIORITY_CONF[t.priority]!
             const overdue = new Date(t.dueAt) < new Date() && !['DONE','CANCELLED'].includes(t.status)

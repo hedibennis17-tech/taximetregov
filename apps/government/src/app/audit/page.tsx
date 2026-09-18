@@ -3,6 +3,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import Link from 'next/link'
 import { useState } from 'react'
 import { Shield, RefreshCw } from 'lucide-react'
+import React from 'react'
 import { PILOT, fmtDt, AUDIT_LOGS } from '@/lib/compliance-data'
 
 const NAV = [
@@ -83,7 +84,7 @@ export default function AuditPage() {
 
         {/* Filtres */}
         <div className="space-y-2">
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher action, objet, utilisateur…"
+          <input value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setSearch(e.target.value)} placeholder="Rechercher action, objet, utilisateur…"
             className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white outline-none focus:border-qc-blue"/>
           <div className="flex gap-1.5 overflow-x-auto flex-nowrap">
             {MODULES.map(m=>(

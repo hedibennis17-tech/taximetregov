@@ -16,7 +16,7 @@ export default function ComplianceCasesPage() {
   const [resolving, setResolving] = useState<string|null>(null)
   const [resolved,  setResolved]  = useState<string[]>(['CASE-DEMO-003'])
 
-  const toggle = (id: string) => setExpanded(prev => prev === id ? null : id)
+  const toggle = (id: string) => setExpanded((prev: string|null)=> prev === id ? null : id)
 
   return (
     <AppShell>
@@ -96,7 +96,7 @@ export default function ComplianceCasesPage() {
                     <div>
                       <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Comparaison des sources</div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {c.sources.map((s,i)=>(
+                        {c.sources.map((s: {label:string;amount:number;tps:number;tvq:number;status:string}, i: number)=>(
                           <div key={i} className={`rounded-xl p-3 border ${i===0?'border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/8':'border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-500/8'}`}>
                             <div className="text-[9px] font-bold mb-1" style={{color:i===0?'#991B1B':'#1E40AF'}}>{s.label}</div>
                             <div className="text-sm font-black" style={{color:i===0?'#DC2626':'#003DA5'}}>{money(s.amount)}</div>
@@ -136,7 +136,7 @@ export default function ComplianceCasesPage() {
                   <div>
                     <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Chronologie du dossier</div>
                     <div className="space-y-2">
-                      {c.timeline.map((t,i)=>(
+                      {c.timeline.map((t: {at:string;action:string;icon:string;note:string}, i: number)=>(
                         <div key={i} className="flex items-start gap-3">
                           <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-sm shrink-0">{t.icon}</div>
                           <div className="flex-1">
@@ -161,7 +161,7 @@ export default function ComplianceCasesPage() {
                       {!isResolved && (
                         resolving === c.id ? (
                           <div className="flex gap-2 items-center">
-                            <button onClick={()=>{setResolved(p=>[...p,c.id]);setResolving(null)}}
+                            <button onClick={()=>{setResolved((p: string[])=>[...p,c.id]);setResolving(null)}}
                               className="px-3 py-2 rounded-xl text-xs font-bold bg-green-600 text-white cursor-pointer hover:bg-green-700 whitespace-nowrap">
                               ✅ Confirmer résolution
                             </button>

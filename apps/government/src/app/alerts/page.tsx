@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -35,7 +36,7 @@ export default function AlertsPage() {
       {/* Modal détail alerte */}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-end bg-black/60" onClick={()=>setSelected(null)}>
-          <div className="w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
+          <div className="w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={(e: React.MouseEvent)=>e.stopPropagation()}>
             <div className="w-10 h-1 rounded bg-slate-200 dark:bg-slate-700 mx-auto mb-4"/>
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -136,7 +137,7 @@ export default function AlertsPage() {
           ].map(f=>(
             <button key={f.v} onClick={()=>setFilter(f.v)} className="px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all cursor-pointer" style={{background:filter===f.v?'#003DA5':'transparent',color:filter===f.v?'white':'#64748B',borderColor:filter===f.v?'#003DA5':'rgba(148,163,184,0.30)'}}>{f.label}</button>
           ))}
-          <select value={priority} onChange={e=>setPriority(e.target.value)} className="px-3 py-1.5 rounded-xl text-[10px] font-bold border bg-transparent text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 outline-none cursor-pointer">
+          <select value={priority} onChange={(e: React.ChangeEvent<HTMLSelectElement>)=>setPriority(e.target.value)} className="px-3 py-1.5 rounded-xl text-[10px] font-bold border bg-transparent text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 outline-none cursor-pointer">
             <option value="ALL">Toutes priorités</option>
             {['CRITICAL','HIGH','MEDIUM','LOW'].map(p=><option key={p} value={p}>{PRIORITY_CONF[p]!.label}</option>)}
           </select>

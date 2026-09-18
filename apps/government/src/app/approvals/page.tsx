@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -20,13 +21,13 @@ export default function ApprovalsPage() {
   function doAction() {
     if (!action) return
     const newStatus = action.type==='APPROVE'?'APPROVED':action.type==='REJECT'?'REJECTED':'RETURNED'
-    setItems(prev=>prev.map(a=>a.id===action.id?{...a,status:newStatus}:a))
+    setItems((prev: typeof APPROVALS)=>prev.map((a: typeof APPROVALS[0])=>a.id===action.id?{...a,status:newStatus}:a))
     setAction(null); setComment('')
   }
 
-  const pending  = items.filter(a=>a.status==='PENDING').length
-  const approved = items.filter(a=>a.status==='APPROVED').length
-  const returned = items.filter(a=>['REJECTED','RETURNED'].includes(a.status)).length
+  const pending  = items.filter((a: typeof APPROVALS[0])=>a.status==='PENDING').length
+  const approved = items.filter((a: typeof APPROVALS[0])=>a.status==='APPROVED').length
+  const returned = items.filter((a: typeof APPROVALS[0])=>['REJECTED','RETURNED'].includes(a.status)).length
 
   return (
     <AppShell>
@@ -38,7 +39,7 @@ export default function ApprovalsPage() {
               {action.type==='APPROVE'?'✅ Approuver':action.type==='REJECT'?'❌ Rejeter':'↩️ Retourner pour correction'}
             </div>
             <div className="text-[9px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-2.5 rounded-xl mb-3">{PILOT}</div>
-            <textarea value={comment} onChange={e=>setComment(e.target.value)}
+            <textarea value={comment} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>)=>setComment(e.target.value)}
               placeholder="Commentaire (requis pour rejeter/retourner)…"
               className="w-full border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs text-slate-800 dark:text-white bg-white dark:bg-slate-800 outline-none focus:border-qc-blue resize-none h-20 mb-3"/>
             <div className="flex gap-2">
@@ -89,7 +90,7 @@ export default function ApprovalsPage() {
 
         {/* Liste */}
         <div className="space-y-3">
-          {items.map(a=>{
+          {items.map((a: typeof APPROVALS[0])=>{
             const sc = APP_STATUS[a.status]!
             const pc = PRIORITY_CONF[a.priority]!
             const isPending = a.status==='PENDING'

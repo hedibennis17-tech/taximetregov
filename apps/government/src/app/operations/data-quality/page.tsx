@@ -14,12 +14,12 @@ const NAV = [
 
 export default function DataQualityPage() {
   const [items, setItems] = useState(DATA_QUALITY)
-  const resolve = (id: string) => setItems(prev=>prev.map(d=>d.id===id?{...d,status:'RESOLVED'}:d))
+  const resolve = (id: string) => setItems((prev: typeof DATA_QUALITY)=>prev.map((d: typeof DATA_QUALITY[0])=>d.id===id?{...d,status:'RESOLVED'}:d))
 
-  const resolved = items.filter(d=>d.status==='RESOLVED').length
+  const resolved = items.filter((d: typeof DATA_QUALITY[0])=>d.status==='RESOLVED').length
   const total    = items.length
   const score    = Math.round((1 - (total-resolved)/total*0.15) * 100)
-  const pending  = items.filter(d=>d.status!=='RESOLVED').length
+  const pending  = items.filter((d: typeof DATA_QUALITY[0])=>d.status!=='RESOLVED').length
 
   return (
     <AppShell>
@@ -70,10 +70,10 @@ export default function DataQualityPage() {
         {/* Répartition par type */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            {l:'Intégrité',     v:items.filter(d=>d.type==='INTEGRITY').length,    c:'#003DA5', icon:'🔗', bg:'bg-blue-50 dark:bg-blue-500/10'},
-            {l:'Complétude',    v:items.filter(d=>d.type==='COMPLETENESS').length,  c:'#B45309', icon:'📋', bg:'bg-amber-50 dark:bg-amber-500/10'},
-            {l:'Doublons',      v:items.filter(d=>d.type==='DUPLICATE').length,     c:'#7C3AED', icon:'🔄', bg:'bg-purple-50 dark:bg-purple-500/10'},
-            {l:'Fiscal',        v:items.filter(d=>d.type==='FISCAL').length,        c:'#059669', icon:'🧾', bg:'bg-green-50 dark:bg-green-500/10'},
+            {l:'Intégrité',     v:items.filter((d: typeof DATA_QUALITY[0])=>d.type==='INTEGRITY').length,    c:'#003DA5', icon:'🔗', bg:'bg-blue-50 dark:bg-blue-500/10'},
+            {l:'Complétude',    v:items.filter((d: typeof DATA_QUALITY[0])=>d.type==='COMPLETENESS').length,  c:'#B45309', icon:'📋', bg:'bg-amber-50 dark:bg-amber-500/10'},
+            {l:'Doublons',      v:items.filter((d: typeof DATA_QUALITY[0])=>d.type==='DUPLICATE').length,     c:'#7C3AED', icon:'🔄', bg:'bg-purple-50 dark:bg-purple-500/10'},
+            {l:'Fiscal',        v:items.filter((d: typeof DATA_QUALITY[0])=>d.type==='FISCAL').length,        c:'#059669', icon:'🧾', bg:'bg-green-50 dark:bg-green-500/10'},
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-2xl p-3 text-center border border-white dark:border-transparent`}>
               <div className="text-xl mb-1">{s.icon}</div>
@@ -88,7 +88,7 @@ export default function DataQualityPage() {
           <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 text-sm font-bold text-slate-800 dark:text-white">
             Contrôles de qualité — {items.length} vérifications
           </div>
-          {items.map(d=>{
+          {items.map((d: typeof DATA_QUALITY[0])=>{
             const sc  = DQ_STATUS[d.status]!
             const pc  = PRIORITY_CONF[d.priority]!
             const isDone = d.status==='RESOLVED'
