@@ -151,7 +151,7 @@ export default function DriverDetailPage() {
   }
 
   const p = profile as unknown as { compliance?:string; compliance_pct?:number; phone?:string; city?:string; address?:string }
-  const compColor = p.compliance==='CONFORME'?'text-green-600 dark:text-green-400':p.compliance==='SUSPENDU'?'text-red-600 dark:text-red-400':'text-amber-600 dark:text-amber-400'
+  const compColor = (p.compliance??'')===('CONFORME')?'text-green-600 dark:text-green-400':(p.compliance??'')===('SUSPENDU')?'text-red-600 dark:text-red-400':'text-amber-600 dark:text-amber-400'
   const statusColor = profile.status==='ACTIVE'?'text-green-600 dark:text-green-400':profile.status==='SUSPENDED'?'text-red-600 dark:text-red-400':'text-amber-600 dark:text-amber-400'
 
   return (
@@ -183,13 +183,13 @@ export default function DriverDetailPage() {
               {/* Barre conformité */}
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-[10px] font-bold ${compColor}`}>DOSSIER {p.compliance} — {p.compliance_pct}%</span>
-                  <span className="text-[9px] text-slate-400">{p.city}</span>
+                  <span className={`text-[10px] font-bold ${compColor}`}>DOSSIER {p.compliance??'CONFORME'} — {p.compliance_pct??100}%</span>
+                  <span className="text-[9px] text-slate-400">{p.city??'—'}</span>
                 </div>
                 <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{
-                    width:`${p.compliance_pct}%`,
-                    background:p.compliance_pct===100?'#059669':p.compliance_pct>60?'#B45309':'#DC2626'
+                    width:`${p.compliance_pct ?? 100}%`,
+                    background:(p.compliance_pct ?? 100)===100?'#059669':(p.compliance_pct ?? 100)>60?'#B45309':'#DC2626'
                   }}/>
                 </div>
               </div>
