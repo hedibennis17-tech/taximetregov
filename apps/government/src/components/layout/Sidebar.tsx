@@ -136,7 +136,7 @@ export function Sidebar() {
           <img src="/logo.png" alt="TAXIMETER.GOV" width={32} height={32} style={{objectFit:'contain',borderRadius:8}} />
           <div>
             <div className="text-xs font-bold tracking-widest text-white">TAXIMÈTRE.GOV</div>
-            <div className="text-[9px] tracking-wide" style={{color:"rgba(255,255,255,0.55)"}}  className="">Gouvernement du Québec</div>
+            <div className="text-[9px] tracking-wide" style={{color:"rgba(255,255,255,0.55)"}}>Gouvernement du Québec</div>
           </div>
         </div>
       </div>
