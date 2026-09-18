@@ -183,13 +183,13 @@ export default function DriverDetailPage() {
               {/* Barre conformité */}
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-[10px] font-bold ${compColor}`}>DOSSIER {profile.compliance} — {profile.compliance_pct}%</span>
-                  <span className="text-[9px] text-slate-400">{profile.city}</span>
+                  <span className={`text-[10px] font-bold ${compColor}`}>DOSSIER {p.compliance} — {p.compliance_pct}%</span>
+                  <span className="text-[9px] text-slate-400">{p.city}</span>
                 </div>
                 <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{
-                    width:`${profile.compliance_pct}%`,
-                    background:profile.compliance_pct===100?'#059669':profile.compliance_pct>60?'#B45309':'#DC2626'
+                    width:`${p.compliance_pct}%`,
+                    background:p.compliance_pct===100?'#059669':p.compliance_pct>60?'#B45309':'#DC2626'
                   }}/>
                 </div>
               </div>
