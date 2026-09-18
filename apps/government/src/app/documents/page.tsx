@@ -72,7 +72,7 @@ function ReviewModal({doc,token,onClose,onDone}:{doc:Doc;token:string;onClose:()
 
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={onClose}>
-      <div className="w-full max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
+      <div className="w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
         <div className="w-10 h-1 rounded bg-slate-600 mx-auto mb-4"/>
         {/* Header doc */}
         <div className="flex items-start justify-between mb-4">
@@ -95,7 +95,7 @@ function ReviewModal({doc,token,onClose,onDone}:{doc:Doc;token:string;onClose:()
           ].map(r=>(
             <div key={r.label} className="flex justify-between text-xs">
               <span className="text-slate-400">{r.label}</span>
-              <span className="text-white font-semibold">{r.val}</span>
+              <span className="text-slate-900 dark:text-white font-semibold">{r.val}</span>
             </div>
           ))}
         </Card>
@@ -275,7 +275,7 @@ export default function AdminDocumentsPage() {
           const sc = STATUS_CONF[doc.status]??STATUS_CONF['UPLOADED']!
           const needsAction = ['UPLOADED','PENDING_REVIEW','UNDER_REVIEW'].includes(doc.status)
           return (
-            <div key={doc.id} onClick={()=>setSelected(doc)} className={`rounded-xl border border-slate-700 bg-slate-800/50 p-4 cursor-pointer hover:border-qc-blue transition-colors ${needsAction?'border-l-4 border-l-purple-500':doc.status==='APPROVED'?'border-l-4 border-l-green-500':doc.status==='REJECTED'?'border-l-4 border-l-red-500':''}`}>
+            <div key={doc.id} onClick={()=>setSelected(doc)} className={`rounded-xl border border-slate-700 bg-slate-50/80 dark:bg-slate-800/50 p-4 cursor-pointer hover:border-qc-blue transition-colors ${needsAction?'border-l-4 border-l-purple-500':doc.status==='APPROVED'?'border-l-4 border-l-green-500':doc.status==='REJECTED'?'border-l-4 border-l-red-500':''}`}>
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-lg shrink-0">
                   📄

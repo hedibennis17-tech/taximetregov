@@ -67,12 +67,12 @@ export default function ReportsPage() {
           {DEMO_REPORTS.map(rpt=>{
             const sc = STATUS_CONF[rpt.status]??STATUS_CONF['DRAFT']!
             return (
-              <div key={rpt.id} className="bg-slate-900 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors">
+              <div key={rpt.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl shrink-0">{TYPE_ICONS[rpt.type]??'📄'}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-sm font-bold text-white">{rpt.title}</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">{rpt.title}</span>
                       <span className="text-[8px] px-2 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
                       {rpt.isPilot&&<span className="text-[8px] text-amber-400 bg-amber-500/10 px-1.5 rounded-full font-bold">PILOTE</span>}
                     </div>
@@ -88,7 +88,7 @@ export default function ReportsPage() {
                     <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] text-blue-400 font-semibold hover:bg-blue-500/20 cursor-pointer">
                       <Eye size={10}/> Voir
                     </button>
-                    <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800 border border-slate-700 text-[10px] text-slate-400 font-semibold hover:bg-slate-700 cursor-pointer">
+                    <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 font-semibold hover:bg-slate-700 cursor-pointer">
                       <Download size={10}/> Export
                     </button>
                   </div>

@@ -28,7 +28,7 @@ function Tx360Modal({tx,onClose}:{tx:typeof TX[0];onClose:()=>void}) {
   const sc = STATUS_CONF[tx.status]??STATUS_CONF['RECONCILED']!
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={onClose}>
-      <div className="w-full max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
+      <div className="w-full max-h-[92vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
         <div className="w-10 h-1 rounded bg-slate-600 mx-auto mb-4"/>
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -64,7 +64,7 @@ function Tx360Modal({tx,onClose}:{tx:typeof TX[0];onClose:()=>void}) {
 
         {/* Identité + Fiscal */}
         <div className="grid grid-cols-1 gap-3">
-          <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-700">
             <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Identité</div>
             {[
               {l:'Chauffeur',  v:tx.driver_name},
@@ -80,7 +80,7 @@ function Tx360Modal({tx,onClose}:{tx:typeof TX[0];onClose:()=>void}) {
               </div>
             ))}
           </div>
-          <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-700">
             <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Financier complet</div>
             {[
               {l:'Brut client',         v:money(tx.clientAmt), c:'text-white'},
@@ -102,7 +102,7 @@ function Tx360Modal({tx,onClose}:{tx:typeof TX[0];onClose:()=>void}) {
         </div>
 
         {/* Source comparison */}
-        <div className="mt-3 bg-slate-800 rounded-xl p-3 border border-slate-700">
+        <div className="mt-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-700">
           <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Comparaison des sources</div>
           {[
             {l:'Source fournisseur',  v:money(tx.clientAmt), s:tx.status==='RECONCILED'?'MATCH':tx.status==='REVIEW_REQUIRED'?'REVIEW':'PARTIAL'},
@@ -156,7 +156,7 @@ export default function TransactionsExplorerPage() {
       {selected&&<Tx360Modal tx={selected} onClose={()=>setSelected(null)}/>}
 
       {/* Header nav */}
-      <div className="px-6 pt-6 pb-4 border-b border-slate-800">
+      <div className="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3 mb-3">
           <Link href="/provider-transparency" className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white"><ArrowLeft size={13}/> Vue globale</Link>
           <span className="text-slate-700">›</span>
@@ -195,7 +195,7 @@ export default function TransactionsExplorerPage() {
         <div className="flex gap-2 items-center flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Nom chauffeur, ID, référence…"
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white pl-9 outline-none focus:border-qc-blue"/>
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white pl-9 outline-none focus:border-qc-blue"/>
             <span className="absolute left-3 top-2.5 text-slate-500">🔍</span>
           </div>
           <div className="flex gap-1.5 flex-wrap">
@@ -212,13 +212,13 @@ export default function TransactionsExplorerPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
             <div className="text-xs font-bold text-white">{filtered.length} transaction(s) · Données pilotes Q3 2026</div>
             <span className="text-[9px] text-amber-400">Cliquer → Transaction 360°</span>
           </div>
           {/* En-têtes */}
-          <div className="grid grid-cols-6 px-4 py-2 border-b border-slate-800 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
+          <div className="grid grid-cols-6 px-4 py-2 border-b border-slate-100 dark:border-slate-800 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
             <div className="col-span-2">Chauffeur · Référence</div>
             <div>Source</div>
             <div className="text-right">Brut client</div>
@@ -228,7 +228,7 @@ export default function TransactionsExplorerPage() {
           {filtered.map((tx)=>{
             const sc = STATUS_CONF[tx.status]??STATUS_CONF['RECONCILED']!
             return (
-              <div key={tx.id} onClick={()=>setSelected(tx)} className="grid grid-cols-6 px-4 py-3 border-b border-slate-800 last:border-0 cursor-pointer hover:bg-slate-800/50 items-center">
+              <div key={tx.id} onClick={()=>setSelected(tx)} className="grid grid-cols-6 px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 cursor-pointer hover:bg-slate-50/80 dark:bg-slate-800/50 items-center">
                 <div className="col-span-2">
                   <div className="text-xs font-semibold text-white">{tx.driver_name}</div>
                   <div className="text-[9px] text-slate-400 font-mono mt-0.5">{tx.id}</div>
@@ -258,7 +258,7 @@ export default function TransactionsExplorerPage() {
         </div>
 
         {/* Totaux */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="text-[10px] font-bold text-slate-400 uppercase mb-3">Totaux — {filtered.length} transactions pilotes Q3 2026</div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
@@ -268,7 +268,7 @@ export default function TransactionsExplorerPage() {
               {l:'TVQ',            v:money(totals.tvq),    c:'text-purple-400'},
               {l:'Net chauffeurs', v:money(totals.net),    c:'text-green-400'},
             ].map(r=>(
-              <div key={r.l} className="bg-slate-800 rounded-lg p-3 text-center border border-slate-700">
+              <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center border border-slate-700">
                 <div className="text-sm font-black" style={(r as {style?:object}).style??{}} {...(!( r as {style?:object}).style&&{className:`text-sm font-black ${(r as {c?:string}).c??''}`})}>{r.v}</div>
                 <div className="text-[9px] text-slate-400 mt-1">{r.l}</div>
               </div>

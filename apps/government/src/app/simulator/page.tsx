@@ -87,7 +87,7 @@ export default function SimulatorPage() {
         </div>
 
         {/* Formulaire */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-4">
           <div className="text-xs font-bold text-white mb-2">Paramètres de la transaction</div>
 
           {/* Provider + Service */}
@@ -131,7 +131,7 @@ export default function SimulatorPage() {
           </div>
 
           {/* Aperçu calcul */}
-          <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-700">
             <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Aperçu du calcul</div>
             <div className="space-y-1">
               {[

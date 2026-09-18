@@ -37,11 +37,11 @@ export default function Page() {
           {/* Stats rapides depuis dashboard */}
           {dashboard && (
             <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
-              <div className="bg-slate-800 rounded-xl p-3">
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
                 <div className="font-bold text-white">{dashboard.drivers.total}</div>
                 <div className="text-[10px] text-slate-400">Chauffeurs</div>
               </div>
-              <div className="bg-slate-800 rounded-xl p-3">
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
                 <div className="font-bold text-green-400">{money(dashboard.revenue.total_gross)}</div>
                 <div className="text-[10px] text-slate-400">Revenus ce mois</div>
               </div>

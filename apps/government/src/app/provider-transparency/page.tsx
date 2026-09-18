@@ -286,7 +286,7 @@ export default function ProviderTransparencyPage() {
   return (
     <AppShell>
       {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-slate-800">
+      <div className="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-1 flex-wrap">
@@ -466,7 +466,7 @@ export default function ProviderTransparencyPage() {
                     { label:'Ouverts',  val: data.reconciliation.open_cases,  color:'text-amber-400' },
                     { label:'Critiques',val: data.reconciliation.critical,    color:'text-red-400' },
                   ].map(r => (
-                    <div key={r.label} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0">
+                    <div key={r.label} className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                       <span className="text-xs text-slate-400">{r.label}</span>
                       <span className={`font-bold text-sm ${r.color}`}>{r.val || '0'}</span>
                     </div>

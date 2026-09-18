@@ -92,7 +92,7 @@ export default function DeclarationsPage() {
       {/* Modal déclaration */}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={() => setSelected(null)}>
-          <div className="w-full max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-t-2xl p-5" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-h-[92vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded bg-slate-600 mx-auto mb-4" />
             <div className="flex items-start justify-between mb-3">
               <div>
@@ -185,7 +185,7 @@ export default function DeclarationsPage() {
                 const stepsOk = selected.status === 'ACCEPTED' ? 8 : selected.status === 'SUBMITTED' ? 6 : selected.status === 'PREPARED' ? 4 : 2
                 const done = i < stepsOk
                 return (
-                  <div key={p.step} className={`flex items-start gap-2.5 p-2 rounded-lg ${done ? 'bg-green-500/8 border border-green-500/15' : 'bg-slate-800/50 border border-slate-700/50'}`}>
+                  <div key={p.step} className={`flex items-start gap-2.5 p-2 rounded-lg ${done ? 'bg-green-500/8 border border-green-500/15' : 'bg-slate-50/80 dark:bg-slate-800/50 border border-slate-700/50'}`}>
                     <span className="text-sm shrink-0">{p.icon}</span>
                     <div className="flex-1">
                       <div className={`text-[10px] font-bold ${done ? 'text-green-400' : 'text-slate-500'}`}>{p.step}</div>
@@ -239,7 +239,7 @@ export default function DeclarationsPage() {
         </div>
 
         {/* Pipeline résumé */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="text-[10px] font-bold text-slate-400 uppercase mb-3">Workflow de déclaration</div>
           <div className="flex flex-wrap gap-1 text-[9px]">
             {PIPELINE.map((p, i) => (
@@ -268,7 +268,7 @@ export default function DeclarationsPage() {
             const sc = STATUS_CONF[decl.status] ?? STATUS_CONF['DRAFT']!
             return (
               <div key={decl.id} onClick={() => setSelected(decl)}
-                className="bg-slate-900 border border-slate-700 rounded-xl p-4 cursor-pointer hover:border-qc-blue transition-colors"
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 cursor-pointer hover:border-qc-blue transition-colors"
                 style={{ borderLeft: `4px solid ${sc.bdr}` }}>
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-xl shrink-0">🧾</div>
@@ -288,7 +288,7 @@ export default function DeclarationsPage() {
                         { l: 'TVQ', v: money(decl.tvqBalance), c: 'text-purple-400' },
                         { l: 'Solde à remettre', v: money(decl.solde), c: 'text-green-400' },
                       ].map(r => (
-                        <div key={r.l} className="bg-slate-800 rounded-lg p-2 border border-slate-700">
+                        <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 border border-slate-700">
                           <div className="text-[8px] text-slate-400 uppercase">{r.l}</div>
                           <div className={`text-xs font-bold mt-0.5 ${r.c}`}>{r.v}</div>
                         </div>

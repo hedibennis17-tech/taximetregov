@@ -15,17 +15,17 @@ function ProviderModal({ p, onClose }: { p: typeof DEMO_PROVIDERS[0]; onClose: (
   const txCount = DEMO_TRANSACTIONS.filter(t => t.provider === p.code).length
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={onClose}>
-      <div className="w-full max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
+      <div className="w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
         <div className="w-10 h-1 rounded bg-slate-600 mx-auto mb-4"/>
         <div className="flex items-start justify-between mb-5">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{p.icon}</span>
             <div>
-              <div className="text-lg font-bold text-white">{p.name}</div>
-              <div className="text-[10px] text-slate-400">{p.id} · {p.type}</div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white">{p.name}</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400">{p.id} · {p.type}</div>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl bg-slate-800 border border-slate-600 cursor-pointer"><X size={14} className="text-slate-400"/></button>
+          <button onClick={onClose} className="p-2 rounded-xl bg-slate-800 border border-slate-600 cursor-pointer"><X size={14} className="text-slate-500 dark:text-slate-400"/></button>
         </div>
 
         <div className="mb-4 p-3 rounded-xl text-[10px] font-bold text-amber-400 bg-amber-500/8 border border-amber-500/20">{PILOT_BANNER}</div>
@@ -41,9 +41,9 @@ function ProviderModal({ p, onClose }: { p: typeof DEMO_PROVIDERS[0]; onClose: (
             {label:'Erreurs',      val:String(p.errorCount)},
             {label:'Dernière sync',val:p.lastSync?new Date(p.lastSync).toLocaleTimeString('fr-CA'):'—'},
           ].map(r=>(
-            <div key={r.label} className="bg-slate-800/50 border border-slate-700 rounded-xl p-3">
+            <div key={r.label} className="bg-slate-50 dark:bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
               <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">{r.label}</div>
-              <div className="text-xs font-bold text-white">{r.val}</div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">{r.val}</div>
             </div>
           ))}
         </div>
@@ -76,11 +76,11 @@ export default function PlatformsPage() {
         <div className="p-3 rounded-xl text-[10px] font-bold text-amber-400 bg-amber-500/8 border border-amber-500/20">{PILOT_BANNER} · SIMULATION — AUCUNE CONNEXION FOURNISSEUR RÉELLE</div>
 
         {/* Architecture flow */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Flux d'intégration (architecture cible)</div>
           <div className="flex items-center gap-2 text-xs text-slate-300 overflow-x-auto pb-1 flex-nowrap">
             {['FOURNISSEUR','→','API Gateway','→','Authentification','→','Validation','→','Webhook Engine','→','Revenue Ledger','→','Moteur Fiscal','→','Réconciliation','→','Rapport'].map((s,i)=>(
-              <span key={i} className={s==='→'?'text-slate-600 shrink-0':`shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold ${s==='FOURNISSEUR'?'bg-blue-500/15 text-blue-400 border border-blue-500/25':'bg-slate-800 border border-slate-700 text-slate-300'}`}>{s}</span>
+              <span key={i} className={s==='→'?'text-slate-600 shrink-0':`shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold ${s==='FOURNISSEUR'?'bg-blue-500/15 text-blue-400 border border-blue-500/25':'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-300'}`}>{s}</span>
             ))}
           </div>
         </div>
@@ -101,22 +101,22 @@ export default function PlatformsPage() {
         </div>
 
         {/* Tableau fournisseurs */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
-            <div className="text-xs font-bold text-white">Tableau de connexions</div>
+            <div className="text-xs font-bold text-slate-900 dark:text-white">Tableau de connexions</div>
             <span className="text-[9px] text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full font-bold">MODE SIMULATION</span>
           </div>
           {DEMO_PROVIDERS.map((p,idx)=>{
             const sc = STATUS_CONF[p.status]??STATUS_CONF['SIMULATION']!
             return (
-              <div key={p.id} onClick={()=>setSelected(p)} className="flex items-center gap-3 px-4 py-3 border-b border-slate-800 last:border-0 cursor-pointer hover:bg-slate-800/50 transition-colors">
+              <div key={p.id} onClick={()=>setSelected(p)} className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-100 dark:border-slate-800 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-50/80 dark:bg-slate-800/50 transition-colors">
                 <span className="text-2xl w-8 text-center shrink-0">{p.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-bold text-white">{p.name}</span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">{p.name}</span>
                     <span className="text-[8px] font-bold px-2 py-0.5 rounded-full" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-[10px] text-slate-400">
+                  <div className="flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-400">
                     <span>{p.type}</span>
                     <span>API: {p.api}</span>
                     <span>OAuth: {p.oauth}</span>
@@ -124,12 +124,12 @@ export default function PlatformsPage() {
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-xs font-bold text-white">{p.txToday} tx</div>
-                  <div className="text-[9px] text-slate-400">aujourd'hui</div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white">{p.txToday} tx</div>
+                  <div className="text-[9px] text-slate-500 dark:text-slate-400">aujourd'hui</div>
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   {p.quality&&<div className="text-[10px] font-bold text-green-400">{p.quality}%</div>}
-                  <ChevronRight size={13} className="text-slate-500"/>
+                  <ChevronRight size={13} className="text-slate-600 dark:text-slate-500"/>
                 </div>
               </div>
             )
@@ -137,10 +137,10 @@ export default function PlatformsPage() {
         </div>
 
         {/* Architecture Webhook — Schéma gouvernemental */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold text-white">Architecture Webhook — Méthode de connexion</div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white">Architecture Webhook — Méthode de connexion</div>
               <div className="text-[10px] text-slate-400 mt-0.5">Chauffeur → Entreprise → TAXIMETER.GOV · Données synthétiques</div>
             </div>
             <span className="text-[9px] text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full font-bold shrink-0">MODE PILOTE</span>

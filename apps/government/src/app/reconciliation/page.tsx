@@ -36,11 +36,11 @@ export default function ReconciliationPage() {
         </div>
 
         {/* Pipeline */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="text-[10px] font-bold text-slate-400 uppercase mb-3">Workflow de réconciliation</div>
           <div className="flex flex-wrap gap-1 text-[9px]">
             {PIPELINE.map((s,i)=>(
-              <span key={i} className={s==='→'?'text-slate-600':'px-2 py-1 bg-slate-800 border border-slate-700 rounded text-slate-300 whitespace-nowrap'}>{s}</span>
+              <span key={i} className={s==='→'?'text-slate-600':'px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-300 whitespace-nowrap'}>{s}</span>
             ))}
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function ReconciliationPage() {
             const sc = REC_STATUS[rec.status]??REC_STATUS['OPEN']!
             const relatedTx = DEMO_TRANSACTIONS.filter(t=>t.rec===rec.id).length
             return (
-              <div key={rec.id} className="bg-slate-900 border border-slate-700 rounded-xl p-4 cursor-pointer hover:border-qc-blue transition-colors" style={{borderLeft:`4px solid ${sc.bdr}`}} onClick={()=>setSelected(selected?.id===rec.id?null:rec)}>
+              <div key={rec.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 cursor-pointer hover:border-qc-blue transition-colors" style={{borderLeft:`4px solid ${sc.bdr}`}} onClick={()=>setSelected(selected?.id===rec.id?null:rec)}>
                 <div className="flex items-start gap-3">
                   <span className="text-2xl shrink-0">{SRC_ICON[rec.provider]??'⚖️'}</span>
                   <div className="flex-1">
@@ -83,7 +83,7 @@ export default function ReconciliationPage() {
                       <span className="text-[9px] px-2 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
                     </div>
                     <div className="text-xs text-slate-400 mb-1">{rec.provider} · {rec.type.replace(/_/g,' ')} · {relatedTx} transaction(s)</div>
-                    <div className="text-[10px] text-slate-500">{rec.note}</div>
+                    <div className="text-[10px] text-slate-600 dark:text-slate-500">{rec.note}</div>
 
                     {selected?.id===rec.id&&(
                       <div className="mt-3 space-y-2">
@@ -93,7 +93,7 @@ export default function ReconciliationPage() {
                             {label:'Reçu',       val:money(rec.actual),   color:'text-white'},
                             {label:'Écart',      val:money(rec.diff),     color:rec.diff===0?'text-green-400':'text-red-400'},
                           ].map(r=>(
-                            <div key={r.label} className="bg-slate-800 rounded-lg p-2 text-center border border-slate-700">
+                            <div key={r.label} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center border border-slate-700">
                               <div className={`text-sm font-bold ${r.color}`}>{r.val}</div>
                               <div className="text-[9px] text-slate-400 mt-0.5">{r.label}</div>
                             </div>
@@ -101,7 +101,7 @@ export default function ReconciliationPage() {
                         </div>
 
                         {/* Sources */}
-                        <div className="bg-slate-800 rounded-lg p-3 border border-slate-700">
+                        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-700">
                           <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Comparaison des sources</div>
                           {[
                             {label:'Source fournisseur',  val:rec.expected>0?money(rec.expected):'Non reçu', status:rec.diff===0?'MATCH':rec.diff>10?'REVIEW':'PARTIAL_MATCH'},
@@ -112,9 +112,9 @@ export default function ReconciliationPage() {
                             const statusLabel = s.status==='MATCH'?'✓ MATCH':s.status==='PARTIAL_MATCH'?'~ PARTIEL':'⚠ RÉVISION'
                             return (
                               <div key={s.label} className="flex items-center justify-between text-[10px] py-1.5 border-b border-slate-700 last:border-0">
-                                <span className="text-slate-400">{s.label}</span>
+                                <span className="text-slate-500 dark:text-slate-400">{s.label}</span>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-white">{s.val}</span>
+                                  <span className="text-slate-900 dark:text-white">{s.val}</span>
                                   <span className={`text-[8px] font-bold ${statusColor}`}>{statusLabel}</span>
                                 </div>
                               </div>

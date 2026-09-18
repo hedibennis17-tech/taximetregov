@@ -31,7 +31,7 @@ function WebhookModal({wh,onClose}:{wh:typeof DEMO_WEBHOOKS[0];onClose:()=>void}
   const sc = WH_STATUS[wh.status]??WH_STATUS['PROCESSED']!
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={onClose}>
-      <div className="w-full max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
+      <div className="w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
         <div className="w-10 h-1 rounded bg-slate-600 mx-auto mb-4"/>
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -57,9 +57,9 @@ function WebhookModal({wh,onClose}:{wh:typeof DEMO_WEBHOOKS[0];onClose:()=>void}
             {label:'Traité',         val:wh.processed?new Date(wh.processed).toLocaleString('fr-CA'):'En cours…'},
             {label:'Latence',        val:wh.processed&&wh.received?`${new Date(wh.processed).getTime()-new Date(wh.received).getTime()}ms`:'—'},
           ].map(r=>(
-            <div key={r.label} className="flex justify-between text-xs py-2 border-b border-slate-800">
+            <div key={r.label} className="flex justify-between text-xs py-2 border-b border-slate-100 dark:border-slate-800">
               <span className="text-slate-400">{r.label}</span>
-              <span className="text-white font-semibold font-mono">{r.val}</span>
+              <span className="text-slate-900 dark:text-white font-semibold font-mono">{r.val}</span>
             </div>
           ))}
         </div>
@@ -70,7 +70,7 @@ function WebhookModal({wh,onClose}:{wh:typeof DEMO_WEBHOOKS[0];onClose:()=>void}
           {PIPELINE.map((p,i)=>{
             const done = wh.status==='PROCESSED' || (wh.status==='REJECTED_DEMO'&&i<=2) || (wh.status==='DUPLICATE_DETECTED'&&i<=4) || (wh.status==='VALIDATION_PENDING'&&i<=1)
             return (
-              <div key={p.step} className={`flex items-start gap-3 p-2.5 rounded-lg ${done?'bg-green-500/8 border border-green-500/15':'bg-slate-800/50 border border-slate-700'}`}>
+              <div key={p.step} className={`flex items-start gap-3 p-2.5 rounded-lg ${done?'bg-green-500/8 border border-green-500/15':'bg-slate-50/80 dark:bg-slate-800/50 border border-slate-700'}`}>
                 <span className="text-base shrink-0">{p.icon}</span>
                 <div>
                   <div className={`text-xs font-semibold ${done?'text-green-400':'text-slate-500'}`}>{p.step}</div>
@@ -106,7 +106,7 @@ export default function WebhookEnginePage() {
         <div className="p-3 rounded-xl text-[10px] font-bold text-amber-400 bg-amber-500/8 border border-amber-500/20">{PILOT_BANNER}</div>
 
         {/* Pipeline schéma */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="text-[10px] font-bold text-slate-400 uppercase mb-3">Pipeline Webhook → Revenue Ledger</div>
           <div className="flex flex-wrap gap-1 text-[9px]">
             {PIPELINE.map((p,i)=>(
@@ -135,14 +135,14 @@ export default function WebhookEnginePage() {
         </div>
 
         {/* Liste */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-700">
             <div className="text-xs font-bold text-white">Événements webhook (pilote)</div>
           </div>
           {filtered.map((wh,idx)=>{
             const sc = WH_STATUS[wh.status]??WH_STATUS['PROCESSED']!
             return (
-              <div key={wh.id} onClick={()=>setSelected(wh)} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-800 last:border-0 cursor-pointer hover:bg-slate-800/50">
+              <div key={wh.id} onClick={()=>setSelected(wh)} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0 cursor-pointer hover:bg-slate-50/80 dark:bg-slate-800/50">
                 <span className="text-lg shrink-0">{SRC_ICON[wh.provider]??'📡'}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

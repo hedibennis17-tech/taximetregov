@@ -127,7 +127,7 @@ export default function TaxReportsPage() {
         {/* ── VUE GLOBALE ── */}
         {tab === 'overview' && (
           <div className="space-y-3">
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
               <div className="text-[10px] font-bold text-slate-400 uppercase mb-3">Évolution trimestrielle — Province QC (en cours de pilote)</div>
               <div className="space-y-3">
                 {QUARTERLY.map(q => {
@@ -146,7 +146,7 @@ export default function TaxReportsPage() {
                           <span className="text-[9px] text-purple-400 ml-2">TPS+TVQ: {money(q.tps + q.tvq)}</span>
                         </div>
                       </div>
-                      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-2 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-green-500 transition-all" style={{ width: `${pct}%` }} />
                       </div>
                       <div className="flex justify-between text-[9px] text-slate-500 mt-0.5">
@@ -161,19 +161,19 @@ export default function TaxReportsPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
                 <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Chauffeurs actifs</div>
                 {QUARTERLY.map(q => (
-                  <div key={q.period} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0">
+                  <div key={q.period} className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <span className="text-[10px] text-slate-400">{q.period}</span>
                     <span className="text-[10px] font-bold text-blue-400">{q.chauf.toLocaleString('fr-CA')}</span>
                   </div>
                 ))}
               </div>
-              <div className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
                 <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Solde fiscal à remettre</div>
                 {QUARTERLY.map(q => (
-                  <div key={q.period} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0">
+                  <div key={q.period} className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <span className="text-[10px] text-slate-400">{q.period}</span>
                     <span className="text-[10px] font-bold text-green-400">{money(q.solde)}</span>
                   </div>
@@ -181,7 +181,7 @@ export default function TaxReportsPage() {
               </div>
             </div>
 
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
               <div className="text-[9px] font-bold text-slate-400 uppercase mb-3">Note gouvernementale</div>
               <div className="text-[10px] text-slate-300 leading-relaxed italic">
                 « Les données présentées dans ce rapport sont synthétiques et générées à des fins de démonstration du projet pilote TAXIMETER.GOV. Elles reflètent un scénario provincial réaliste basé sur les volumes estimés de l'industrie du transport et de la livraison au Québec. Aucune donnée réelle de contribuable n'est impliquée. »
@@ -196,7 +196,7 @@ export default function TaxReportsPage() {
             {QUARTERLY.map(q => {
               const sc = STATUS_C[q.status] ?? STATUS_C['DRAFT']!
               return (
-                <div key={q.period} className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+                <div key={q.period} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-base font-bold text-white">{q.period}</span>
@@ -214,7 +214,7 @@ export default function TaxReportsPage() {
                       { l: 'TPS+TVQ', v: money(q.tps + q.tvq), c: 'text-purple-300' },
                       { l: 'Solde à remettre', v: money(q.solde), c: 'text-green-400' },
                     ].map(r => (
-                      <div key={r.l} className="bg-slate-800 rounded-lg p-2 border border-slate-700 text-center">
+                      <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 border border-slate-700 text-center">
                         <div className="text-[8px] text-slate-400 uppercase">{r.l}</div>
                         <div className={`text-xs font-bold mt-0.5 ${r.c}`}>{r.v}</div>
                       </div>
@@ -226,7 +226,7 @@ export default function TaxReportsPage() {
                       { icon: '🚗', l: 'Rideshare', v: q.brut * 0.35 },
                       { icon: '📦', l: 'Livraison', v: q.brut * 0.25 },
                     ].map(r => (
-                      <div key={r.l} className="bg-slate-800/50 rounded-lg p-2 text-center border border-slate-700/50">
+                      <div key={r.l} className="bg-slate-50/80 dark:bg-slate-800/50 rounded-lg p-2 text-center border border-slate-700/50">
                         <div className="text-base">{r.icon}</div>
                         <div className="text-[9px] text-slate-400">{r.l}</div>
                         <div className="text-[10px] font-bold text-white">{money(r.v)}</div>
@@ -242,14 +242,14 @@ export default function TaxReportsPage() {
         {/* ── MENSUELS ── */}
         {tab === 'monthly' && (
           <div className="space-y-2">
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
               <div className="text-[10px] font-bold text-slate-400 uppercase mb-3">Revenus bruts mensuels — Province QC (barres)</div>
               <div className="space-y-2">
                 {MONTHLY.map(m => (
                   <div key={m.month}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[10px] font-semibold text-white w-24 shrink-0">{m.month}</span>
-                      <div className="flex-1 mx-2 h-3 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="flex-1 mx-2 h-3 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-green-500" style={{ width: `${(m.brut / maxBrut) * 100}%` }} />
                       </div>
                       <span className="text-[10px] font-bold text-green-400 w-28 text-right shrink-0">{money(m.brut)}</span>
@@ -269,12 +269,12 @@ export default function TaxReportsPage() {
         {/* ── FOURNISSEURS ── */}
         {tab === 'providers' && (
           <div className="space-y-3">
-            <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
               <div className="px-4 py-3 border-b border-slate-700">
                 <div className="text-xs font-bold text-white">Revenus bruts par fournisseur — Province QC</div>
               </div>
               {PROVIDERS.map(p => (
-                <div key={p.name} className="px-4 py-3 border-b border-slate-800 last:border-0">
+                <div key={p.name} className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-2xl shrink-0">{p.icon}</span>
                     <div className="flex-1">
@@ -293,7 +293,7 @@ export default function TaxReportsPage() {
                       <div className="text-[9px] text-slate-400">total 3T</div>
                     </div>
                   </div>
-                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
                     <div className="h-full rounded-full" style={{ width: `${p.pct}%`, background: p.color || '#003DA5' }} />
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export default function TaxReportsPage() {
               const sc = SEV_C[ano.severity] ?? SEV_C['LOW']!
               const resolved = ano.status === 'RESOLVED'
               return (
-                <div key={ano.id} className="bg-slate-900 border border-slate-700 rounded-xl p-4" style={{ borderLeft: `3px solid ${sc.color}` }}>
+                <div key={ano.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4" style={{ borderLeft: `3px solid ${sc.color}` }}>
                   <div className="flex items-start gap-3">
                     <span className="text-xl">⚠️</span>
                     <div className="flex-1">
@@ -356,7 +356,7 @@ export default function TaxReportsPage() {
             {REPORTS_LIST.map(rpt => {
               const sc = STATUS_C[rpt.status] ?? STATUS_C['DRAFT']!
               return (
-                <div key={rpt.id} className="bg-slate-900 border border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors">
+                <div key={rpt.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:border-slate-600 transition-colors">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl shrink-0">{TYPE_ICONS[rpt.type] ?? '📄'}</span>
                     <div className="flex-1 min-w-0">

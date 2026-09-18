@@ -94,7 +94,7 @@ function OpModal({op, onClose}:{op:typeof OPERATIONS[0];onClose:()=>void}) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={onClose}>
-      <div className="w-full max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
+      <div className="w-full max-h-[92vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
         <div className="w-10 h-1 rounded bg-slate-600 mx-auto mb-4"/>
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -125,7 +125,7 @@ function OpModal({op, onClose}:{op:typeof OPERATIONS[0];onClose:()=>void}) {
             {label:'Retry',        val:String(op.retry)},
             {label:'Erreur',       val:op.err??'Aucune'},
           ].map(r=>(
-            <div key={r.label} className="bg-slate-800 rounded-lg p-2 border border-slate-700">
+            <div key={r.label} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 border border-slate-700">
               <div className="text-[8px] text-slate-400 uppercase tracking-wider mb-0.5">{r.label}</div>
               <div className="text-[10px] font-bold text-white font-mono truncate">{r.val}</div>
             </div>
@@ -151,7 +151,7 @@ function OpModal({op, onClose}:{op:typeof OPERATIONS[0];onClose:()=>void}) {
           {PIPELINE_STEPS.map((p,i)=>{
             const done = i < stepsOk
             return (
-              <div key={p.step} className={`flex items-start gap-2.5 p-2 rounded-lg transition-colors ${done?'bg-green-500/8 border border-green-500/15':'bg-slate-800/50 border border-slate-700/50'}`}>
+              <div key={p.step} className={`flex items-start gap-2.5 p-2 rounded-lg transition-colors ${done?'bg-green-500/8 border border-green-500/15':'bg-slate-50/80 dark:bg-slate-800/50 border border-slate-700/50'}`}>
                 <span className="text-sm shrink-0">{p.icon}</span>
                 <div className="flex-1">
                   <div className={`text-[10px] font-bold ${done?'text-green-400':'text-slate-500'}`}>{p.step}</div>
@@ -227,7 +227,7 @@ export default function PlatformOperationsPage() {
         </div>
 
         {/* Pipeline architecture */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Architecture · Flux d'une donnée dans TAXIMETER.GOV</div>
           <div className="flex flex-wrap gap-1 text-[9px] items-center">
             {['PLATEFORME','→','Connexion','→','API/Webhook','→','Auth','→','Validation','→','Normalisation','→','Déduplication','→','Activité','→','Transaction','→','Revenue Ledger','→','TPS/TVQ','→','Réconciliation','→','Audit','→','Rapport'].map((s,i)=>(
@@ -256,7 +256,7 @@ export default function PlatformOperationsPage() {
         </div>
 
         {/* Simulateur rapide */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
               <div className="text-xs font-bold text-white">🚀 Simulateur d'opération</div>
@@ -294,7 +294,7 @@ export default function PlatformOperationsPage() {
 
         {/* ── TAB OPÉRATIONS ── */}
         {tab==='operations'&&(
-          <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
               <div className="text-xs font-bold text-white">{OPERATIONS.length} opérations (pilote)</div>
               <span className="text-[9px] text-amber-400">Cliquer pour Opération 360°</span>
@@ -302,7 +302,7 @@ export default function PlatformOperationsPage() {
             {OPERATIONS.map((op,idx)=>{
               const sc = STATUS_CONF[op.status]??STATUS_CONF['PENDING']!
               return (
-                <div key={op.id} onClick={()=>setSelected(op)} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-800 last:border-0 cursor-pointer hover:bg-slate-800/50">
+                <div key={op.id} onClick={()=>setSelected(op)} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0 cursor-pointer hover:bg-slate-50/80 dark:bg-slate-800/50">
                   <span className="text-lg shrink-0">{SRC_ICON[op.provider]??'📡'}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -335,26 +335,26 @@ export default function PlatformOperationsPage() {
                 {label:'Auth DEMO',            val:'DEMO VALIDATION', color:'text-amber-400'},
                 {label:'Dernière requête',     val:'08:42:14',color:'text-slate-300'},
               ].map(r=>(
-                <div key={r.label} className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+                <div key={r.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
                   <div className="text-[8px] text-slate-400 uppercase tracking-wider mb-1">{r.label}</div>
                   <div className={`text-sm font-bold ${r.color}`}>{r.val}</div>
                 </div>
               ))}
             </div>
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
               <div className="text-[10px] font-bold text-slate-400 uppercase mb-3">Endpoints d'architecture DEMO</div>
               <div className="text-[9px] text-amber-400 mb-3 bg-amber-500/8 p-2 rounded-lg border border-amber-500/15">Ces endpoints représentent l'architecture cible. Ils ne sont pas des API gouvernementales officielles.</div>
               {['/api/providers','/api/activities','/api/transactions','/api/webhooks','/api/reconciliation','/api/taxes'].map(ep=>(
-                <div key={ep} className="flex items-center justify-between py-2 border-b border-slate-800 last:border-0">
+                <div key={ep} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-[10px] font-mono text-blue-400">{ep}</span>
                   <span className="text-[9px] text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full font-bold">DEMO</span>
                 </div>
               ))}
             </div>
-            <div className="p-3 bg-slate-900 border border-slate-700 rounded-xl">
+            <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl">
               <div className="text-[10px] font-bold text-slate-400 uppercase mb-2">Sécurité (DEMO)</div>
               {['Authentification API','Autorisation OAuth DEMO','Validation signature HMAC','Chiffrement TLS DEMO','Contrôle d\'accès','Journaux d\'audit','Rate limiting','Prévention doublons'].map(s=>(
-                <div key={s} className="flex items-center gap-2 py-1.5 border-b border-slate-800 last:border-0">
+                <div key={s} className="flex items-center gap-2 py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <CheckCircle size={10} className="text-green-400 shrink-0"/>
                   <span className="text-[10px] text-slate-300">{s}</span>
                   <span className="ml-auto text-[8px] text-amber-400">DEMO</span>
@@ -366,14 +366,14 @@ export default function PlatformOperationsPage() {
 
         {/* ── TAB WEBHOOKS ── */}
         {tab==='webhooks'&&(
-          <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-700">
               <div className="text-xs font-bold text-white">{DEMO_WEBHOOKS.length} événements webhook (pilote)</div>
             </div>
             {DEMO_WEBHOOKS.map((wh,idx)=>{
               const stmap:Record<string,string> = {PROCESSED:'text-green-400',DUPLICATE_DETECTED:'text-purple-400',VALIDATION_PENDING:'text-amber-400',REJECTED_DEMO:'text-red-400',RETRYING:'text-blue-400'}
               return (
-                <div key={wh.id} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-800 last:border-0">
+                <div key={wh.id} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-lg shrink-0">{SRC_ICON[wh.provider]??'📡'}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -396,7 +396,7 @@ export default function PlatformOperationsPage() {
             {IMPORTS.map(imp=>{
               const sc = STATUS_CONF[imp.status]??STATUS_CONF['PENDING']!
               return (
-                <div key={imp.id} className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+                <div key={imp.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl shrink-0">{SRC_ICON[imp.provider]??'📥'}</span>
                     <div className="flex-1">
@@ -427,10 +427,10 @@ export default function PlatformOperationsPage() {
               Différentes plateformes utilisent des structures de données différentes. TAXIMETER.GOV normalise tous les formats vers un standard commun.
             </div>
             <div className="flex gap-3 items-start">
-              <div className="flex-1 bg-slate-900 border border-slate-700 rounded-xl p-3">
+              <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
                 <div className="text-[9px] font-bold text-amber-400 uppercase mb-2">Format fournisseur</div>
                 {NORMALISATION.map(n=>(
-                  <div key={n.src} className="py-1.5 border-b border-slate-800 last:border-0">
+                  <div key={n.src} className="py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <div className="text-[10px] font-mono text-amber-300">{n.src}</div>
                   </div>
                 ))}
@@ -441,16 +441,16 @@ export default function PlatformOperationsPage() {
               <div className="flex-1 bg-slate-900 border border-green-500/20 rounded-xl p-3">
                 <div className="text-[9px] font-bold text-green-400 uppercase mb-2">Standard TAXIMETER.GOV</div>
                 {NORMALISATION.map(n=>(
-                  <div key={n.norm} className="py-1.5 border-b border-slate-800 last:border-0">
+                  <div key={n.norm} className="py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <div className="text-[10px] font-mono text-green-400">{n.norm}</div>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
               <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Descriptions</div>
               {NORMALISATION.map(n=>(
-                <div key={n.src} className="flex gap-2 py-1.5 border-b border-slate-800 last:border-0">
+                <div key={n.src} className="flex gap-2 py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-[9px] font-mono text-amber-300 w-28 shrink-0">{n.src}</span>
                   <span className="text-[9px] text-slate-400">{n.desc}</span>
                 </div>
@@ -481,14 +481,14 @@ export default function PlatformOperationsPage() {
                   {label:'Transaction financière',  val:'NON CRÉÉE (doublon)',  color:'text-red-400'},
                   {label:'Audit',                   val:'CRÉÉ — doublon enregistré',color:'text-slate-300'},
                 ].map(r=>(
-                  <div key={r.label} className="flex justify-between text-[10px] py-1.5 border-b border-slate-800 last:border-0">
+                  <div key={r.label} className="flex justify-between text-[10px] py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <span className="text-slate-400">{r.label}</span>
                     <span className={`font-bold ${r.color}`}>{r.val}</span>
                   </div>
                 ))}
               </div>
             ))}
-            <div className="p-3 bg-slate-900 border border-slate-700 rounded-xl">
+            <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl">
               <div className="text-[9px] text-slate-400">Total doublons bloqués (pilote): <strong className="text-white">{OPERATIONS.filter(o=>o.status==='DUPLICATE').length}</strong> · Aucune transaction financière en double.</div>
             </div>
           </div>
@@ -510,10 +510,10 @@ export default function PlatformOperationsPage() {
               ))}
             </div>
             {/* Retry queue */}
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
               <div className="text-[10px] font-bold text-slate-400 uppercase mb-2">File de réessai (DEMO)</div>
               {OPERATIONS.filter(o=>o.status==='RETRYING').map(op=>(
-                <div key={op.id} className="flex items-center gap-3 py-2 border-b border-slate-800 last:border-0">
+                <div key={op.id} className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-base">{SRC_ICON[op.provider]??'📡'}</span>
                   <div className="flex-1">
                     <div className="text-[10px] font-bold text-white font-mono">{op.id}</div>
@@ -540,9 +540,9 @@ export default function PlatformOperationsPage() {
                     {l:'Tentatives',  v:String(err.retry)},
                     {l:'Horodatage',  v:fmtDt(err.at)},
                   ].map(r=>(
-                    <div key={r.l} className="flex justify-between text-[10px] py-1 border-b border-slate-800 last:border-0">
+                    <div key={r.l} className="flex justify-between text-[10px] py-1 border-b border-slate-100 dark:border-slate-800 last:border-0">
                       <span className="text-slate-400">{r.l}</span>
-                      <span className="text-white font-mono">{r.v}</span>
+                      <span className="text-slate-900 dark:text-white font-mono">{r.v}</span>
                     </div>
                   ))}
                 </div>
@@ -562,7 +562,7 @@ export default function PlatformOperationsPage() {
               {label:'Unicité',       val:99, desc:'Doublons détectés et bloqués',     color:'#7C3AED'},
               {label:'Ponctualité',   val:95, desc:'Délai de traitement acceptable',   color:'#B45309'},
             ].map(q=>(
-              <div key={q.label} className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+              <div key={q.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <div className="text-xs font-bold text-white">{q.label}</div>
@@ -570,12 +570,12 @@ export default function PlatformOperationsPage() {
                   </div>
                   <div className="text-2xl font-black" style={{color:q.color}}>{q.val}<span className="text-sm">%</span></div>
                 </div>
-                <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{width:`${q.val}%`,background:q.color}}/>
                 </div>
               </div>
             ))}
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
               <div className="text-[10px] font-bold text-slate-400 uppercase mb-2">Doublons & champs manquants (DEMO)</div>
               <div className="flex gap-6">
                 <div><div className="text-xl font-black text-purple-400">2</div><div className="text-[9px] text-slate-400">Doublons bloqués</div></div>
@@ -584,7 +584,7 @@ export default function PlatformOperationsPage() {
               </div>
             </div>
             {/* Liens modules */}
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
               <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Modules reliés</div>
               <div className="flex flex-wrap gap-2">
                 {[

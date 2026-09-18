@@ -22,14 +22,14 @@ function Tx360Modal({tx,onClose}:{tx:typeof DEMO_TRANSACTIONS[0];onClose:()=>voi
   const sc = STATUS_CONF[tx.status]??STATUS_CONF['RECONCILED']!
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={onClose}>
-      <div className="w-full max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
+      <div className="w-full max-h-[92vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
         <div className="w-10 h-1 rounded bg-slate-600 mx-auto mb-4"/>
         <div className="flex items-start justify-between mb-3">
           <div>
             <div className="text-base font-bold text-white font-mono">{tx.id}</div>
-            <div className="text-[10px] text-slate-400">{SRC_ICON[tx.provider]} {tx.provider} · {tx.service} · {fmtDt(tx.at)}</div>
+            <div className="text-[10px] text-slate-500 dark:text-slate-400">{SRC_ICON[tx.provider]} {tx.provider} · {tx.service} · {fmtDt(tx.at)}</div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl bg-slate-800 border border-slate-600 cursor-pointer"><X size={14} className="text-slate-400"/></button>
+          <button onClick={onClose} className="p-2 rounded-xl bg-slate-800 border border-slate-600 cursor-pointer"><X size={14} className="text-slate-500 dark:text-slate-400"/></button>
         </div>
 
         <div className="mb-3 p-2 rounded-lg text-[10px] text-amber-400 bg-amber-500/8 border border-amber-500/20">{PILOT_BANNER}</div>
@@ -42,7 +42,7 @@ function Tx360Modal({tx,onClose}:{tx:typeof DEMO_TRANSACTIONS[0];onClose:()=>voi
         <div className="text-[11px] font-bold text-slate-300 mb-3">📊 TRANSACTION 360°</div>
 
         {/* Identité */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 mb-3">
+        <div className="bg-slate-50 dark:bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 mb-3">
           <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Identité</div>
           {[
             {label:'Transaction ID', val:tx.id},
@@ -54,14 +54,14 @@ function Tx360Modal({tx,onClose}:{tx:typeof DEMO_TRANSACTIONS[0];onClose:()=>voi
             {label:'Réconciliation', val:tx.rec},
           ].map(r=>(
             <div key={r.label} className="flex justify-between text-xs py-1.5 border-b border-slate-700 last:border-0">
-              <span className="text-slate-400">{r.label}</span>
-              <span className="text-white font-mono text-[10px]">{r.val}</span>
+              <span className="text-slate-500 dark:text-slate-400">{r.label}</span>
+              <span className="text-slate-900 dark:text-white font-mono text-[10px]">{r.val}</span>
             </div>
           ))}
         </div>
 
         {/* Financier */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 mb-3">
+        <div className="bg-slate-50 dark:bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 mb-3">
           <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Financier</div>
           {[
             {label:'Montant client',         val:money(tx.clientAmt), color:'text-white'},
@@ -75,14 +75,14 @@ function Tx360Modal({tx,onClose}:{tx:typeof DEMO_TRANSACTIONS[0];onClose:()=>voi
             {label:'Net chauffeur',          val:money(tx.driverNet), color:'text-green-400'},
           ].map(r=>(
             <div key={r.label} className="flex justify-between text-xs py-1.5 border-b border-slate-700 last:border-0">
-              <span className="text-slate-400">{r.label}</span>
+              <span className="text-slate-500 dark:text-slate-400">{r.label}</span>
               <span className={`font-bold ${typeof r.color==='string'&&r.color.startsWith('#')?'':(r.color??'text-white')}`} style={typeof r.color==='string'&&r.color.startsWith('#')?{color:r.color}:{}}>{r.val}</span>
             </div>
           ))}
         </div>
 
         {/* Transparence */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 mb-3">
+        <div className="bg-slate-50 dark:bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 mb-3">
           <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-3">Transparence transactionnelle</div>
           <div className="flex flex-col gap-1 items-center text-center text-[10px]">
             {[
@@ -100,7 +100,7 @@ function Tx360Modal({tx,onClose}:{tx:typeof DEMO_TRANSACTIONS[0];onClose:()=>voi
         </div>
 
         {/* Période fiscale */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-3">
+        <div className="bg-slate-50 dark:bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
           <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-2">Fiscal</div>
           {[
             {label:'Période',    val:tx.period},
@@ -111,8 +111,8 @@ function Tx360Modal({tx,onClose}:{tx:typeof DEMO_TRANSACTIONS[0];onClose:()=>voi
             {label:'Statut',    val:sc.label},
           ].map(r=>(
             <div key={r.label} className="flex justify-between text-xs py-1.5 border-b border-slate-700 last:border-0">
-              <span className="text-slate-400">{r.label}</span>
-              <span className="text-white font-semibold">{r.val}</span>
+              <span className="text-slate-500 dark:text-slate-400">{r.label}</span>
+              <span className="text-slate-900 dark:text-white font-semibold">{r.val}</span>
             </div>
           ))}
         </div>
@@ -169,22 +169,22 @@ export default function TransactionsPage() {
         </div>
 
         {/* Liste */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
-            <div className="text-xs font-bold text-white">{filtered.length} transaction(s)</div>
+            <div className="text-xs font-bold text-slate-900 dark:text-white">{filtered.length} transaction(s)</div>
             <span className="text-[9px] text-amber-400">PILOTE · Cliquer pour Transaction 360°</span>
           </div>
           {filtered.map((tx,idx)=>{
             const sc = STATUS_CONF[tx.status]??STATUS_CONF['RECONCILED']!
             return (
-              <div key={tx.id} onClick={()=>setSelected(tx)} className="flex items-center gap-3 px-4 py-3 border-b border-slate-800 last:border-0 cursor-pointer hover:bg-slate-800/50">
+              <div key={tx.id} onClick={()=>setSelected(tx)} className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-100 dark:border-slate-800 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-50/80 dark:bg-slate-800/50">
                 <span className="text-xl shrink-0">{SRC_ICON[tx.provider]??'💳'}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="text-xs font-bold text-white font-mono">{tx.id}</span>
                     <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
                   </div>
-                  <div className="text-[10px] text-slate-400">{tx.provider} · {tx.service} · {fmtDt(tx.at)}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400">{tx.provider} · {tx.service} · {fmtDt(tx.at)}</div>
                   <div className="flex gap-3 text-[9px] text-slate-500 mt-0.5">
                     <span>Base: {money(tx.base)}</span>
                     {tx.tip>0&&<span style={{color:'#F5C842'}}>Tip: {money(tx.tip)}</span>}
@@ -193,7 +193,7 @@ export default function TransactionsPage() {
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-sm font-bold text-green-400">{money(tx.driverNet)}</div>
-                  <div className="text-[9px] text-slate-500">net chauffeur</div>
+                  <div className="text-[9px] text-slate-600 dark:text-slate-500">net chauffeur</div>
                 </div>
               </div>
             )
@@ -201,7 +201,7 @@ export default function TransactionsPage() {
         </div>
 
         {/* Totaux */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Totaux — {DEMO_TRANSACTIONS.length} transactions pilotes</div>
           <div className="grid grid-cols-2 gap-2">
             {[
@@ -211,8 +211,8 @@ export default function TransactionsPage() {
               {label:'TVQ totale',     val:money(totals.tvq),    color:'text-purple-400'},
               {label:'Net chauffeurs', val:money(totals.net),    color:'text-green-300'},
             ].map(r=>(
-              <div key={r.label} className="flex justify-between text-xs py-2 border-b border-slate-800">
-                <span className="text-slate-400">{r.label}</span>
+              <div key={r.label} className="flex justify-between text-xs py-2 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">{r.label}</span>
                 <span className="font-bold" style={r.color.startsWith('#')?{color:r.color}:{}} {...(!r.color.startsWith('#')&&{className:`font-bold ${r.color}`})}>{r.val}</span>
               </div>
             ))}

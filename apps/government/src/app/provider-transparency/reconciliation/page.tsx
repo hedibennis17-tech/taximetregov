@@ -41,7 +41,7 @@ export default function ReconciliationPage() {
 
   return (
     <AppShell>
-      <div className="px-6 pt-6 pb-4 border-b border-slate-800">
+      <div className="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3 mb-3">
           <Link href="/provider-transparency" className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white"><ArrowLeft size={13}/> Vue globale</Link>
           <span className="text-slate-700">›</span>
@@ -70,7 +70,7 @@ export default function ReconciliationPage() {
         </div>
 
         {/* Pipeline */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="text-[10px] font-bold text-slate-400 uppercase mb-3">Workflow de réconciliation</div>
           <div className="flex flex-wrap gap-1 text-[9px]">
             {PIPELINE.map((s,i)=>(
@@ -115,7 +115,7 @@ export default function ReconciliationPage() {
             const relatedTx = DEMO_TRANSACTIONS.filter(t=>t.rec===rec.id)
             const isOpen = expanded===rec.id
             return (
-              <div key={rec.id} className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden" style={{borderLeft:`4px solid ${sc.bdr}`}}>
+              <div key={rec.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden" style={{borderLeft:`4px solid ${sc.bdr}`}}>
                 <button className="w-full flex items-start gap-3 p-4 text-left hover:bg-slate-800/30 transition-colors cursor-pointer" onClick={()=>setExpanded(isOpen?null:rec.id)}>
                   <span className="text-2xl shrink-0">{ICON[rec.provider]??'⚖️'}</span>
                   <div className="flex-1 min-w-0">
@@ -142,7 +142,7 @@ export default function ReconciliationPage() {
                         {l:'Reçu',     v:money(rec.actual),   c:'text-white'},
                         {l:'Écart',    v:money(rec.diff),     c:rec.diff===0?'text-green-400':'text-red-400'},
                       ].map(r=>(
-                        <div key={r.l} className="bg-slate-800 rounded-lg p-3 text-center border border-slate-700">
+                        <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center border border-slate-700">
                           <div className={`text-sm font-bold ${r.c}`}>{r.v}</div>
                           <div className="text-[9px] text-slate-400 mt-0.5">{r.l}</div>
                         </div>
@@ -150,7 +150,7 @@ export default function ReconciliationPage() {
                     </div>
 
                     {/* Comparaison sources */}
-                    <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-700">
                       <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Comparaison 3 sources</div>
                       {[
                         {l:'Source fournisseur',  v:rec.expected>0?money(rec.expected):'Non reçu',      s:rec.diff===0?'MATCH':rec.diff>50000?'REVIEW':'PARTIAL'},
@@ -172,7 +172,7 @@ export default function ReconciliationPage() {
 
                     {/* Transactions liées */}
                     {relatedTx.length>0&&(
-                      <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
+                      <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-700">
                         <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Transactions associées ({relatedTx.length})</div>
                         {relatedTx.slice(0,3).map(tx=>(
                           <div key={tx.id} className="flex items-center justify-between py-1.5 border-b border-slate-700 last:border-0">

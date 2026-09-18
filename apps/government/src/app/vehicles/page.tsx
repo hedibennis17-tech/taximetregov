@@ -82,15 +82,15 @@ function ReviewModal({v,onClose,onDone}:{v:Vehicle;onClose:()=>void;onDone:()=>v
 
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/70" onClick={onClose}>
-      <div className="w-full max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
+      <div className="w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-t-2xl p-5" onClick={e=>e.stopPropagation()}>
         <div className="w-10 h-1 rounded bg-slate-600 mx-auto mb-4"/>
         <div className="flex items-start justify-between mb-4">
           <div>
-            <div className="text-base font-bold text-white">{v.year} {v.make} {v.model}</div>
+            <div className="text-base font-bold text-slate-900 dark:text-white">{v.year} {v.make} {v.model}</div>
             <div className="text-[10px] text-slate-400 mt-1">{v.vehicle_number} · {v.license_plate_masked}</div>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl bg-slate-800 border border-slate-600 cursor-pointer">
-            <X size={14} className="text-slate-400"/>
+            <X size={14} className="text-slate-500 dark:text-slate-400"/>
           </button>
         </div>
 
@@ -106,8 +106,8 @@ function ReviewModal({v,onClose,onDone}:{v:Vehicle;onClose:()=>void;onDone:()=>v
             {label:'Soumis',      val:fmtDate(v.created_at)},
           ].map(r=>(
             <div key={r.label} className="flex justify-between text-xs">
-              <span className="text-slate-400">{r.label}</span>
-              <span className="text-white font-semibold">{r.val}</span>
+              <span className="text-slate-500 dark:text-slate-400">{r.label}</span>
+              <span className="text-slate-900 dark:text-white font-semibold">{r.val}</span>
             </div>
           ))}
         </Card>
@@ -139,7 +139,7 @@ function ReviewModal({v,onClose,onDone}:{v:Vehicle;onClose:()=>void;onDone:()=>v
         {decision && decision!=='APPROVE' && (
           <>
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Motif (obligatoire)</div>
-            <select value={reason} onChange={e=>{setReason(e.target.value);setNote(e.target.value)}} className="w-full mb-3 p-2 rounded-lg bg-slate-800 border border-slate-600 text-xs text-white">
+            <select value={reason} onChange={e=>{setReason(e.target.value);setNote(e.target.value)}} className="w-full mb-3 p-2 rounded-lg bg-slate-800 border border-slate-600 text-xs text-slate-900 dark:text-white">
               <option value="">Sélectionner un motif…</option>
               {REJECTION_REASONS.map(r=><option key={r} value={r}>{r}</option>)}
             </select>
@@ -242,7 +242,7 @@ export default function AdminVehiclesPage() {
 
       <div className="px-4 pt-4 pb-2 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">Administration des véhicules</h1>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Administration des véhicules</h1>
           <p className="text-xs text-slate-400 mt-1">Table: vehicles · TAXIMETER.GOV</p>
         </div>
         <button onClick={()=>void load()} className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-400 hover:border-qc-blue">
@@ -295,8 +295,8 @@ export default function AdminVehiclesPage() {
         {error && <Card className="p-4 text-center text-sm text-red-400">{error}</Card>}
         {!loading && vehicles.length===0 && (
           <Card className="py-12 text-center">
-            <Car size={32} className="mx-auto mb-3 text-slate-500"/>
-            <p className="text-sm text-slate-400">Aucun véhicule {filter?'avec ce filtre':'enregistré'}</p>
+            <Car size={32} className="mx-auto mb-3 text-slate-600 dark:text-slate-500"/>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Aucun véhicule {filter?'avec ce filtre':'enregistré'}</p>
           </Card>
         )}
 
@@ -304,21 +304,21 @@ export default function AdminVehiclesPage() {
           const sc = STATUS_CONF[v.status] ?? STATUS_CONF['PENDING']!
           const needsReview = v.status==='PENDING'
           return (
-            <div key={v.id} onClick={()=>setSelected(v)} className={`rounded-xl border border-slate-700 bg-slate-800/50 p-4 cursor-pointer hover:border-qc-blue transition-colors ${needsReview?'border-l-4 border-l-amber-500':v.status==='ACTIVE'||v.status==='APPROVED'?'border-l-4 border-l-green-500':v.status==='REJECTED'?'border-l-4 border-l-red-500':''}`}>
+            <div key={v.id} onClick={()=>setSelected(v)} className={`rounded-xl border border-slate-700 bg-slate-50/80 dark:bg-slate-800/50 p-4 cursor-pointer hover:border-qc-blue transition-colors ${needsReview?'border-l-4 border-l-amber-500':v.status==='ACTIVE'||v.status==='APPROVED'?'border-l-4 border-l-green-500':v.status==='REJECTED'?'border-l-4 border-l-red-500':''}`}>
               <div className="flex items-start gap-3">
                 <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-xl shrink-0">
                   {FUEL_ICON[v.fuel_type]??'🚗'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-sm font-bold text-white">{v.year} {v.make} {v.model}</span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">{v.year} {v.make} {v.model}</span>
                     <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border ${sc.cls}`}>{sc.label}</span>
                     {v.is_active && <span className="text-[9px] px-2 py-0.5 rounded-full font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20">ACTIF</span>}
                   </div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">
                     👤 {v.driver_profiles?.first_name} {v.driver_profiles?.last_name} · {v.driver_profiles?.driver_number}
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-500">
+                  <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-600 dark:text-slate-500">
                     <span className="font-mono">{v.license_plate_masked}</span>
                     <span>{v.color} · {v.seating_capacity}p</span>
                     <span>{v.vehicle_number}</span>
@@ -330,7 +330,7 @@ export default function AdminVehiclesPage() {
                   {(v.status==='ACTIVE'||v.status==='APPROVED') && <CheckCircle size={15} className="text-green-400"/>}
                   {v.status==='REJECTED'   && <XCircle size={15} className="text-red-400"/>}
                   {v.status==='SUSPENDED'  && <AlertTriangle size={15} className="text-purple-400"/>}
-                  <ChevronRight size={14} className="text-slate-500"/>
+                  <ChevronRight size={14} className="text-slate-600 dark:text-slate-500"/>
                 </div>
               </div>
             </div>

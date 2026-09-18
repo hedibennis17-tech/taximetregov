@@ -174,7 +174,7 @@ export default function TaxCenterPage() {
                 { label:'Rideshare', val: data.allPeriods.reduce((s2,p) => s2+parseFloat(p['gross_revenue_rideshare']??'0'),0), icon:'🚗' },
                 { label:'Livraison', val: data.allPeriods.reduce((s2,p) => s2+parseFloat(p['gross_revenue_delivery']??'0'),0), icon:'📦' },
               ].map(r => (
-                <div key={r.label} className="flex items-center gap-2 py-2 border-b border-slate-800 last:border-0">
+                <div key={r.label} className="flex items-center gap-2 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-lg">{r.icon}</span>
                   <span className="flex-1 text-sm text-white">{r.label}</span>
                   <span className="font-bold text-green-400">{money(r.val)}</span>
@@ -195,12 +195,12 @@ export default function TaxCenterPage() {
                 { label:'TVQ perçue (estimée)',    val: money(s.total_tvq_collected), color:'text-purple-400' },
                 { label:'Solde à remettre',        val: money(s.total_tax_solde),     color:'text-amber-400' },
               ].map(r => (
-                <div key={r.label} className="flex justify-between py-1.5 border-b border-slate-800 last:border-0 text-xs">
+                <div key={r.label} className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0 text-xs">
                   <span className="text-slate-400">{r.label}</span>
                   <span className={`font-bold ${r.color}`}>{r.val}</span>
                 </div>
               ))}
-              <div className="mt-2 p-2 rounded-lg bg-slate-900 border border-slate-700">
+              <div className="mt-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
                 <p className="text-[9px] text-slate-500">Une différence n'est jamais automatiquement une fraude — elle devient une exception à vérifier.</p>
               </div>
             </Card>
@@ -236,7 +236,7 @@ export default function TaxCenterPage() {
                       { label:'Rideshare', val: p['gross_revenue_rideshare']??'0', icon:'🚗' },
                       { label:'Livraison', val: p['gross_revenue_delivery']??'0', icon:'📦' },
                     ].map(r => (
-                      <div key={r.label} className="bg-slate-800 rounded-lg p-2 text-center">
+                      <div key={r.label} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center">
                         <div className="text-base mb-0.5">{r.icon}</div>
                         <div className="text-slate-400">{r.label}</div>
                         <div className="font-bold text-white">{money(parseFloat(r.val))}</div>
@@ -302,7 +302,7 @@ export default function TaxCenterPage() {
                       { label:'TPS solde',     val: tpsBal },
                       { label:'TVQ solde',     val: tvqBal },
                     ].map(r => (
-                      <div key={r.label} className="bg-slate-800 rounded-lg p-2">
+                      <div key={r.label} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2">
                         <div className="text-slate-400">{r.label}</div>
                         <div className="font-bold text-white">{money(r.val)}</div>
                       </div>

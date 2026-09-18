@@ -106,7 +106,7 @@ export default function ExceptionsPage() {
 
   return (
     <AppShell>
-      <div className="px-6 pt-6 pb-4 border-b border-slate-800">
+      <div className="px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3 mb-3">
           <Link href="/provider-transparency" className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white"><ArrowLeft size={13}/> Vue globale</Link>
           <span className="text-slate-700">›</span>
@@ -150,7 +150,7 @@ export default function ExceptionsPage() {
         </div>
 
         {/* Impact total */}
-        <div className="p-4 bg-slate-900 border border-slate-700 rounded-xl flex items-center justify-between">
+        <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between">
           <div>
             <div className="text-xs font-bold text-white">Impact financier total des exceptions ouvertes</div>
             <div className="text-[10px] text-slate-400 mt-0.5">Montant cumulé des écarts à résoudre · Données pilotes Q3 2026</div>
@@ -182,7 +182,7 @@ export default function ExceptionsPage() {
             const stc = STATUS_CONF[exc.status]??STATUS_CONF['OPEN']!
             const isOpen = expanded===exc.id
             return (
-              <div key={exc.id} className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden" style={{borderLeft:`3px solid ${sc.color}`}}>
+              <div key={exc.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden" style={{borderLeft:`3px solid ${sc.color}`}}>
                 <button className="w-full flex items-start gap-3 p-4 text-left hover:bg-slate-800/30 cursor-pointer" onClick={()=>setExpanded(isOpen?null:exc.id)}>
                   <span className="text-xl shrink-0">{tc.icon}</span>
                   <div className="flex-1 min-w-0">
@@ -204,7 +204,7 @@ export default function ExceptionsPage() {
                 {isOpen&&(
                   <div className="px-4 pb-4 border-t border-slate-800 space-y-3 pt-3">
                     {/* Détail */}
-                    <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-700">
                       <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Analyse</div>
                       <div className="text-[10px] text-slate-300 leading-relaxed">{exc.note}</div>
                     </div>
@@ -217,7 +217,7 @@ export default function ExceptionsPage() {
                           {l:'Reçu',     v:money(exc.actual),   c:'text-white'},
                           {l:'Écart',    v:money(exc.diff),     c:'text-red-400'},
                         ].map(r=>(
-                          <div key={r.l} className="bg-slate-800 rounded-lg p-2 text-center border border-slate-700">
+                          <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center border border-slate-700">
                             <div className={`text-sm font-bold ${r.c}`}>{r.v}</div>
                             <div className="text-[9px] text-slate-400 mt-0.5">{r.l}</div>
                           </div>
@@ -245,7 +245,7 @@ export default function ExceptionsPage() {
         </div>
 
         {/* Résumé types */}
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
           <div className="text-[10px] font-bold text-slate-400 uppercase mb-3">Répartition par type (pilote Q3 2026)</div>
           <div className="space-y-2">
             {Object.entries(TYPE_CONF).map(([type,conf])=>{
@@ -258,7 +258,7 @@ export default function ExceptionsPage() {
                     <div className="text-[10px] font-semibold text-white">{conf.label}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-1.5 bg-slate-800 rounded-full w-24 overflow-hidden">
+                    <div className="h-1.5 bg-slate-50 dark:bg-slate-800 rounded-full w-24 overflow-hidden">
                       <div className="h-full rounded-full" style={{width:`${(count/EXCEPTIONS.length)*100}%`,background:conf.color.replace('text-','').includes('amber')?'#B45309':conf.color.replace('text-','').includes('red')?'#DC2626':conf.color.replace('text-','').includes('purple')?'#7C3AED':conf.color.replace('text-','').includes('blue')?'#003DA5':'#059669'}}/>
                     </div>
                     <span className={`text-xs font-bold ${conf.color}`}>{count}</span>
