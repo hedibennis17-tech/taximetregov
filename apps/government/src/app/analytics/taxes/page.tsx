@@ -62,7 +62,7 @@ export default function TaxesPage() {
                     <td className="px-4 py-2.5 font-semibold text-purple-600 dark:text-purple-400">{money(m.tps)}</td>
                     <td className="px-4 py-2.5 font-semibold text-purple-700 dark:text-purple-300">{money(m.tvq)}</td>
                     <td className="px-4 py-2.5 font-black text-slate-900 dark:text-white">{money(m.total)}</td>
-                    <td className="px-4 py-2.5 text-[10px] font-bold text-slate-400">{((m.total/MONTHLY_TAX.find((_,j)=>j===i)?1:1)*14.975).toFixed(3)}%</td>
+                    <td className="px-4 py-2.5 text-[10px] font-bold text-slate-400">14,975%</td>
                   </tr>
                 ))}
                 <tr className="bg-purple-50 dark:bg-purple-500/10 border-t-2 border-purple-200 dark:border-purple-500/30">
