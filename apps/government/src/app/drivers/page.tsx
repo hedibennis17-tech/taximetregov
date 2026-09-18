@@ -126,7 +126,7 @@ export default function DriversPage() {
                 background:filter===f.v?'#003DA5':'rgba(255,255,255,0.04)',
                 color:filter===f.v?'white':'#94A3B8',
                 borderColor:filter===f.v?'#003DA5':'rgba(255,255,255,0.08)',
-              }}>{f.l}{f.v&&` (${drivers.filter((d:typeof DEMO_DRIVERS[0])=>d.status===f.v).length})`}</button>
+              }}>{f.l}{f.v&&` (${drivers.filter((d:AnyDriver)=>d.status===f.v).length})`}</button>
             ))}
           </div>
         </div>
