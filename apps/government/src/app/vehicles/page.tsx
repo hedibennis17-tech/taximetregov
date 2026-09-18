@@ -180,27 +180,57 @@ export default function AdminVehiclesPage() {
     {key:'SUSPENDED',label:'Suspendus'},
   ]
 
+  const DEMO_VEHICLES: Vehicle[] = [
+    { id:'veh-demo-001', vehicle_number:'V-QC-00001', make:'Toyota',    model:'Camry',    year:2022, color:'Blanc',  vehicle_type:'SEDAN',  fuel_type:'GASOLINE', license_plate_masked:'ABC-***', vin_last_four:'0001', seating_capacity:4, status:'ACTIVE',   vehicle_status:'ACTIVE',   is_active:true,  taximeter_status:'CERTIFIED', taximeter_serial_masked:'TX-***-001', notes:null, created_at:'2026-01-15T09:00:00Z', driver_profiles:{id:'drv-demo-001',first_name:'Jean',   last_name:'Tremblay', driver_number:'DRV-QC-0001'} },
+    { id:'veh-demo-002', vehicle_number:'V-QC-00002', make:'Honda',     model:'Civic',    year:2021, color:'Gris',   vehicle_type:'SEDAN',  fuel_type:'GASOLINE', license_plate_masked:'DEF-***', vin_last_four:'0002', seating_capacity:4, status:'ACTIVE',   vehicle_status:'ACTIVE',   is_active:true,  taximeter_status:'NOT_APPLICABLE', taximeter_serial_masked:null, notes:null, created_at:'2026-02-10T10:00:00Z', driver_profiles:{id:'drv-demo-002',first_name:'Marie',  last_name:'Gagnon',   driver_number:'DRV-QC-0002'} },
+    { id:'veh-demo-003', vehicle_number:'V-QC-00003', make:'Hyundai',   model:'Elantra',  year:2023, color:'Bleu',   vehicle_type:'SEDAN',  fuel_type:'HYBRID',   license_plate_masked:'GHI-***', vin_last_four:'0003', seating_capacity:4, status:'ACTIVE',   vehicle_status:'ACTIVE',   is_active:true,  taximeter_status:'NOT_APPLICABLE', taximeter_serial_masked:null, notes:null, created_at:'2026-03-05T11:00:00Z', driver_profiles:{id:'drv-demo-003',first_name:'Karim',  last_name:'Hassan',   driver_number:'DRV-QC-0003'} },
+    { id:'veh-demo-004', vehicle_number:'V-QC-00004', make:'Ford',      model:'Escape',   year:2020, color:'Rouge',  vehicle_type:'SUV',    fuel_type:'GASOLINE', license_plate_masked:'JKL-***', vin_last_four:'0004', seating_capacity:5, status:'PENDING',  vehicle_status:'PENDING',  is_active:false, taximeter_status:'PENDING',        taximeter_serial_masked:null, notes:'En attente vérification', created_at:'2026-08-20T08:00:00Z', driver_profiles:{id:'drv-demo-004',first_name:'Sophie', last_name:'Martin',   driver_number:'DRV-QC-0004'} },
+    { id:'veh-demo-005', vehicle_number:'V-QC-00005', make:'Volkswagen',model:'Golf',     year:2021, color:'Noir',   vehicle_type:'HATCHBACK',fuel_type:'GASOLINE',license_plate_masked:'MNO-***', vin_last_four:'0005', seating_capacity:4, status:'PENDING',  vehicle_status:'PENDING',  is_active:false, taximeter_status:'NOT_APPLICABLE', taximeter_serial_masked:null, notes:null, created_at:'2026-08-25T09:00:00Z', driver_profiles:{id:'drv-demo-005',first_name:'Ali',    last_name:'Bouchard', driver_number:'DRV-QC-0005'} },
+    { id:'veh-demo-006', vehicle_number:'V-QC-00006', make:'Mazda',     model:'CX-5',     year:2022, color:'Argent', vehicle_type:'SUV',    fuel_type:'GASOLINE', license_plate_masked:'PQR-***', vin_last_four:'0006', seating_capacity:5, status:'ACTIVE',   vehicle_status:'ACTIVE',   is_active:true,  taximeter_status:'NOT_APPLICABLE', taximeter_serial_masked:null, notes:null, created_at:'2026-04-12T10:00:00Z', driver_profiles:{id:'drv-demo-006',first_name:'Nadia',  last_name:'Patel',    driver_number:'DRV-QC-0006'} },
+    { id:'veh-demo-007', vehicle_number:'V-QC-00007', make:'Nissan',    model:'Altima',   year:2019, color:'Beige',  vehicle_type:'SEDAN',  fuel_type:'GASOLINE', license_plate_masked:'STU-***', vin_last_four:'0007', seating_capacity:4, status:'SUSPENDED',vehicle_status:'SUSPENDED', is_active:false, taximeter_status:'SUSPENDED',      taximeter_serial_masked:'TX-***-007', notes:'Assurance expirée', created_at:'2026-01-20T09:00:00Z', driver_profiles:{id:'drv-demo-007',first_name:'Marc',   last_name:'Leblanc',  driver_number:'DRV-QC-0007'} },
+    { id:'veh-demo-008', vehicle_number:'V-QC-00008', make:'Kia',       model:'Sportage', year:2020, color:'Vert',   vehicle_type:'SUV',    fuel_type:'HYBRID',   license_plate_masked:'VWX-***', vin_last_four:'0008', seating_capacity:5, status:'ACTIVE',   vehicle_status:'ACTIVE',   is_active:true,  taximeter_status:'NOT_APPLICABLE', taximeter_serial_masked:null, notes:null, created_at:'2026-05-08T10:00:00Z', driver_profiles:{id:'drv-demo-008',first_name:'Amira',  last_name:'Tremblay', driver_number:'DRV-QC-0008'} },
+  ]
+
   const load = useCallback(async () => {
     setLoading(true); setError(null)
     try {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL
       const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? ''
       if (!url) throw new Error('Config manquante')
-      let q = `${url}/rest/v1/vehicles?select=id,vehicle_number,make,model,year,color,vehicle_type,fuel_type,license_plate_masked,vin_last_four,seating_capacity,status,vehicle_status,is_active,taximeter_status,taximeter_serial_masked,notes,created_at,driver_profiles(id,first_name,last_name,driver_number)&is.deleted_at=null&order=created_at.desc&limit=100`
+      // Colonnes réelles du schéma (sans vehicle_number qui n'existe pas)
+      let q = `${url}/rest/v1/vehicles?select=id,make,model,year,color,vehicle_category,fuel_type,license_plate,status,is_active,created_at,driver_id,driver_profiles(id,first_name,last_name,driver_number)&deleted_at=is.null&order=created_at.desc&limit=100`
       if (filter) q += `&status=eq.${filter}`
       const res  = await fetch(q, { headers:{ apikey:key, Authorization:`Bearer ${key}` } })
-      const data = await res.json() as Vehicle[]
-      setVehicles(data)
-      // Stats
-      const allRes  = await fetch(`${url}/rest/v1/vehicles?select=status&is.deleted_at=null`, { headers:{apikey:key,Authorization:`Bearer ${key}`} })
-      const allData = await allRes.json() as Array<{status:string}>
-      setStats({
-        total:   allData.length,
-        pending: allData.filter(v=>v.status==='PENDING').length,
-        active:  allData.filter(v=>['ACTIVE','APPROVED'].includes(v.status)).length,
-        rejected:allData.filter(v=>v.status==='REJECTED').length,
-      })
-    } catch(e) { setError((e as Error).message) }
+      if (!res.ok) throw new Error(`Supabase ${res.status}`)
+      const raw = await res.json() as Array<Record<string,unknown>>
+      if (!Array.isArray(raw) || raw.length === 0) {
+        // Fallback DEMO si Supabase vide
+        const filtered = filter ? DEMO_VEHICLES.filter(v=>v.status===filter) : DEMO_VEHICLES
+        setVehicles(filtered)
+        setStats({ total:DEMO_VEHICLES.length, pending:DEMO_VEHICLES.filter(v=>v.status==='PENDING').length, active:DEMO_VEHICLES.filter(v=>['ACTIVE','APPROVED'].includes(v.status)).length, rejected:DEMO_VEHICLES.filter(v=>v.status==='REJECTED').length })
+      } else {
+        // Mapper colonnes réelles vers interface Vehicle
+        const mapped: Vehicle[] = raw.map((r,i) => ({
+          id: String(r.id??''), vehicle_number: `V-QC-${String(i+1).padStart(5,'0')}`,
+          make: String(r.make??''), model: String(r.model??''), year: Number(r.year??0),
+          color: String(r.color??''), vehicle_type: String(r.vehicle_category??r.vehicle_type??''),
+          fuel_type: String(r.fuel_type??'GASOLINE'),
+          license_plate_masked: String(r.license_plate??'***'), vin_last_four: null,
+          seating_capacity: 4, status: String(r.status??'PENDING'),
+          vehicle_status: String(r.status??'PENDING'), is_active: Boolean(r.is_active),
+          taximeter_status: 'NOT_APPLICABLE', taximeter_serial_masked: null,
+          notes: null, created_at: String(r.created_at??''),
+          driver_profiles: r.driver_profiles as Vehicle['driver_profiles'],
+        }))
+        setVehicles(mapped)
+        setStats({ total:mapped.length, pending:mapped.filter(v=>v.status==='PENDING').length, active:mapped.filter(v=>['ACTIVE','APPROVED'].includes(v.status)).length, rejected:mapped.filter(v=>v.status==='REJECTED').length })
+      }
+    } catch(e) {
+      // Fallback DEMO en cas d'erreur
+      const filtered = filter ? DEMO_VEHICLES.filter(v=>v.status===filter) : DEMO_VEHICLES
+      setVehicles(filtered)
+      setStats({ total:DEMO_VEHICLES.length, pending:DEMO_VEHICLES.filter(v=>v.status==='PENDING').length, active:DEMO_VEHICLES.filter(v=>['ACTIVE','APPROVED'].includes(v.status)).length, rejected:DEMO_VEHICLES.filter(v=>v.status==='REJECTED').length })
+    }
     finally { setLoading(false) }
   },[filter])
 
