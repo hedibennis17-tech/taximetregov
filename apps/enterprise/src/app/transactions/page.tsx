@@ -133,7 +133,7 @@ export default function TransactionsPage() {
                   const drv = ENT_DRIVERS.find(d=>d.id===t.driverId)
                   const sc  = TX_STATUS_FULL[t.status]!
                   const rc  = RECON_CONF[t.recon]!
-                  const ss  = SYNC_STATUS[t.syncStatus]!
+                  const ss  = SYNC_STATUS[t.syncStatus] ?? {label:'SYNCED',color:'#059669',dot:'bg-green-500'}
                   return (
                     <tr key={t.id} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="px-3 py-2.5">
