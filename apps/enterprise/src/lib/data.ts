@@ -10,12 +10,43 @@ const TPS=0.05; const TVQ=0.09975
 
 // ENTREPRISE CONNECTÉE (session DEMO = ENT-DEMO-001)
 export const CURRENT_ENT = {
-  id:'ENT-DEMO-001', legalName:'Taxi Métro Montréal Inc.', tradeName:'Taxi Métro',
-  neq:'1234567890', taxId:'TPS-123456-7', sector:'TAXI', type:'CORPORATION',
-  status:'ACTIVE', verif:'VERIFIED', connection:'CONNECTED', compliance:98,
-  address:'1200 boul. Saint-Laurent', city:'Montréal', province:'QC', postal:'H2X 2S5',
-  phone:'(514) 555-0201', email:'admin@taximetro.demo', website:'www.taximetro.demo',
-  registered:'2026-01-15', repr:'Robert Simard', jurisdiction:'QC',
+  id:'ENT-DEMO-001',
+  legalName:'Taxi Métro Montréal Inc.',
+  tradeName:'Taxi Métro Montréal',
+  neq:'1234567890',
+  taxId:'TPS-123456-7',
+  tvqId:'TVQ-9876543-2',
+  sector:'MULTI-ACTIVITÉS',
+  type:'CORPORATION',
+  status:'ACTIVE',
+  verif:'VERIFIED',
+  connection:'CONNECTED',
+  compliance:98,
+  address:'1200 boul. Saint-Laurent',
+  city:'Montréal',
+  province:'QC',
+  postal:'H2X 2S5',
+  phone:'(514) 555-0201',
+  email:'admin@taximetro.demo',
+  website:'www.taximetro.demo',
+  registered:'2026-01-15',
+  repr:'Robert Simard',
+  reprTitle:'Président & représentant autorisé',
+  reprFiscal:'Louise Côté',
+  jurisdiction:'QC',
+  // Services actifs (PILOTE — données synthétiques)
+  services:[
+    {id:'SVC-001',label:'Taxi réglementé',  emoji:'🚕',status:'ACTIVE',  note:'Avec taximètre numérique'},
+    {id:'SVC-002',label:'UberX',            emoji:'🚗',status:'ACTIVE',  note:'Rideshare standard'},
+    {id:'SVC-003',label:'Uber Green',       emoji:'🟢',status:'ACTIVE',  note:'Véhicules électriques/hybrides'},
+    {id:'SVC-004',label:'UberXL',           emoji:'🚙',status:'PLANNED', note:'Capacité étendue'},
+    {id:'SVC-005',label:'Uber Eats',        emoji:'🍔',status:'PLANNED', note:'Livraison restauration'},
+    {id:'SVC-006',label:'Uber Eats Grocery',emoji:'🛒',status:'PLANNED', note:'Livraison épicerie'},
+    {id:'SVC-007',label:'Uber Delivery',    emoji:'📦',status:'PLANNED', note:'Colis et courrier'},
+  ],
+  // Revenus synthétiques DEMO — NE REPRÉSENTE PAS LE CA RÉEL D'UBER
+  revenusAnnuels2026:486_750_000,
+  revenusNote:"DONNÉES SYNTHÉTIQUES — EXEMPLE DÉMONSTRATION — NE REPRÉSENTE PAS LE CA RÉEL D'UBER",
 }
 
 export const ENT_USERS = [
@@ -583,4 +614,42 @@ export const SVC_CAT_CONF: Record<string,{label:string;color:string;icon:string}
   PARCEL:   {label:'Colis/Courrier',color:'#B45309',icon:'📦'},
   DELIVERY: {label:'Livraison',     color:'#B45309',icon:'📦'},
   MOBILITY: {label:'Mobilité',      color:'#7C3AED',icon:'🚙'},
+}
+
+// ── DOCUMENTS FINANCIERS ──────────────────────────────────────
+export const FINANCIAL_DOCS = [
+  // Relevés mensuels
+  {id:'FD-001',type:'RELEVÉ_MENSUEL',    label:'Relevé juillet 2026',         period:'2026-07',source:'TAXIMETER.GOV',gross:142_800,net:118_320,tps:r2(142_800*TPS),tvq:r2(142_800*TVQ),tips:14_280,fees:24_480,status:'VALIDÉ',  version:1,at:'2026-08-05T08:00:00Z',by:'Louise Côté',  note:null},
+  {id:'FD-002',type:'RELEVÉ_MENSUEL',    label:'Relevé août 2026',            period:'2026-08',source:'TAXIMETER.GOV',gross:148_400,net:123_080,tps:r2(148_400*TPS),tvq:r2(148_400*TVQ),tips:14_840,fees:25_320,status:'VALIDÉ',  version:1,at:'2026-09-05T08:00:00Z',by:'Louise Côté',  note:null},
+  {id:'FD-003',type:'RELEVÉ_MENSUEL',    label:'Relevé septembre 2026',       period:'2026-09',source:'TAXIMETER.GOV',gross:121_600,net:100_930,tps:r2(121_600*TPS),tvq:r2(121_600*TVQ),tips:12_160,fees:20_670,status:'EN_COURS',version:1,at:'2026-09-18T10:38:00Z',by:'SYSTEM',      note:'Période en cours — données partielles'},
+  // Relevés trimestriels
+  {id:'FD-004',type:'RELEVÉ_TRIM',       label:'Relevé Q1 2026',              period:'Q1 2026',source:'TAXIMETER.GOV',gross:136_800,net:113_520,tps:r2(136_800*TPS),tvq:r2(136_800*TVQ),tips:13_680,fees:23_280,status:'ARCHIVÉ', version:2,at:'2026-04-05T08:00:00Z',by:'Louise Côté',  note:'V2: correction frais plateforme janvier'},
+  {id:'FD-005',type:'RELEVÉ_TRIM',       label:'Relevé Q2 2026',              period:'Q2 2026',source:'TAXIMETER.GOV',gross:144_480,net:119_880,tps:r2(144_480*TPS),tvq:r2(144_480*TVQ),tips:14_448,fees:24_600,status:'ARCHIVÉ', version:1,at:'2026-07-05T08:00:00Z',by:'Louise Côté',  note:null},
+  {id:'FD-006',type:'RELEVÉ_TRIM',       label:'Relevé Q3 2026 (partiel)',    period:'Q3 2026',source:'TAXIMETER.GOV',gross:412_800,net:342_600,tps:r2(412_800*TPS),tvq:r2(412_800*TVQ),tips:41_280,fees:70_200,status:'EN_COURS',version:1,at:'2026-09-18T10:38:00Z',by:'SYSTEM',      note:'Période en cours — estimé à date'},
+  // Déclarations TPS/TVQ
+  {id:'FD-007',type:'DÉCL_TPS',          label:'Déclaration TPS Q1 2026',     period:'Q1 2026',source:'ENTERPRISE GOV',gross:136_800,net:6_840,  tps:r2(136_800*TPS),tvq:0,              tips:0,     fees:0,    status:'ARCHIVÉ', version:1,at:'2026-04-25T10:00:00Z',by:'Louise Côté',  note:'Réf: DAS-2026-Q1-ENT001'},
+  {id:'FD-008',type:'DÉCL_TVQ',          label:'Déclaration TVQ Q1 2026',     period:'Q1 2026',source:'ENTERPRISE GOV',gross:136_800,net:13_654, tps:0,               tvq:r2(136_800*TVQ),tips:0,    fees:0,    status:'ARCHIVÉ', version:1,at:'2026-04-25T10:05:00Z',by:'Louise Côté',  note:'Réf: DAS-2026-Q1-ENT001'},
+  {id:'FD-009',type:'DÉCL_TPS',          label:'Déclaration TPS Q2 2026',     period:'Q2 2026',source:'ENTERPRISE GOV',gross:144_480,net:7_224,  tps:r2(144_480*TPS),tvq:0,              tips:0,     fees:0,    status:'ARCHIVÉ', version:1,at:'2026-07-28T10:00:00Z',by:'Louise Côté',  note:'Réf: DAS-2026-Q2-ENT001'},
+  // Rapports financiers
+  {id:'FD-010',type:'RAPPORT_REVENUS',   label:'Rapport revenus chauffeurs Q2',period:'Q2 2026',source:'ENTERPRISE GOV',gross:144_480,net:112_694,tps:0,              tvq:0,              tips:14_448,fees:17_338,status:'VALIDÉ',  version:1,at:'2026-07-26T08:00:00Z',by:'Robert Simard',note:'Distribué aux chauffeurs'},
+  {id:'FD-011',type:'RAPPORT_AUDIT',     label:'Rapport d\'audit Q2 2026',    period:'Q2 2026',source:'SYSTEM',        gross:0,      net:0,      tps:0,               tvq:0,              tips:0,     fees:0,    status:'ARCHIVÉ', version:1,at:'2026-08-01T08:00:00Z',by:'SYSTEM',      note:'Journal complet des actions Q2'},
+  {id:'FD-012',type:'RELEVÉ_POURBOIRES', label:'Relevé pourboires Q3 (partiel)',period:'Q3 2026',source:'TAXIMETER.GOV',gross:41_280, net:41_280, tps:0,              tvq:0,              tips:41_280,fees:0,    status:'EN_COURS',version:1,at:'2026-09-18T10:38:00Z',by:'SYSTEM',      note:'Pourboires séparés revenus principaux'},
+]
+
+export const FD_TYPE_CONF: Record<string,{label:string;icon:string;color:string}> = {
+  RELEVÉ_MENSUEL:  {label:'Relevé mensuel',    icon:'📅',color:'#003DA5'},
+  RELEVÉ_TRIM:     {label:'Relevé trimestriel',icon:'📊',color:'#7C3AED'},
+  RELEVÉ_ANNUEL:   {label:'Relevé annuel',     icon:'📆',color:'#059669'},
+  DÉCL_TPS:        {label:'Déclaration TPS',   icon:'🧾',color:'#7C3AED'},
+  DÉCL_TVQ:        {label:'Déclaration TVQ',   icon:'🧾',color:'#7C3AED'},
+  RAPPORT_REVENUS: {label:'Rapport revenus',   icon:'💰',color:'#059669'},
+  RAPPORT_AUDIT:   {label:'Rapport audit',     icon:'🛡️',color:'#64748B'},
+  RELEVÉ_POURBOIRES:{label:'Relevé pourboires',icon:'💳',color:'#B45309'},
+}
+export const FD_STATUS_CONF: Record<string,{label:string;color:string;bg:string}> = {
+  'VALIDÉ':    {label:'Validé',     color:'#059669',bg:'rgba(5,150,105,0.12)'},
+  'EN_COURS':  {label:'En cours',   color:'#003DA5',bg:'rgba(0,61,165,0.10)'},
+  'ARCHIVÉ':   {label:'Archivé',    color:'#64748B',bg:'rgba(100,116,139,0.10)'},
+  'À_VÉRIFIER':{label:'À vérifier',color:'#B45309',bg:'rgba(180,83,9,0.10)'},
+  'CORRIGÉ':   {label:'Corrigé',    color:'#7C3AED',bg:'rgba(124,58,237,0.12)'},
 }
