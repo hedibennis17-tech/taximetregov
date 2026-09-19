@@ -538,3 +538,49 @@ export const COMP_CATEGORY_CONF: Record<string,{label:string;icon:string;color:s
   REPORTING:  {label:'Rapports',     icon:'📊',color:'#64748B'},
   DOCUMENT:   {label:'Documents',    icon:'📄',color:'#B45309'},
 }
+
+// ── PROVIDERS & SERVICES ──────────────────────────────────────
+export const PROVIDERS = [
+  {id:'PRV-001',name:'Uber',       country:'USA', emoji:'🚗', status:'CONNECTED',services:['SVC-001','SVC-002','SVC-003','SVC-004','SVC-005','SVC-006'],note:'6 services actifs · DEMO'},
+  {id:'PRV-002',name:'Lyft',       country:'USA', emoji:'🚕', status:'CONNECTED',services:['SVC-101'],note:'Mobilité uniquement · DEMO'},
+  {id:'PRV-003',name:'DoorDash',   country:'USA', emoji:'🍔', status:'CONNECTED',services:['SVC-201'],note:'Livraison restauration · DEMO'},
+  {id:'PRV-004',name:'Instacart',  country:'USA', emoji:'🛒', status:'PLANNED',  services:['SVC-301'],note:'Intégration future · DEMO'},
+  {id:'PRV-005',name:'DHL',        country:'DE',  emoji:'📦', status:'PLANNED',  services:['SVC-401'],note:'Logistique · DEMO'},
+  {id:'PRV-006',name:'GLS',        country:'DE',  emoji:'📦', status:'PLANNED',  services:['SVC-501'],note:'Logistique · DEMO'},
+  {id:'PRV-007',name:'Purolator',  country:'CA',  emoji:'📬', status:'PLANNED',  services:['SVC-601'],note:'Courrier national · DEMO'},
+  {id:'PRV-008',name:'UPS',        country:'USA', emoji:'📦', status:'PLANNED',  services:['SVC-701'],note:'Logistique · DEMO'},
+  {id:'PRV-009',name:'Skip',       country:'CA',  emoji:'🍕', status:'PLANNED',  services:['SVC-801'],note:'Livraison restauration · DEMO'},
+  {id:'PRV-010',name:'Intelcom',   country:'CA',  emoji:'🚚', status:'PLANNED',  services:['SVC-901'],note:'Dernier kilomètre · DEMO'},
+]
+
+export const PROVIDER_SERVICES = [
+  // UBER
+  {id:'SVC-001',providerId:'PRV-001',name:'Uber Taxi',       cat:'TAXI',     emoji:'🚕',desc:'Service taxi réglementé avec taximètre numérique',status:'ACTIVE',accountRef:'UBTX-ENT-001',lastSync:'2026-09-18T10:32:00Z',dataRx:1240,txCount:4,gross:134.75,tips:11.50},
+  {id:'SVC-002',providerId:'PRV-001',name:'UberX',           cat:'RIDESHARE',emoji:'🚗',desc:'Service rideshare standard',                        status:'ACTIVE',accountRef:'UBX-ENT-001', lastSync:'2026-09-18T10:20:00Z',dataRx:880, txCount:2,gross:41.50,tips:5.50},
+  {id:'SVC-003',providerId:'PRV-001',name:'Uber Green',      cat:'RIDESHARE',emoji:'🟢',desc:'Véhicules électriques ou hybrides',                 status:'PLANNED',accountRef:null,          lastSync:null,                 dataRx:0,   txCount:0,gross:0,    tips:0},
+  {id:'SVC-004',providerId:'PRV-001',name:'Uber Eats',       cat:'FOOD',     emoji:'🍔',desc:'Livraison de repas',                                status:'PLANNED',accountRef:null,          lastSync:null,                 dataRx:0,   txCount:0,gross:0,    tips:0},
+  {id:'SVC-005',providerId:'PRV-001',name:'Uber Eats Grocery',cat:'GROCERY', emoji:'🛒',desc:'Livraison d\'épicerie',                            status:'PLANNED',accountRef:null,          lastSync:null,                 dataRx:0,   txCount:0,gross:0,    tips:0},
+  {id:'SVC-006',providerId:'PRV-001',name:'Uber Delivery',   cat:'PARCEL',   emoji:'📦',desc:'Livraison de colis et courrier',                    status:'PLANNED',accountRef:null,          lastSync:null,                 dataRx:0,   txCount:0,gross:0,    tips:0},
+  // LYFT
+  {id:'SVC-101',providerId:'PRV-002',name:'Lyft Standard',   cat:'RIDESHARE',emoji:'🚗',desc:'Service rideshare Lyft',                            status:'ACTIVE',accountRef:'LFT-ENT-001', lastSync:'2026-09-17T16:05:00Z',dataRx:620, txCount:1,gross:21.00,tips:0},
+  // DOORDASH
+  {id:'SVC-201',providerId:'PRV-003',name:'DoorDash Livraison',cat:'DELIVERY',emoji:'🍔',desc:'Livraison restauration DoorDash',                 status:'ACTIVE',accountRef:'DDA-ENT-001', lastSync:'2026-09-17T12:05:00Z',dataRx:480, txCount:1,gross:12.00,tips:2.00},
+  // PLANIFIÉS
+  {id:'SVC-301',providerId:'PRV-004',name:'Instacart Épicerie',cat:'GROCERY',emoji:'🛒',desc:'Épicerie et produits frais',                       status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+  {id:'SVC-401',providerId:'PRV-005',name:'DHL Express',     cat:'PARCEL',   emoji:'📦',desc:'Colis express international',                       status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+  {id:'SVC-501',providerId:'PRV-006',name:'GLS Colis',       cat:'PARCEL',   emoji:'📦',desc:'Réseau colis européen',                             status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+  {id:'SVC-601',providerId:'PRV-007',name:'Purolator National',cat:'PARCEL', emoji:'📬',desc:'Courrier et colis Canada',                          status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+  {id:'SVC-701',providerId:'PRV-008',name:'UPS Ground',      cat:'PARCEL',   emoji:'📦',desc:'Livraison terrestre UPS',                           status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+  {id:'SVC-801',providerId:'PRV-009',name:'Skip Livraison',  cat:'FOOD',     emoji:'🍕',desc:'Livraison restauration Skip',                       status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+  {id:'SVC-901',providerId:'PRV-010',name:'Intelcom Express',cat:'PARCEL',   emoji:'🚚',desc:'Dernier kilomètre résidentiel',                     status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+]
+
+export const SVC_CAT_CONF: Record<string,{label:string;color:string;icon:string}> = {
+  TAXI:     {label:'Taxi',          color:'#003DA5',icon:'🚕'},
+  RIDESHARE:{label:'Rideshare',     color:'#7C3AED',icon:'🚗'},
+  FOOD:     {label:'Restauration',  color:'#DC2626',icon:'🍔'},
+  GROCERY:  {label:'Épicerie',      color:'#059669',icon:'🛒'},
+  PARCEL:   {label:'Colis/Courrier',color:'#B45309',icon:'📦'},
+  DELIVERY: {label:'Livraison',     color:'#B45309',icon:'📦'},
+  MOBILITY: {label:'Mobilité',      color:'#7C3AED',icon:'🚙'},
+}
