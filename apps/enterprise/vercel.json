@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd ../.. && npx turbo run build --filter=@taximetregov/enterprise",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}
