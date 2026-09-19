@@ -26,13 +26,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="text-[9px] text-qc-blue font-bold">Enterprise Gov</div>
             </div>
           </div>
-          {/* Entreprise courante */}
-          <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl px-3 py-2">
-            <div className="text-[9px] font-bold text-blue-600 dark:text-blue-400 mb-0.5">🏢 {CURRENT_ENT.tradeName}</div>
-            <div className="text-[8px] text-slate-400 font-mono">{CURRENT_ENT.id}</div>
-            <div className="flex items-center gap-1 mt-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500"/>
-              <span className="text-[8px] text-green-600 dark:text-green-400 font-bold">Connecté · PILOTE</span>
+          {/* Entreprise courante — Logo Uber DEMO */}
+          <div className="rounded-xl px-3 py-2.5" style={{background:'#000000'}}>
+            <div className="text-white font-black tracking-tighter" style={{fontSize:'1.5rem',fontFamily:'system-ui',letterSpacing:'-0.04em',lineHeight:1}}>uber</div>
+            <div className="text-[8px] font-mono mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>DEMO · {CURRENT_ENT.id}</div>
+            <div className="flex items-center gap-1 mt-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400"/>
+              <span className="text-[8px] font-bold" style={{color:'rgba(255,255,255,0.7)'}}>Connecté · PILOTE</span>
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <div className="w-6 h-6 rounded-lg bg-qc-blue flex items-center justify-center text-[10px] font-black text-white">R</div>
-            <div className="text-[10px] font-bold text-slate-700 dark:text-slate-200 hidden md:block">Robert Simard</div>
+            <div className="text-[10px] font-bold text-slate-700 dark:text-slate-200 hidden md:block">Sophie Marchand</div>
           </div>
         </header>
         <main className="flex-1">{children}</main>

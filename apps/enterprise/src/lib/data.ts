@@ -245,12 +245,12 @@ export const PERMISSIONS_MATRIX = [
 
 // ── AUDIT LOG DEMO ────────────────────────────────────────────
 export const AUDIT_LOG = [
-  {id:'AL-001',at:'2026-09-18T10:38:00Z',user:'Robert Simard',    role:'OWNER',    action:'SYNC_COMPLETED',    obj:'Revenue Ledger',   result:'OK',   note:'9840 enregistrements synchronisés'},
+  {id:'AL-001',at:'2026-09-18T10:38:00Z',user:'Sophie Marchand',    role:'OWNER',    action:'SYNC_COMPLETED',    obj:'Revenue Ledger',   result:'OK',   note:'9840 enregistrements synchronisés'},
   {id:'AL-002',at:'2026-09-18T08:00:00Z',user:'SYSTEM',           role:'SYSTEM',   action:'DOCUMENT_FLAGGED',  obj:'DOC-007',          result:'WARN', note:'Inspection TXM-004 expirée'},
   {id:'AL-003',at:'2026-09-17T14:00:00Z',user:'Louise Côté',      role:'FINANCE',  action:'DECLARATION_VIEWED',obj:'OBL-Q3',           result:'OK',   note:'Consultation obligations Q3'},
   {id:'AL-004',at:'2026-09-16T10:00:00Z',user:'Sophie Tran',      role:'VIEWER',   action:'DASHBOARD_VIEWED',  obj:'Dashboard',        result:'OK',   note:'Connexion et consultation'},
-  {id:'AL-005',at:'2026-09-15T09:00:00Z',user:'Robert Simard',    role:'OWNER',    action:'DRIVER_UPDATED',    obj:'DRV-QC-0004',      result:'OK',   note:'Statut mis à jour'},
-  {id:'AL-006',at:'2026-09-10T11:00:00Z',user:'Robert Simard',    role:'OWNER',    action:'USER_INVITED',      obj:'a.karim@taximetro.demo',result:'OK',note:'Invitation envoyée — rôle COMPLIANCE'},
+  {id:'AL-005',at:'2026-09-15T09:00:00Z',user:'Sophie Marchand',    role:'OWNER',    action:'DRIVER_UPDATED',    obj:'DRV-QC-0004',      result:'OK',   note:'Statut mis à jour'},
+  {id:'AL-006',at:'2026-09-10T11:00:00Z',user:'Sophie Marchand',    role:'OWNER',    action:'USER_INVITED',      obj:'d.chen@uber-demo.taximetergov.demo',result:'OK',note:'Invitation envoyée — rôle COMPLIANCE'},
   {id:'AL-007',at:'2026-09-01T08:00:00Z',user:'SYSTEM',           role:'SYSTEM',   action:'OBLIGATION_CREATED',obj:'OBL-Q3',           result:'OK',   note:'Obligation Q3 générée automatiquement'},
   {id:'AL-008',at:'2026-07-30T16:00:00Z',user:'Louise Côté',      role:'FINANCE',  action:'PAYMENT_SUBMITTED', obj:'OBL-Q2',           result:'OK',   note:'Paiement TPS/TVQ Q2 soumis'},
 ]
@@ -279,12 +279,12 @@ export const MONTHLY = [
 
 // ── DRIVERS ENRICHIS ──────────────────────────────────────────
 export const DRIVER_DETAIL: Record<string, {email:string;phone:string;address:string;joined:string;syncStatus:string;lastSync:string|null;externalRef:string|null;docsStatus:string;complianceScore:number;history:Array<{at:string;action:string;note:string}>}> = {
-  'DRV-QC-0001': {email:'jean.tremblay.demo@taximetro.demo',phone:'(514) 555-1001',address:'123 rue Beaubien, Montréal QC H2S 1Y3',joined:'2026-01-15',syncStatus:'CONNECTED',lastSync:'2026-09-18T10:32:00Z',externalRef:'TAXGOV-DRV-001',docsStatus:'OK',complianceScore:98,history:[{at:'2026-01-15T09:00:00Z',action:'DRIVER_ASSOCIATED',note:'Chauffeur associé à Taxi Métro'},{at:'2026-03-10T10:00:00Z',action:'VEHICLE_ASSIGNED',note:'TXM-001 assigné'},{at:'2026-09-18T10:32:00Z',action:'SYNC_COMPLETED',note:'Synchronisation TAXIMETER.GOV réussie'}]},
-  'DRV-QC-0002': {email:'marie.gagnon.demo@taximetro.demo',phone:'(514) 555-1002',address:'456 av. du Mont-Royal, Montréal QC H2T 2S5',joined:'2026-01-15',syncStatus:'CONNECTED',lastSync:'2026-09-18T08:32:00Z',externalRef:'TAXGOV-DRV-002',docsStatus:'OK',complianceScore:96,history:[{at:'2026-01-15T09:10:00Z',action:'DRIVER_ASSOCIATED',note:'Chauffeur associé'},{at:'2026-09-18T08:32:00Z',action:'SYNC_COMPLETED',note:'Sync réussie'}]},
-  'DRV-QC-0003': {email:'karim.hassan.demo@taximetro.demo',phone:'(514) 555-1003',address:'789 rue Saint-Denis, Montréal QC H2J 2L9',joined:'2026-02-01',syncStatus:'CONNECTED',lastSync:'2026-09-18T07:47:00Z',externalRef:'TAXGOV-DRV-003',docsStatus:'OK',complianceScore:94,history:[{at:'2026-02-01T10:00:00Z',action:'DRIVER_ASSOCIATED',note:'Sous-traitant associé'}]},
-  'DRV-QC-0004': {email:'ali.bouchard.demo@taximetro.demo',phone:'(514) 555-1004',address:'321 boul. Saint-Laurent, Montréal QC H2X 2T4',joined:'2026-02-15',syncStatus:'PENDING',lastSync:'2026-09-17T22:02:00Z',externalRef:'TAXGOV-DRV-004',docsStatus:'EXPIRING',complianceScore:72,history:[{at:'2026-02-15T10:00:00Z',action:'DRIVER_ASSOCIATED',note:'Sous-traitant associé'},{at:'2026-09-17T08:00:00Z',action:'DOCUMENT_FLAGGED',note:'Permis expire 2026-09-30'}]},
-  'DRV-QC-0005': {email:'nadia.patel.demo@taximetro.demo',phone:'(514) 555-1005',address:'654 rue Sherbrooke O., Montréal QC H3A 1E3',joined:'2026-03-01',syncStatus:'ERROR',lastSync:null,externalRef:null,docsStatus:'EXPIRED',complianceScore:40,history:[{at:'2026-03-01T10:00:00Z',action:'DRIVER_ASSOCIATED',note:'Employée associée'},{at:'2026-06-01T08:00:00Z',action:'DOCUMENT_EXPIRED',note:'Permis expiré'},{at:'2026-06-02T09:00:00Z',action:'DRIVER_SUSPENDED',note:'Suspension suite expiration permis'}]},
-  'DRV-QC-0006': {email:'marc.leblanc.demo@taximetro.demo',phone:'(514) 555-1006',address:'987 rue Papineau, Montréal QC H2K 4K6',joined:'2026-01-20',syncStatus:'CONNECTED',lastSync:'2026-09-18T07:00:00Z',externalRef:'TAXGOV-DRV-006',docsStatus:'OK',complianceScore:95,history:[{at:'2026-01-20T10:00:00Z',action:'DRIVER_ASSOCIATED',note:'Employé associé'},{at:'2026-09-18T07:00:00Z',action:'SYNC_COMPLETED',note:'Sync OK'}]},
+  'DRV-QC-0001': {email:'jean.tremblay.demo@uber-demo.taximetergov.demo',phone:'(514) 555-1001',address:'123 rue Beaubien, Montréal QC H2S 1Y3',joined:'2026-01-15',syncStatus:'CONNECTED',lastSync:'2026-09-18T10:32:00Z',externalRef:'TAXGOV-DRV-001',docsStatus:'OK',complianceScore:98,history:[{at:'2026-01-15T09:00:00Z',action:'DRIVER_ASSOCIATED',note:'Chauffeur associé à Uber QC (DEMO)'},{at:'2026-03-10T10:00:00Z',action:'VEHICLE_ASSIGNED',note:'TXM-001 assigné'},{at:'2026-09-18T10:32:00Z',action:'SYNC_COMPLETED',note:'Synchronisation TAXIMETER.GOV réussie'}]},
+  'DRV-QC-0002': {email:'marie.gagnon.demo@uber-demo.taximetergov.demo',phone:'(514) 555-1002',address:'456 av. du Mont-Royal, Montréal QC H2T 2S5',joined:'2026-01-15',syncStatus:'CONNECTED',lastSync:'2026-09-18T08:32:00Z',externalRef:'TAXGOV-DRV-002',docsStatus:'OK',complianceScore:96,history:[{at:'2026-01-15T09:10:00Z',action:'DRIVER_ASSOCIATED',note:'Chauffeur associé'},{at:'2026-09-18T08:32:00Z',action:'SYNC_COMPLETED',note:'Sync réussie'}]},
+  'DRV-QC-0003': {email:'karim.hassan.demo@uber-demo.taximetergov.demo',phone:'(514) 555-1003',address:'789 rue Saint-Denis, Montréal QC H2J 2L9',joined:'2026-02-01',syncStatus:'CONNECTED',lastSync:'2026-09-18T07:47:00Z',externalRef:'TAXGOV-DRV-003',docsStatus:'OK',complianceScore:94,history:[{at:'2026-02-01T10:00:00Z',action:'DRIVER_ASSOCIATED',note:'Sous-traitant associé'}]},
+  'DRV-QC-0004': {email:'ali.bouchard.demo@uber-demo.taximetergov.demo',phone:'(514) 555-1004',address:'321 boul. Saint-Laurent, Montréal QC H2X 2T4',joined:'2026-02-15',syncStatus:'PENDING',lastSync:'2026-09-17T22:02:00Z',externalRef:'TAXGOV-DRV-004',docsStatus:'EXPIRING',complianceScore:72,history:[{at:'2026-02-15T10:00:00Z',action:'DRIVER_ASSOCIATED',note:'Sous-traitant associé'},{at:'2026-09-17T08:00:00Z',action:'DOCUMENT_FLAGGED',note:'Permis expire 2026-09-30'}]},
+  'DRV-QC-0005': {email:'nadia.patel.demo@uber-demo.taximetergov.demo',phone:'(514) 555-1005',address:'654 rue Sherbrooke O., Montréal QC H3A 1E3',joined:'2026-03-01',syncStatus:'ERROR',lastSync:null,externalRef:null,docsStatus:'EXPIRED',complianceScore:40,history:[{at:'2026-03-01T10:00:00Z',action:'DRIVER_ASSOCIATED',note:'Employée associée'},{at:'2026-06-01T08:00:00Z',action:'DOCUMENT_EXPIRED',note:'Permis expiré'},{at:'2026-06-02T09:00:00Z',action:'DRIVER_SUSPENDED',note:'Suspension suite expiration permis'}]},
+  'DRV-QC-0006': {email:'marc.leblanc.demo@uber-demo.taximetergov.demo',phone:'(514) 555-1006',address:'987 rue Papineau, Montréal QC H2K 4K6',joined:'2026-01-20',syncStatus:'CONNECTED',lastSync:'2026-09-18T07:00:00Z',externalRef:'TAXGOV-DRV-006',docsStatus:'OK',complianceScore:95,history:[{at:'2026-01-20T10:00:00Z',action:'DRIVER_ASSOCIATED',note:'Employé associé'},{at:'2026-09-18T07:00:00Z',action:'SYNC_COMPLETED',note:'Sync OK'}]},
 }
 
 // ── VEHICLES ENRICHIS ─────────────────────────────────────────
@@ -520,7 +520,7 @@ export const REPORT_TEMPLATES = [
 
 export const GENERATED_REPORTS = [
   {id:'GEN-001',templateId:'RPT-002',name:'Déclaration TPS/TVQ Q2 2026',period:'Q2 2026',generatedAt:'2026-07-25T10:00:00Z',generatedBy:'Louise Côté',size:'48 KB', format:'PDF',status:'SENT',   sentTo:'Comptable externe',sentAt:'2026-07-25T10:05:00Z'},
-  {id:'GEN-002',templateId:'RPT-001',name:'Rapport revenus Q2 2026',    period:'Q2 2026',generatedAt:'2026-07-26T08:00:00Z',generatedBy:'Robert Simard',size:'124 KB',format:'XLSX',status:'SAVED',  sentTo:null,               sentAt:null},
+  {id:'GEN-002',templateId:'RPT-001',name:'Rapport revenus Q2 2026',    period:'Q2 2026',generatedAt:'2026-07-26T08:00:00Z',generatedBy:'Sophie Marchand',size:'124 KB',format:'XLSX',status:'SAVED',  sentTo:null,               sentAt:null},
   {id:'GEN-003',templateId:'RPT-003',name:'Réconciliation Q3 Sept 18',  period:'2026-09-18',generatedAt:'2026-09-18T10:40:00Z',generatedBy:'SYSTEM',size:'32 KB', format:'PDF',status:'SAVED',  sentTo:null,               sentAt:null},
 ]
 
@@ -646,7 +646,7 @@ export const FINANCIAL_DOCS = [
   {id:'FD-008',type:'DÉCL_TVQ',          label:'Déclaration TVQ Q1 2026',     period:'Q1 2026',source:'ENTERPRISE GOV',gross:136_800,net:13_654, tps:0,               tvq:r2(136_800*TVQ),tips:0,    fees:0,    status:'ARCHIVÉ', version:1,at:'2026-04-25T10:05:00Z',by:'Louise Côté',  note:'Réf: DAS-2026-Q1-ENT001'},
   {id:'FD-009',type:'DÉCL_TPS',          label:'Déclaration TPS Q2 2026',     period:'Q2 2026',source:'ENTERPRISE GOV',gross:144_480,net:7_224,  tps:r2(144_480*TPS),tvq:0,              tips:0,     fees:0,    status:'ARCHIVÉ', version:1,at:'2026-07-28T10:00:00Z',by:'Louise Côté',  note:'Réf: DAS-2026-Q2-ENT001'},
   // Rapports financiers
-  {id:'FD-010',type:'RAPPORT_REVENUS',   label:'Rapport revenus chauffeurs Q2',period:'Q2 2026',source:'ENTERPRISE GOV',gross:144_480,net:112_694,tps:0,              tvq:0,              tips:14_448,fees:17_338,status:'VALIDÉ',  version:1,at:'2026-07-26T08:00:00Z',by:'Robert Simard',note:'Distribué aux chauffeurs'},
+  {id:'FD-010',type:'RAPPORT_REVENUS',   label:'Rapport revenus chauffeurs Q2',period:'Q2 2026',source:'ENTERPRISE GOV',gross:144_480,net:112_694,tps:0,              tvq:0,              tips:14_448,fees:17_338,status:'VALIDÉ',  version:1,at:'2026-07-26T08:00:00Z',by:'Sophie Marchand',note:'Distribué aux chauffeurs'},
   {id:'FD-011',type:'RAPPORT_AUDIT',     label:'Rapport d\'audit Q2 2026',    period:'Q2 2026',source:'SYSTEM',        gross:0,      net:0,      tps:0,               tvq:0,              tips:0,     fees:0,    status:'ARCHIVÉ', version:1,at:'2026-08-01T08:00:00Z',by:'SYSTEM',      note:'Journal complet des actions Q2'},
   {id:'FD-012',type:'RELEVÉ_POURBOIRES', label:'Relevé pourboires Q3 (partiel)',period:'Q3 2026',source:'TAXIMETER.GOV',gross:41_280, net:41_280, tps:0,              tvq:0,              tips:41_280,fees:0,    status:'EN_COURS',version:1,at:'2026-09-18T10:38:00Z',by:'SYSTEM',      note:'Pourboires séparés revenus principaux'},
 ]
@@ -667,4 +667,73 @@ export const FD_STATUS_CONF: Record<string,{label:string;color:string;bg:string}
   'ARCHIVÉ':   {label:'Archivé',    color:'#64748B',bg:'rgba(100,116,139,0.10)'},
   'À_VÉRIFIER':{label:'À vérifier',color:'#B45309',bg:'rgba(180,83,9,0.10)'},
   'CORRIGÉ':   {label:'Corrigé',    color:'#7C3AED',bg:'rgba(124,58,237,0.12)'},
+}
+
+// ── API ENDPOINTS DÉMO ────────────────────────────────────────
+export const API_ENDPOINTS = [
+  {id:'API-001',name:'Enterprise API',   version:'v2.1',status:'CONNECTED',requests:24_582,success:99.8,errors:49,lastSync:'2026-09-18T10:38:00Z',scopes:['enterprise:read','enterprise:write']},
+  {id:'API-002',name:'Driver API',       version:'v2.0',status:'CONNECTED',requests:18_441,success:99.5,errors:92,lastSync:'2026-09-18T10:32:00Z',scopes:['drivers:read','drivers:write']},
+  {id:'API-003',name:'Vehicle API',      version:'v2.0',status:'CONNECTED',requests:8_220, success:100, errors:0, lastSync:'2026-09-18T09:45:00Z',scopes:['vehicles:read','vehicles:write']},
+  {id:'API-004',name:'Activity API',     version:'v1.8',status:'CONNECTED',requests:41_820,success:99.9,errors:42,lastSync:'2026-09-18T10:38:00Z',scopes:['activities:read']},
+  {id:'API-005',name:'Transaction API',  version:'v2.2',status:'CONNECTED',requests:38_640,success:99.7,errors:116,lastSync:'2026-09-18T10:38:00Z',scopes:['transactions:read','transactions:write']},
+  {id:'API-006',name:'Revenue API',      version:'v1.5',status:'CONNECTED',requests:12_100,success:100, errors:0, lastSync:'2026-09-18T10:00:00Z',scopes:['revenue:read']},
+  {id:'API-007',name:'Tax API',          version:'v1.2',status:'CONNECTED',requests:6_480, success:99.6,errors:26,lastSync:'2026-09-18T09:00:00Z',scopes:['tax:read']},
+  {id:'API-008',name:'Document API',     version:'v1.0',status:'CONNECTED',requests:3_210, success:100, errors:0, lastSync:'2026-09-17T08:00:00Z',scopes:['documents:read']},
+  {id:'API-009',name:'Government API',   version:'v0.1',status:'PLANNED',  requests:0,     success:0,   errors:0, lastSync:null,               scopes:['government:read','government:write']},
+  {id:'API-010',name:'Compliance API',   version:'v1.1',status:'CONNECTED',requests:2_140, success:100, errors:0, lastSync:'2026-09-18T08:00:00Z',scopes:['compliance:read']},
+]
+
+// ── WEBHOOK EVENTS DÉMO ───────────────────────────────────────
+export const WEBHOOK_EVENTS_FULL = [
+  {id:'WHE-001',event:'activity.completed', src:'TAXIMETER.GOV', dst:'Enterprise Gov',at:'2026-09-18T10:32:00Z',status:'SUCCESS',attempts:1,traceId:'TRC-A001',payload:'{"actId":"ACT-ENT-001","gross":42.50}',error:null},
+  {id:'WHE-002',event:'transaction.created',src:'TAXIMETER.GOV', dst:'Revenue Ledger',at:'2026-09-18T10:32:05Z',status:'SUCCESS',attempts:1,traceId:'TRC-T001',payload:'{"txId":"TX-ENT-001","amount":42.50}',error:null},
+  {id:'WHE-003',event:'trip.completed',     src:'UBER DEMO',      dst:'TAXIMETER.GOV',at:'2026-09-18T10:20:00Z',status:'SUCCESS',attempts:1,traceId:'TRC-U001',payload:'{"tripId":"UBER-8421","fare":22.50}', error:null},
+  {id:'WHE-004',event:'tax.calculated',     src:'Tax Engine',     dst:'Revenue Ledger',at:'2026-09-18T10:33:00Z',status:'SUCCESS',attempts:1,traceId:'TRC-TAX001',payload:'{"tps":2.125,"tvq":4.239}',error:null},
+  {id:'WHE-005',event:'driver.updated',     src:'Enterprise Gov', dst:'TAXIMETER.GOV',at:'2026-09-17T09:00:00Z',status:'SUCCESS',attempts:1,traceId:'TRC-D001',payload:'{"driverId":"DRV-QC-0004","status":"PENDING"}',error:null},
+  {id:'WHE-006',event:'document.expired',   src:'Compliance Engine',dst:'Notifications',at:'2026-09-17T08:00:00Z',status:'SUCCESS',attempts:1,traceId:'TRC-DOC001',payload:'{"docId":"DOC-007","expiry":"2026-09-30"}',error:null},
+  {id:'WHE-007',event:'trip.completed',     src:'UBER DEMO',      dst:'TAXIMETER.GOV',at:'2026-09-17T10:00:00Z',status:'FAILED',  attempts:3,traceId:'TRC-U002',payload:'{}',error:'Auth token expiré'},
+  {id:'WHE-008',event:'declaration.created',src:'Enterprise Gov', dst:'Gov Gateway',  at:'2026-09-18T09:00:00Z',status:'PENDING', attempts:0,traceId:'TRC-GOV001',payload:'{"declId":"DCL-Q3-2026"}',error:'Connexion gouvernementale non disponible — MODE PILOTE'},
+]
+
+// ── SCOPES API ────────────────────────────────────────────────
+export const API_SCOPES = [
+  {scope:'enterprise:read',  desc:'Lire le profil entreprise',          roles:['OWNER','ADMIN','FINANCE','COMPLIANCE','VIEWER']},
+  {scope:'enterprise:write', desc:'Modifier le profil entreprise',      roles:['OWNER','ADMIN']},
+  {scope:'drivers:read',     desc:'Consulter les dossiers chauffeurs',  roles:['OWNER','ADMIN','DISPATCH','COMPLIANCE','VIEWER']},
+  {scope:'drivers:write',    desc:'Modifier les chauffeurs',            roles:['OWNER','ADMIN','DISPATCH']},
+  {scope:'activities:read',  desc:'Consulter les activités',            roles:['OWNER','ADMIN','FINANCE','DISPATCH','VIEWER']},
+  {scope:'transactions:read',desc:'Consulter les transactions',         roles:['OWNER','ADMIN','FINANCE']},
+  {scope:'transactions:write',desc:'Créer/modifier transactions',       roles:['OWNER','ADMIN','FINANCE']},
+  {scope:'revenue:read',     desc:'Consulter les revenus',              roles:['OWNER','ADMIN','FINANCE']},
+  {scope:'tax:read',         desc:'Consulter données fiscales',         roles:['OWNER','ADMIN','FINANCE','COMPLIANCE']},
+  {scope:'declarations:read',desc:'Consulter déclarations',             roles:['OWNER','ADMIN','FINANCE']},
+  {scope:'declarations:write',desc:'Préparer/soumettre déclarations',  roles:['OWNER','ADMIN','FINANCE']},
+  {scope:'documents:read',   desc:'Consulter documents',                roles:['OWNER','ADMIN','FINANCE','COMPLIANCE','VIEWER']},
+  {scope:'compliance:read',  desc:'Consulter conformité',               roles:['OWNER','ADMIN','COMPLIANCE']},
+  {scope:'government:read',  desc:'Données gov (futur)',                roles:['OWNER','ADMIN']},
+  {scope:'government:write', desc:'Transmission gov (futur)',           roles:['OWNER']},
+]
+
+// ── UBER SERVICES DASHBOARD ───────────────────────────────────
+export const UBER_SERVICES_DASHBOARD = [
+  {id:'UBR-001',name:'Uber Taxi',      emoji:'🚕',status:'ACTIVE', drivers:2,vehicles:2,activities:5, trips:5, txCount:6, gross:172.25,tips:14.50,tps:8.61, tvq:17.18, cancels:0,refunds:0,exceptions:1,docs:'OK'},
+  {id:'UBR-002',name:'UberX',         emoji:'🚗',status:'ACTIVE', drivers:2,vehicles:2,activities:2, trips:2, txCount:2, gross:41.50, tips:5.50, tps:2.08, tvq:4.14,  cancels:0,refunds:1,exceptions:0,docs:'OK'},
+  {id:'UBR-003',name:'Uber Green',    emoji:'🟢',status:'ACTIVE', drivers:1,vehicles:1,activities:1, trips:1, txCount:1, gross:21.00, tips:0,    tps:1.05, tvq:2.09,  cancels:0,refunds:0,exceptions:0,docs:'OK'},
+  {id:'UBR-004',name:'UberXL',        emoji:'🚙',status:'ACTIVE', drivers:1,vehicles:1,activities:2, trips:2, txCount:2, gross:62.50, tips:7.00, tps:3.13, tvq:6.24,  cancels:0,refunds:0,exceptions:0,docs:'OK'},
+  {id:'UBR-005',name:'Uber Eats',     emoji:'🍔',status:'ACTIVE', drivers:1,vehicles:1,activities:1, trips:0, txCount:1, gross:12.00, tips:2.00, tps:0.60, tvq:1.20,  cancels:0,refunds:0,exceptions:0,docs:'OK'},
+  {id:'UBR-006',name:'Uber Eats Grocery',emoji:'🛒',status:'ACTIVE',drivers:0,vehicles:0,activities:0,trips:0,txCount:0,gross:0,tips:0,tps:0,tvq:0,cancels:0,refunds:0,exceptions:0,docs:'—'},
+  {id:'UBR-007',name:'Uber Delivery', emoji:'📦',status:'PLANNED',drivers:0,vehicles:0,activities:0, trips:0, txCount:0, gross:0,     tips:0,    tps:0,    tvq:0,     cancels:0,refunds:0,exceptions:0,docs:'—'},
+]
+
+// ── DONNÉES PUBLIQUES UBER (vérifiées) ────────────────────────
+export const UBER_PUBLIC_DATA = {
+  impactEco2024_qc:    1_900_000_000,
+  impactEats2024_qc:   270_000_000,
+  anneeRef:            2024,
+  publication:         '4 décembre 2025',
+  source:              'Uber Canada / Public First',
+  sourceUrl:           'https://www.uber.com/ca/fr-ca/newsroom/stimuler-la-croissance-un-impact-economique-de-19-milliard-pour-uber-au-quebec/',
+  noteImpact:          "1,9 G$ = impact économique ESTIMÉ au Québec — ≠ chiffre d'affaires Uber",
+  chauffeursQC:        'Non publié officiellement — ne pas extrapoler',
+  chauffeursSource:    'Uber ne divulgue pas le nombre exact pour le Québec',
 }
