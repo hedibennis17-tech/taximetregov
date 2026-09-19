@@ -98,7 +98,7 @@ export default function ProfilePage() {
               </div>
             ))}
             <div className="bg-amber-50 dark:bg-amber-500/8 border border-amber-200 dark:border-amber-500/20 rounded-xl px-3 py-2 text-[8px] text-amber-700 dark:text-amber-400">
-              ⚠️ Les obligations fiscales varient selon le type d'activité. TPS/TVQ taxi ≠ Uber Eats. Revenus annuels synthétiques affichés: {(CURRENT_ENT.revenusAnnuels2026/1_000_000).toFixed(2)} M$ — EXEMPLE SEULEMENT.
+              ⚠️ Les obligations fiscales varient selon le type d'activité. TPS/TVQ taxi ≠ Uber Eats. Revenus annuels synthétiques affichés: {(CURRENT_ENT.revenusAnnuels2024_estime/1_000_000).toFixed(2)} M$ — EXEMPLE SEULEMENT.
             </div>
           </div>
         )}
@@ -111,7 +111,7 @@ export default function ProfilePage() {
               {l:'Ville',        v:CURRENT_ENT.city},
               {l:'Province',     v:CURRENT_ENT.province},
               {l:'Code postal',  v:CURRENT_ENT.postal},
-              {l:'Téléphone',    v:CURRENT_ENT.phone},
+              {l:'Téléphone',    v:CURRENT_ENT.phoneQC??'—'},
               {l:'Courriel',     v:CURRENT_ENT.email},
               {l:'Site web',     v:CURRENT_ENT.website},
             ].map(r=>(

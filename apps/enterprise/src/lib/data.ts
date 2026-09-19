@@ -11,51 +11,65 @@ const TPS=0.05; const TVQ=0.09975
 // ENTREPRISE CONNECTÉE (session DEMO = ENT-DEMO-001)
 export const CURRENT_ENT = {
   id:'ENT-DEMO-001',
-  legalName:'Taxi Métro Montréal Inc.',
-  tradeName:'Taxi Métro Montréal',
-  neq:'1234567890',
-  taxId:'TPS-123456-7',
-  tvqId:'TVQ-9876543-2',
+  // ⚠️ DONNÉES SYNTHÉTIQUES — COMPTE DÉMO POUR DÉMONSTRATION TAXIMETER.GOV
+  // Les chiffres affichés sont des estimations inspirées de données publiques
+  // disponibles pour illustrer les capacités du système. Ils ne représentent
+  // pas les états financiers réels d'Uber Technologies Inc. ou de ses filiales.
+  legalName:'Uber Canada Inc. (DEMO)',
+  tradeName:'Uber Québec',
+  neq:'8765432100',               // FICTIF — DEMO UNIQUEMENT
+  taxId:'TPS-UBER-DEMO-001',      // FICTIF — DEMO UNIQUEMENT
+  tvqId:'TVQ-UBER-DEMO-001',      // FICTIF — DEMO UNIQUEMENT
   sector:'MULTI-ACTIVITÉS',
   type:'CORPORATION',
   status:'ACTIVE',
   verif:'VERIFIED',
   connection:'CONNECTED',
-  compliance:98,
-  address:'1200 boul. Saint-Laurent',
-  city:'Montréal',
-  province:'QC',
-  postal:'H2X 2S5',
-  phone:'(514) 555-0201',
-  email:'admin@taximetro.demo',
-  website:'www.taximetro.demo',
-  registered:'2026-01-15',
-  repr:'Robert Simard',
-  reprTitle:'Président & représentant autorisé',
-  reprFiscal:'Louise Côté',
+  compliance:97,
+  address:'720 King St W, Suite 1600',
+  city:'Toronto',
+  province:'ON',
+  postal:'M5V 2T3',
+  phoneQC:'(514) 555-UBER',       // FICTIF
+  email:'quebec.demo@uber-taximetergov.demo',
+  website:'www.uber.com',
+  registered:'2014-09-01',        // Uber Canada présent depuis ~2014
+  repr:'Sophie Marchand',         // FICTIF — représentant DEMO
+  reprTitle:'Directrice Québec — Compte DÉMO',
+  reprFiscal:'Jean-Philippe Roy', // FICTIF
   jurisdiction:'QC',
-  // Services actifs (PILOTE — données synthétiques)
+  logoEmoji:'⚫',                  // Noir = couleur Uber
+  logoBg:'#000000',
+  logoText:'uber',
+  // ── CHIFFRES ANNUELS 2024 — ESTIMATION PUBLIQUE ──────────────
+  // Source: Uber a déclaré un impact économique de ~1,9 G$ au QC en 2024
+  // Ces chiffres sont une ESTIMATION SYNTHÉTIQUE à des fins de DÉMONSTRATION
+  // Uber ne divulgue pas son CA Québec séparément
+  revenusAnnuels2024_estime: 380_000_000,   // Estimation DEMO revenus QC
+  revenusAnnuels2026_demo:   412_800,        // Q3 2026 données DEMO de l'app
+  revenusNote:"DONNÉES SYNTHÉTIQUES — ESTIMATION INSPIRÉE DE DONNÉES PUBLIQUES — NE REPRÉSENTE PAS LES ÉTATS FINANCIERS RÉELS D'UBER",
+  chauffeurs_qc_estime: 17_000,             // ~17 000 chauffeurs actifs QC (public)
+  trips_annuels_estime: 45_000_000,         // Estimation courses annuelles QC
+  // ── SERVICES ACTIFS ──────────────────────────────────────────
   services:[
-    {id:'SVC-001',label:'Taxi réglementé',  emoji:'🚕',status:'ACTIVE',  note:'Avec taximètre numérique'},
+    {id:'SVC-001',label:'Uber Taxi',        emoji:'🚕',status:'ACTIVE',  note:'Taxi réglementé avec taximètre numérique · QC'},
     {id:'SVC-002',label:'UberX',            emoji:'🚗',status:'ACTIVE',  note:'Rideshare standard'},
     {id:'SVC-003',label:'Uber Green',       emoji:'🟢',status:'ACTIVE',  note:'Véhicules électriques/hybrides'},
-    {id:'SVC-004',label:'UberXL',           emoji:'🚙',status:'PLANNED', note:'Capacité étendue'},
-    {id:'SVC-005',label:'Uber Eats',        emoji:'🍔',status:'PLANNED', note:'Livraison restauration'},
-    {id:'SVC-006',label:'Uber Eats Grocery',emoji:'🛒',status:'PLANNED', note:'Livraison épicerie'},
-    {id:'SVC-007',label:'Uber Delivery',    emoji:'📦',status:'PLANNED', note:'Colis et courrier'},
+    {id:'SVC-004',label:'UberXL',           emoji:'🚙',status:'ACTIVE',  note:'Véhicules grande capacité'},
+    {id:'SVC-005',label:'Uber Eats',        emoji:'🍔',status:'ACTIVE',  note:'Livraison restauration'},
+    {id:'SVC-006',label:'Uber Eats Grocery',emoji:'🛒',status:'ACTIVE',  note:'Livraison épicerie Cornershop'},
+    {id:'SVC-007',label:'Uber Delivery',    emoji:'📦',status:'PLANNED', note:'Livraison colis — déploiement futur'},
   ],
-  // Revenus synthétiques DEMO — NE REPRÉSENTE PAS LE CA RÉEL D'UBER
-  revenusAnnuels2026:486_750_000,
-  revenusNote:"DONNÉES SYNTHÉTIQUES — EXEMPLE DÉMONSTRATION — NE REPRÉSENTE PAS LE CA RÉEL D'UBER",
 }
 
 export const ENT_USERS = [
-  {id:'EUSR-001',name:'Robert Simard',      role:'OWNER',    email:'r.simard@taximetro.demo',     status:'ACTIVE',  lastLogin:'2026-09-18T08:02:00Z'},
-  {id:'EUSR-002',name:'Louise Côté',         role:'FINANCE',  email:'l.cote@taximetro.demo',        status:'ACTIVE',  lastLogin:'2026-09-17T14:00:00Z'},
-  {id:'EUSR-003',name:'Marc Dupont',         role:'DISPATCH', email:'m.dupont@taximetro.demo',      status:'ACTIVE',  lastLogin:'2026-09-18T07:30:00Z'},
-  {id:'EUSR-004',name:'Sophie Tran',         role:'VIEWER',   email:'s.tran@taximetro.demo',        status:'ACTIVE',  lastLogin:'2026-09-16T10:00:00Z'},
-  {id:'EUSR-005',name:'Ali Karim',           role:'COMPLIANCE',email:'a.karim@taximetro.demo',      status:'PENDING', lastLogin:null},
+  {id:'EUSR-001',name:'Sophie Marchand',    role:'OWNER',    email:'s.marchand@uber-demo.taximetergov.demo',status:'ACTIVE',  lastLogin:'2026-09-18T08:02:00Z'},
+  {id:'EUSR-002',name:'Jean-Philippe Roy',  role:'FINANCE',  email:'jp.roy@uber-demo.taximetergov.demo',   status:'ACTIVE',  lastLogin:'2026-09-17T14:00:00Z'},
+  {id:'EUSR-003',name:'Karim Benali',       role:'DISPATCH', email:'k.benali@uber-demo.taximetergov.demo', status:'ACTIVE',  lastLogin:'2026-09-18T07:30:00Z'},
+  {id:'EUSR-004',name:'Marie-Ève Lapointe', role:'VIEWER',   email:'me.lapointe@uber-demo.taximetergov.demo',status:'ACTIVE',lastLogin:'2026-09-16T10:00:00Z'},
+  {id:'EUSR-005',name:'David Chen',         role:'COMPLIANCE',email:'d.chen@uber-demo.taximetergov.demo',  status:'PENDING', lastLogin:null},
 ]
+// ⚠️ UTILISATEURS FICTIFS — DÉMONSTRATION TAXIMETER.GOV UNIQUEMENT
 
 export const ENT_DRIVERS = [
   {id:'DRV-QC-0001',name:'Jean Tremblay',   status:'ACTIVE',    vehicle:'TXM-001',plate:'ABC-1234',actQ3:1842,revQ3:r2(1842*22.4),docs:'OK',   relation:'EMPLOYEE'},
@@ -204,12 +218,13 @@ export const NAV_SECTIONS = [
 ]
 
 // ── REPRÉSENTANTS ─────────────────────────────────────────────
+// ⚠️ REPRÉSENTANTS FICTIFS — DÉMONSTRATION TAXIMETER.GOV — UBER CANADA DEMO
 export const ENT_REPRESENTATIVES = [
-  {id:'REP-001',firstName:'Robert',lastName:'Simard',   role:'OWNER',       email:'r.simard@taximetro.demo',   phone:'(514) 555-0221',status:'ACTIVE', addedAt:'2026-01-15',lastLogin:'2026-09-18T08:02:00Z'},
-  {id:'REP-002',firstName:'Louise',lastName:'Côté',     role:'FINANCE',     email:'l.cote@taximetro.demo',     phone:'(514) 555-0222',status:'ACTIVE', addedAt:'2026-01-15',lastLogin:'2026-09-17T14:00:00Z'},
-  {id:'REP-003',firstName:'Marc',  lastName:'Dupont',   role:'DISPATCH',    email:'m.dupont@taximetro.demo',   phone:'(514) 555-0223',status:'ACTIVE', addedAt:'2026-02-01',lastLogin:'2026-09-18T07:30:00Z'},
-  {id:'REP-004',firstName:'Sophie',lastName:'Tran',     role:'VIEWER',      email:'s.tran@taximetro.demo',     phone:'(514) 555-0224',status:'ACTIVE', addedAt:'2026-03-15',lastLogin:'2026-09-16T10:00:00Z'},
-  {id:'REP-005',firstName:'Ali',   lastName:'Karim',    role:'COMPLIANCE',  email:'a.karim@taximetro.demo',    phone:'(514) 555-0225',status:'PENDING',addedAt:'2026-09-10',lastLogin:null},
+  {id:'REP-001',firstName:'Sophie',   lastName:'Marchand',  role:'OWNER',      email:'s.marchand@uber-demo.taximetergov.demo',   phone:'(514) 555-0001',status:'ACTIVE', addedAt:'2026-01-15',lastLogin:'2026-09-18T08:02:00Z'},
+  {id:'REP-002',firstName:'Jean-Philippe',lastName:'Roy',   role:'FINANCE',    email:'jp.roy@uber-demo.taximetergov.demo',        phone:'(514) 555-0002',status:'ACTIVE', addedAt:'2026-01-15',lastLogin:'2026-09-17T14:00:00Z'},
+  {id:'REP-003',firstName:'Karim',    lastName:'Benali',    role:'DISPATCH',   email:'k.benali@uber-demo.taximetergov.demo',      phone:'(514) 555-0003',status:'ACTIVE', addedAt:'2026-02-01',lastLogin:'2026-09-18T07:30:00Z'},
+  {id:'REP-004',firstName:'Marie-Ève',lastName:'Lapointe',  role:'VIEWER',     email:'me.lapointe@uber-demo.taximetergov.demo',   phone:'(514) 555-0004',status:'ACTIVE', addedAt:'2026-03-15',lastLogin:'2026-09-16T10:00:00Z'},
+  {id:'REP-005',firstName:'David',    lastName:'Chen',      role:'COMPLIANCE', email:'d.chen@uber-demo.taximetergov.demo',        phone:'(514) 555-0005',status:'PENDING',addedAt:'2026-09-10',lastLogin:null},
 ]
 
 // ── PERMISSIONS MATRICE ───────────────────────────────────────
