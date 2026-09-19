@@ -182,6 +182,7 @@ export const OBL_STATUS: Record<string,{label:string;color:string;bg:string}> = 
 export const NAV_SECTIONS = [
   {section:'🏠 Tableau de bord', items:[{href:'/',label:'Dashboard'}]},
   {section:'🏢 Organisation', items:[
+    {href:'/departments',      label:'Départements & Services'},
     {href:'/profile',         label:'Profil entreprise'},
     {href:'/representatives',  label:'Représentants'},
     {href:'/users',           label:'Utilisateurs & Rôles'},
@@ -736,4 +737,110 @@ export const UBER_PUBLIC_DATA = {
   noteImpact:          "1,9 G$ = impact économique ESTIMÉ au Québec — ≠ chiffre d'affaires Uber",
   chauffeursQC:        'Non publié officiellement — ne pas extrapoler',
   chauffeursSource:    'Uber ne divulgue pas le nombre exact pour le Québec',
+}
+
+// ── DÉPARTEMENTS UBER QUÉBEC ──────────────────────────────────
+// ⚠️ DONNÉES SYNTHÉTIQUES — PILOTE — NE REPRÉSENTE PAS LES OPÉRATIONS RÉELLES D'UBER
+// Source publique: 12 351 véhicules Uber référencés QC (Travelnet 2024)
+// Nb chauffeurs actifs par dpt: NON PUBLIÉ — chiffres ci-dessous = SYNTHÉTIQUES DEMO
+export const DEPARTMENTS = [
+  {
+    id:'DEPT-001', name:'Uber Taxi', slug:'taxi', emoji:'🚕', color:'#003DA5',
+    status:'ACTIVE',
+    desc:'Transport de personnes avec taximètre numérique · Permis taxi requis',
+    // DONNÉES SYNTHÉTIQUES
+    drivers:142, vehicles:138, activities:8_420, transactions:8_106,
+    gross:2_890_000, tips:289_000, tps:r2(2_890_000*TPS), tvq:r2(2_890_000*TVQ),
+    fees:r2(2_890_000*0.15), driverAmt:r2(2_890_000*0.80), entAmt:r2(2_890_000*0.20),
+    cancels:314, refunds:82, exceptions:12, alerts:3,
+    lastSync:'2026-09-18T10:38:00Z',
+    publicNote:'Permis taxi CTQ requis · Taximètre numérique obligatoire QC',
+    fiscalNote:'TPS/TVQ remises selon entente Uber-Revenu Québec (transport de personnes)',
+  },
+  {
+    id:'DEPT-002', name:'Rides (UberX / XL)', slug:'rides', emoji:'🚗', color:'#000000',
+    status:'ACTIVE',
+    desc:'Transport rémunéré de personnes · UberX, UberXL, Comfort',
+    drivers:3_840, vehicles:3_680, activities:124_500, transactions:119_200,
+    gross:18_420_000, tips:1_842_000, tps:r2(18_420_000*TPS), tvq:r2(18_420_000*TVQ),
+    fees:r2(18_420_000*0.25), driverAmt:r2(18_420_000*0.75), entAmt:r2(18_420_000*0.25),
+    cancels:5_300, refunds:890, exceptions:48, alerts:6,
+    lastSync:'2026-09-18T10:32:00Z',
+    publicNote:'Service principal Uber · UberX, UberXL, Uber Comfort',
+    fiscalNote:'TPS/TVQ remises selon entente Uber-Revenu Québec (transport de personnes)',
+  },
+  {
+    id:'DEPT-003', name:'Uber Green', slug:'green', emoji:'🟢', color:'#059669',
+    status:'ACTIVE',
+    desc:'Mobilité électrique et hybride · Véhicules certifiés faibles émissions',
+    drivers:420, vehicles:408, activities:14_200, transactions:13_640,
+    gross:2_484_000, tips:248_400, tps:r2(2_484_000*TPS), tvq:r2(2_484_000*TVQ),
+    fees:r2(2_484_000*0.22), driverAmt:r2(2_484_000*0.78), entAmt:r2(2_484_000*0.22),
+    cancels:560, refunds:48, exceptions:4, alerts:1,
+    lastSync:'2026-09-18T09:45:00Z',
+    publicNote:'Véhicules électriques/hybrides certifiés',
+    fiscalNote:'Même traitement fiscal que Rides',
+  },
+  {
+    id:'DEPT-004', name:'Uber Eats', slug:'eats', emoji:'🍔', color:'#06B029',
+    status:'ACTIVE',
+    desc:'Livraison de repas · Restaurants partenaires · Coursiers',
+    drivers:5_200, vehicles:4_900, activities:312_000, transactions:298_400,
+    gross:24_960_000, tips:3_744_000, tps:r2(24_960_000*TPS), tvq:r2(24_960_000*TVQ),
+    fees:r2(24_960_000*0.30), driverAmt:r2(24_960_000*0.65), entAmt:r2(24_960_000*0.35),
+    cancels:13_000, refunds:2_980, exceptions:124, alerts:8,
+    lastSync:'2026-09-18T10:20:00Z',
+    publicNote:'>270 M$ retombées restaurateurs QC 2024 (Uber Canada/Public First)',
+    fiscalNote:'Obligations Uber Eats distinctes — TPS/TVQ livreurs: obligations propres selon RQ',
+  },
+  {
+    id:'DEPT-005', name:'Uber Eats Épicerie', slug:'grocery', emoji:'🛒', color:'#7C3AED',
+    status:'ACTIVE',
+    desc:'Livraison épicerie et commerce de détail · Cornershop / partenaires',
+    drivers:820, vehicles:780, activities:42_000, transactions:40_200,
+    gross:5_880_000, tips:588_000, tps:r2(5_880_000*TPS), tvq:r2(5_880_000*TVQ),
+    fees:r2(5_880_000*0.28), driverAmt:r2(5_880_000*0.65), entAmt:r2(5_880_000*0.35),
+    cancels:1_800, refunds:420, exceptions:18, alerts:2,
+    lastSync:'2026-09-18T09:30:00Z',
+    publicNote:'Service épicerie et commerce de détail',
+    fiscalNote:'Traitement fiscal variable selon type de produit livré',
+  },
+  {
+    id:'DEPT-006', name:'Uber Courier / Colis', slug:'courier', emoji:'📦', color:'#B45309',
+    status:'ACTIVE',
+    desc:'Livraison de colis et courrier · Clients corporatifs et particuliers',
+    drivers:380, vehicles:362, activities:18_400, transactions:17_640,
+    gross:2_760_000, tips:138_000, tps:r2(2_760_000*TPS), tvq:r2(2_760_000*TVQ),
+    fees:r2(2_760_000*0.28), driverAmt:r2(2_760_000*0.68), entAmt:r2(2_760_000*0.32),
+    cancels:760, refunds:88, exceptions:8, alerts:2,
+    lastSync:'2026-09-17T22:00:00Z',
+    publicNote:'Uber Direct / Courier — livraison B2B et B2C',
+    fiscalNote:'Livraison de biens — TPS/TVQ applicable selon catégorie',
+  },
+  {
+    id:'DEPT-007', name:'Uber Direct / Entreprises', slug:'direct', emoji:'🚚', color:'#64748B',
+    status:'PLANNED',
+    desc:'Livraison API pour entreprises · Intégration B2B · Flottes corporate',
+    drivers:0, vehicles:0, activities:0, transactions:0,
+    gross:0, tips:0, tps:0, tvq:0, fees:0, driverAmt:0, entAmt:0,
+    cancels:0, refunds:0, exceptions:0, alerts:0,
+    lastSync:null,
+    publicNote:'Uber Direct — intégration API entreprises',
+    fiscalNote:'Facturation B2B — traitement fiscal distinct',
+  },
+]
+
+export const DEPT_CONF: Record<string,{emoji:string;color:string;label:string}> = Object.fromEntries(
+  DEPARTMENTS.map(d=>[d.slug, {emoji:d.emoji, color:d.color, label:d.name}])
+)
+
+// Véhicules publics QC
+export const UBER_QC_PUBLIC = {
+  vehicules_ref: 12_351,
+  vehicules_source: 'Travelnet / données sectorielles 2024',
+  vehicules_note: 'Véhicules Uber référencés/enregistrés au Québec — ne constitue pas le nombre de chauffeurs actifs',
+  impact_eco: 1_900_000_000,
+  impact_eats: 270_000_000,
+  source_impact: 'Uber Canada / Public First — décembre 2025',
+  chauffeurs_note: 'Nombre de chauffeurs actifs par département: données non publiées officiellement — chiffres pilote = SYNTHÉTIQUES',
 }
