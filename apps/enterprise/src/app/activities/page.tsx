@@ -111,7 +111,7 @@ export default function ActivitiesPage() {
           </div>
           {filtered.map(a=>{
             const drv = ENT_DRIVERS.find(d=>d.id===a.driverId)
-            const ss  = SYNC_STATUS[a.syncStatus]!
+            const ss  = SYNC_STATUS[a.syncStatus] ?? {label:'DEMO',color:'#7C3AED',dot:'bg-purple-400'}
             return (
               <div key={a.id} className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <span className="text-xl shrink-0">{ACT_TYPE_ICONS[a.type]??'📋'}</span>
