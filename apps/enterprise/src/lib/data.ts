@@ -229,21 +229,6 @@ export const ENT_REPRESENTATIVES = [
 ]
 
 // ── PERMISSIONS MATRICE ───────────────────────────────────────
-export const PERMISSIONS_MATRIX = [
-  {resource:'Chauffeurs',    owner:['view','manage'], admin:['view','manage'], finance:['view'], compliance:['view'], dispatch:['view','manage'], viewer:['view']},
-  {resource:'Véhicules',     owner:['view','manage'], admin:['view','manage'], finance:['view'], compliance:['view'], dispatch:['view','manage'], viewer:['view']},
-  {resource:'Documents',     owner:['view','upload','approve'], admin:['view','upload','approve'], finance:['view'], compliance:['view','upload','approve'], dispatch:['view'], viewer:['view']},
-  {resource:'Activités',     owner:['view'],          admin:['view'],          finance:['view'], compliance:['view'], dispatch:['view'],          viewer:['view']},
-  {resource:'Transactions',  owner:['view'],          admin:['view'],          finance:['view'], compliance:['view'], dispatch:[],               viewer:['view']},
-  {resource:'Revenus',       owner:['view'],          admin:['view'],          finance:['view'], compliance:[],       dispatch:[],               viewer:[]},
-  {resource:'Taxes',         owner:['view','manage'], admin:['view'],          finance:['view','manage'], compliance:['view'], dispatch:[], viewer:[]},
-  {resource:'Déclarations',  owner:['prepare','submit'], admin:['view'],       finance:['prepare','submit'], compliance:['view'], dispatch:[], viewer:[]},
-  {resource:'Paiements',     owner:['view','manage'], admin:['view'],          finance:['view','manage'], compliance:[], dispatch:[], viewer:[]},
-  {resource:'Connexions',    owner:['view','manage'], admin:['view','manage'], finance:[], compliance:[], dispatch:[], viewer:[]},
-  {resource:'Rapports',      owner:['view','export'], admin:['view','export'], finance:['view','export'], compliance:['view','export'], dispatch:['view'], viewer:['view']},
-  {resource:'Audit',         owner:['view'],          admin:['view'],          finance:['view'], compliance:['view'], dispatch:[], viewer:[]},
-]
-
 // ── AUDIT LOG DEMO ────────────────────────────────────────────
 export const AUDIT_LOG = [
   {id:'AL-001',at:'2026-09-18T10:38:00Z',user:'Sophie Marchand',    role:'OWNER',    action:'SYNC_COMPLETED',    obj:'Revenue Ledger',   result:'OK',   note:'9840 enregistrements synchronisés'},
@@ -1003,3 +988,171 @@ export const RPT_CAT_CONF: Record<string,{label:string;color:string}> = {
   AUDIT:      {label:'Audit',       color:'#64748B'},
   GOVERNMENT: {label:'Gouvernemental',color:'#003DA5'},
 }
+
+// ══════════════════════════════════════════════════════════════
+// PHASES 25-26-27 DATA — CONFORMITÉ · AUDIT · SÉCURITÉ
+// ⚠️ DONNÉES SYNTHÉTIQUES — PILOTE — AUCUNE VALEUR LÉGALE
+// ══════════════════════════════════════════════════════════════
+
+// ── COMPLIANCE CASES ─────────────────────────────────────────
+export const COMPLIANCE_CASES = [
+  {id:'CASE-2026-0001',type:'DOC_EXPIRÉ',  obj:'Véhicule',    objId:'TXM-004',dept:'taxi',   priority:'IMPORTANT',status:'EN ANALYSE', openedAt:'2026-09-15T08:00:00Z',assignedTo:'Jean-Philippe Roy',desc:'Inspection TXM-004 expire 2026-09-30 — action urgente requise',actions:['Ouvrir','Attribuer','Demander document','Résoudre'],resolvedAt:null,notes:'Document de renouvellement en préparation'},
+  {id:'CASE-2026-0002',type:'DOC_EXPIRÉ',  obj:'Chauffeur',   objId:'DRV-QC-0005',dept:'taxi',priority:'CRITIQUE', status:'RÉSOLU',    openedAt:'2026-09-01T08:00:00Z',assignedTo:'Sophie Marchand',  desc:'Permis DRV-QC-0005 expiré — chauffeur suspendu en attente renouvellement',actions:['Voir','Fermer'],resolvedAt:'2026-09-12T14:00:00Z',notes:'Chauffeur suspendu jusqu\'au renouvellement du permis'},
+  {id:'CASE-2026-0003',type:'ÉCART_TX',    obj:'Transaction', objId:'TX-ENT-005',dept:'taxi',  priority:'IMPORTANT',status:'EN ANALYSE', openedAt:'2026-09-18T10:05:00Z',assignedTo:'Jean-Philippe Roy',desc:'Écart de 33,50$ entre activité (16,50$) et transaction (50,00$)',actions:['Ouvrir','Attribuer','Ajouter note','Résoudre'],resolvedAt:null,notes:'Analyse en cours — vérifier le calcul de commission'},
+  {id:'CASE-2026-0004',type:'WEBHOOK_FAIL',obj:'API',         objId:'WHE-007',dept:'rides',  priority:'ATTENTION',status:'RÉSOLU',    openedAt:'2026-09-17T10:00:00Z',assignedTo:'Karim Benali',     desc:'Webhook UBER-TX-FAIL1 échoué 3 tentatives — token auth expiré',actions:['Voir','Fermer'],resolvedAt:'2026-09-17T14:00:00Z',notes:'Token renouvelé — webhook re-déclenché avec succès'},
+  {id:'CASE-2026-0005',type:'DOC_EXPIRANT',obj:'Chauffeur',   objId:'DRV-QC-0004',dept:'taxi',priority:'IMPORTANT',status:'OUVERT',   openedAt:'2026-09-17T08:00:00Z',assignedTo:null,              desc:'Permis DRV-QC-0004 expire 2026-09-30 — 12 jours restants',actions:['Ouvrir','Attribuer','Demander document'],resolvedAt:null,notes:null},
+]
+
+export const CASE_TYPE_CONF: Record<string,{label:string;icon:string;color:string}> = {
+  DOC_EXPIRÉ:   {label:'Document expiré',    icon:'📄',color:'#DC2626'},
+  DOC_EXPIRANT: {label:'Document expirant',  icon:'⚠️',color:'#B45309'},
+  ÉCART_TX:     {label:'Écart transactionnel',icon:'💸',color:'#DC2626'},
+  WEBHOOK_FAIL: {label:'Webhook échoué',      icon:'📡',color:'#7C3AED'},
+  SYNC_ERR:     {label:'Erreur sync',         icon:'🔄',color:'#003DA5'},
+}
+export const CASE_STATUS_CONF: Record<string,{label:string;color:string;bg:string}> = {
+  'EN ANALYSE':{label:'En analyse',color:'#B45309',bg:'rgba(180,83,9,0.10)'},
+  'OUVERT':    {label:'Ouvert',    color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+  'RÉSOLU':    {label:'Résolu',   color:'#059669',bg:'rgba(5,150,105,0.12)'},
+  'FERMÉ':     {label:'Fermé',    color:'#64748B',bg:'rgba(100,116,139,0.10)'},
+}
+
+// ── AUDIT EVENTS (50 événements DEMO) ────────────────────────
+const mkEvt=(id:string,at:string,user:string,role:string,action:string,module:string,obj:string,objId:string,result:string,dept:string,prev:string|null=null,next:string|null=null)=>({
+  id,at,user,role,action,module,obj,objId,result,dept,prev,next,
+  ip:`192.168.${Math.floor(Math.random()*4+1)}.${Math.floor(Math.random()*200+10)}`,
+  session:`SES-${Math.random().toString(36).slice(2,8).toUpperCase()}`,
+})
+export const AUDIT_EVENTS = [
+  mkEvt('AUD-001','2026-09-18T10:38:00Z','Sophie Marchand',   'OWNER',   'SYNC',           'sync',      'Revenue Ledger','LED-001','SUCCESS','taxi',  null,'SYNCED'),
+  mkEvt('AUD-002','2026-09-18T10:32:00Z','Jean-Philippe Roy', 'FINANCE', 'EXPORT',         'reports',   'Revenus Q3',   'GR-001', 'SUCCESS','taxi',  null,null),
+  mkEvt('AUD-003','2026-09-18T10:20:00Z','SYSTÈME',           'SYSTEM',  'WEBHOOK_RECV',   'webhooks',  'Trip',         'WHE-003','SUCCESS','rides', null,'PROCESSED'),
+  mkEvt('AUD-004','2026-09-18T10:05:00Z','SYSTÈME',           'SYSTEM',  'ANOMALY_DETECT', 'intelligence','TX Écart',   'ANOM-001','OPEN',  'taxi',  null,null),
+  mkEvt('AUD-005','2026-09-18T09:45:00Z','Karim Benali',      'DISPATCH','UPDATE',         'drivers',   'DRV-QC-0004',  'DRV-QC-0004','SUCCESS','taxi','ACTIVE','PENDING'),
+  mkEvt('AUD-006','2026-09-18T09:30:00Z','Sophie Marchand',   'OWNER',   'LOGIN',          'security',  'Session',      'SES-A001','SUCCESS','—',   null,'ACTIVE'),
+  mkEvt('AUD-007','2026-09-18T09:00:00Z','Jean-Philippe Roy', 'FINANCE', 'TAX_CALCULATION','fiscal',    'TPS Q3',       'TAX-Q3', 'SUCCESS','ALL',  null,'CALCULATED'),
+  mkEvt('AUD-008','2026-09-18T08:30:00Z','SYSTÈME',           'SYSTEM',  'SYNC',           'sync',      'Chauffeurs',   'SYNC-006','SUCCESS','ALL', null,'SYNCED'),
+  mkEvt('AUD-009','2026-09-17T22:05:00Z','SYSTÈME',           'SYSTEM',  'ANOMALY_DETECT', 'intelligence','TX Manquante','ANOM-002','OPEN', 'taxi', null,null),
+  mkEvt('AUD-010','2026-09-17T22:02:00Z','SYSTÈME',           'SYSTEM',  'SYNC',           'sync',      'Activités',    'SYNC-007','WARNING','ALL', null,'PARTIAL'),
+  mkEvt('AUD-011','2026-09-17T14:00:00Z','Jean-Philippe Roy', 'FINANCE', 'EXPORT',         'reports',   'TPS/TVQ Q3',   'GR-003', 'SUCCESS','ALL', null,null),
+  mkEvt('AUD-012','2026-09-17T13:00:00Z','Marie-Ève Lapointe','VIEWER',  'LOGIN',          'security',  'Session',      'SES-B002','SUCCESS','—',  null,'ACTIVE'),
+  mkEvt('AUD-013','2026-09-17T12:00:00Z','SYSTÈME',           'SYSTEM',  'WEBHOOK_RECV',   'webhooks',  'Eats Delivery','WHE-008','PENDING','eats',null,'QUEUED'),
+  mkEvt('AUD-014','2026-09-17T10:00:00Z','SYSTÈME',           'SYSTEM',  'WEBHOOK_FAIL',   'webhooks',  'Trip',         'WHE-007','FAILED','rides',null,'RETRY_3'),
+  mkEvt('AUD-015','2026-09-17T09:00:00Z','Karim Benali',      'DISPATCH','DOCUMENT_UPLOAD','documents', 'Permis',       'DOC-NEW1','SUCCESS','taxi',null,'PENDING_VALID'),
+  mkEvt('AUD-016','2026-09-17T08:30:00Z','Sophie Marchand',   'OWNER',   'APPROVE',        'compliance','CASE-2026-0004','CASE-2026-0004','SUCCESS','rides','EN ANALYSE','RÉSOLU'),
+  mkEvt('AUD-017','2026-09-17T08:00:00Z','SYSTÈME',           'SYSTEM',  'COMPLIANCE_ALERT','compliance','Doc Expirant','DRV-QC-0004','ALERT','taxi',null,null),
+  mkEvt('AUD-018','2026-09-16T18:00:00Z','David Chen',        'COMPLIANCE','COMPLIANCE_REVIEW','compliance','Score Depts','COMP-001','SUCCESS','ALL',null,'97%'),
+  mkEvt('AUD-019','2026-09-16T15:30:00Z','SYSTÈME',           'SYSTEM',  'TRANSACTION',    'transactions','TX UberXL', 'TX-ENT-012','SUCCESS','rides',null,'RECONCILED'),
+  mkEvt('AUD-020','2026-09-16T14:00:00Z','Jean-Philippe Roy', 'FINANCE', 'UPDATE',         'declarations','DCL-Q3-2026','DCL-Q3-2026','SUCCESS','ALL','DRAFT','IN_PROGRESS'),
+  mkEvt('AUD-021','2026-09-16T10:00:00Z','Sophie Marchand',   'OWNER',   'VIEW',           'government','Dossier Gov','GOV-001','SUCCESS','ALL',null,null),
+  mkEvt('AUD-022','2026-09-16T09:00:00Z','SYSTÈME',           'SYSTEM',  'SYNC',           'integrations','API Tx',   'API-005','SUCCESS','ALL',null,'38640 req.'),
+  mkEvt('AUD-023','2026-09-15T16:00:00Z','Karim Benali',      'DISPATCH','CREATE',         'drivers',   'DRV-TAXI-0009','DRV-T009','SUCCESS','taxi',null,'PENDING'),
+  mkEvt('AUD-024','2026-09-15T14:00:00Z','David Chen',        'COMPLIANCE','DOCUMENT_VALIDATE','documents','Assurance','DOC-ASS-001','SUCCESS','rides','PENDING','VALIDE'),
+  mkEvt('AUD-025','2026-09-15T10:00:00Z','SYSTÈME',           'SYSTEM',  'COMPLIANCE_ALERT','compliance','Inspection','TXM-004','ALERT','taxi',null,null),
+  mkEvt('AUD-026','2026-09-14T16:00:00Z','Jean-Philippe Roy', 'FINANCE', 'TAX_CALCULATION','fiscal',    'TVQ Q2',       'TAX-Q2','SUCCESS','ALL',null,'ACCEPTED'),
+  mkEvt('AUD-027','2026-09-14T14:00:00Z','Sophie Marchand',   'OWNER',   'APPROVE',        'declarations','DCL-Q2-2026','DCL-Q2-2026','SUCCESS','ALL','SUBMITTED','ACCEPTED'),
+  mkEvt('AUD-028','2026-09-14T10:00:00Z','SYSTÈME',           'SYSTEM',  'PAYMENT',        'payments',  'Paiement Q2',  'PAY-002','SUCCESS','ALL',null,'PAID'),
+  mkEvt('AUD-029','2026-09-13T11:00:00Z','Karim Benali',      'DISPATCH','UPDATE',         'vehicles',  'TXM-001',      'TXM-001','SUCCESS','taxi','ACTIF','ACTIF'),
+  mkEvt('AUD-030','2026-09-12T14:00:00Z','Sophie Marchand',   'OWNER',   'APPROVE',        'compliance','CASE-2026-0002','CASE-2026-0002','SUCCESS','taxi','EN ANALYSE','RÉSOLU'),
+  mkEvt('AUD-031','2026-09-12T10:00:00Z','David Chen',        'COMPLIANCE','REJECT',       'documents', 'Doc non conforme','DOC-REJ1','SUCCESS','rides','PENDING','REJETÉ'),
+  mkEvt('AUD-032','2026-09-11T09:00:00Z','Marie-Ève Lapointe','VIEWER',  'VIEW',           'analytics', 'Dashboard QC', 'DASH-001','SUCCESS','ALL',null,null),
+  mkEvt('AUD-033','2026-09-10T16:00:00Z','Jean-Philippe Roy', 'FINANCE', 'EXPORT',         'reports',   'TPS Q3 estim','GR-003','SUCCESS','ALL',null,null),
+  mkEvt('AUD-034','2026-09-10T08:00:00Z','SYSTÈME',           'SYSTEM',  'TAX_CALCULATION','fiscal',    'Q3 2026',      'TAX-Q3','SUCCESS','ALL',null,'412800$'),
+  mkEvt('AUD-035','2026-09-08T10:00:00Z','Sophie Marchand',   'OWNER',   'UPDATE',         'profile',   'Profil Uber',  'ENT-DEMO-001','SUCCESS','ALL',null,null),
+  mkEvt('AUD-036','2026-09-07T15:00:00Z','SYSTÈME',           'SYSTEM',  'SYNC',           'sync',      'Eats Livreurs','SYNC-EATS','SUCCESS','eats',null,'5200 actifs'),
+  mkEvt('AUD-037','2026-09-06T10:00:00Z','Karim Benali',      'DISPATCH','DOCUMENT_UPLOAD','documents', 'Assurance Veh','DOC-ASS-NEW','SUCCESS','green',null,'PENDING'),
+  mkEvt('AUD-038','2026-09-05T14:00:00Z','David Chen',        'COMPLIANCE','COMPLIANCE_REVIEW','compliance','Green Dept','COMP-GREEN','SUCCESS','green',null,'99%'),
+  mkEvt('AUD-039','2026-09-04T11:00:00Z','Jean-Philippe Roy', 'FINANCE', 'VIEW',           'reconciliation','Recon Q3','RECON-Q3','SUCCESS','ALL',null,null),
+  mkEvt('AUD-040','2026-09-03T09:00:00Z','Sophie Marchand',   'OWNER',   'LOGOUT',         'security',  'Session',      'SES-A001','SUCCESS','—','ACTIVE','CLOSED'),
+  mkEvt('AUD-041','2026-09-02T16:00:00Z','SYSTÈME',           'SYSTEM',  'SYNC',           'sync',      'Grocery Sync', 'SYNC-GRC','SUCCESS','grocery',null,'820 actifs'),
+  mkEvt('AUD-042','2026-09-02T10:00:00Z','David Chen',        'COMPLIANCE','CREATE',       'compliance','CASE-2026-0005','CASE-2026-0005','SUCCESS','taxi',null,'OUVERT'),
+  mkEvt('AUD-043','2026-09-01T14:00:00Z','SYSTÈME',           'SYSTEM',  'REPORT_EXPORT',  'reports',   'Audit Août',   'RPT-AUD-1','SUCCESS','ALL',null,null),
+  mkEvt('AUD-044','2026-09-01T10:00:00Z','Sophie Marchand',   'OWNER',   'LOGIN',          'security',  'Session',      'SES-A002','SUCCESS','—',null,'ACTIVE'),
+  mkEvt('AUD-045','2026-08-31T18:00:00Z','SYSTÈME',           'SYSTEM',  'SYNC',           'sync',      'Courier Sync', 'SYNC-COR','SUCCESS','courier',null,'380 actifs'),
+  mkEvt('AUD-046','2026-08-30T10:00:00Z','Marie-Ève Lapointe','VIEWER',  'VIEW',           'drivers',   'Liste Eats',   'DRV-EATS','SUCCESS','eats',null,null),
+  mkEvt('AUD-047','2026-08-28T14:00:00Z','Jean-Philippe Roy', 'FINANCE', 'PAYMENT',        'payments',  'Paiement Q1',  'PAY-001','SUCCESS','ALL',null,'PAID'),
+  mkEvt('AUD-048','2026-08-27T11:00:00Z','Karim Benali',      'DISPATCH','UPDATE',         'vehicles',  'TXM-006',      'TXM-006','SUCCESS','eats',null,null),
+  mkEvt('AUD-049','2026-08-26T09:00:00Z','David Chen',        'COMPLIANCE','DOCUMENT_VALIDATE','documents','Permis taxi','DOC-007','SUCCESS','taxi','PENDING','VALIDE'),
+  mkEvt('AUD-050','2026-08-25T16:00:00Z','SYSTÈME',           'SYSTEM',  'ANOMALY_DETECT', 'intelligence','Scan complet','SCAN-001','INFO','ALL',null,'7 anomalies'),
+]
+
+export const AUDIT_ACTION_CONF: Record<string,{label:string;icon:string;color:string}> = {
+  LOGIN:              {label:'Connexion',          icon:'🔐',color:'#003DA5'},
+  LOGOUT:             {label:'Déconnexion',        icon:'🚪',color:'#64748B'},
+  CREATE:             {label:'Création',           icon:'➕',color:'#059669'},
+  UPDATE:             {label:'Modification',       icon:'✏️', color:'#B45309'},
+  APPROVE:            {label:'Approbation',        icon:'✅',color:'#059669'},
+  REJECT:             {label:'Rejet',              icon:'❌',color:'#DC2626'},
+  EXPORT:             {label:'Export',             icon:'↓',  color:'#7C3AED'},
+  SYNC:               {label:'Sync',               icon:'🔄',color:'#003DA5'},
+  PAYMENT:            {label:'Paiement',           icon:'💳',color:'#059669'},
+  DOCUMENT_UPLOAD:    {label:'Upload document',    icon:'📤',color:'#B45309'},
+  DOCUMENT_VALIDATE:  {label:'Validation document',icon:'📋',color:'#059669'},
+  TAX_CALCULATION:    {label:'Calcul fiscal',      icon:'🧾',color:'#7C3AED'},
+  WEBHOOK_RECV:       {label:'Webhook reçu',       icon:'📡',color:'#003DA5'},
+  WEBHOOK_FAIL:       {label:'Webhook échoué',     icon:'📡',color:'#DC2626'},
+  TRANSACTION:        {label:'Transaction',        icon:'💸',color:'#059669'},
+  ANOMALY_DETECT:     {label:'Anomalie détectée',  icon:'🔍',color:'#DC2626'},
+  COMPLIANCE_ALERT:   {label:'Alerte conformité',  icon:'⚠️',color:'#B45309'},
+  COMPLIANCE_REVIEW:  {label:'Révision conformité',icon:'⚖️',color:'#003DA5'},
+  REPORT_EXPORT:      {label:'Export rapport',     icon:'📊',color:'#7C3AED'},
+  VIEW:               {label:'Consultation',       icon:'👁',  color:'#64748B'},
+}
+
+// ── SECURITY DATA ─────────────────────────────────────────────
+export const SECURITY_USERS = [
+  {id:'SEC-USR-001',name:'Sophie Marchand',   email:'s.marchand@uber-demo.taximetergov.demo',role:'OWNER',     mfa:true, status:'ACTIVE',  lastLogin:'2026-09-18T09:30:00Z',sessions:1,ipDemo:'192.168.1.10'},
+  {id:'SEC-USR-002',name:'Jean-Philippe Roy', email:'jp.roy@uber-demo.taximetergov.demo',    role:'FINANCE',   mfa:true, status:'ACTIVE',  lastLogin:'2026-09-18T08:00:00Z',sessions:1,ipDemo:'192.168.1.22'},
+  {id:'SEC-USR-003',name:'Karim Benali',      email:'k.benali@uber-demo.taximetergov.demo',  role:'DISPATCH',  mfa:false,status:'ACTIVE',  lastLogin:'2026-09-18T07:30:00Z',sessions:2,ipDemo:'192.168.2.11'},
+  {id:'SEC-USR-004',name:'Marie-Ève Lapointe',email:'me.lapointe@uber-demo.taximetergov.demo',role:'VIEWER',  mfa:false,status:'ACTIVE',  lastLogin:'2026-09-16T10:00:00Z',sessions:0,ipDemo:'192.168.2.45'},
+  {id:'SEC-USR-005',name:'David Chen',        email:'d.chen@uber-demo.taximetergov.demo',    role:'COMPLIANCE',mfa:true, status:'PENDING', lastLogin:null,                  sessions:0,ipDemo:null},
+]
+
+export const SECURITY_ROLES = [
+  {id:'ROLE-001',name:'OWNER',        label:'Propriétaire',      perms:['ALL'],                                                                     users:1,color:'#000000'},
+  {id:'ROLE-002',name:'FINANCE',      label:'Finance',           perms:['VIEW_FINANCE','VIEW_TX','VIEW_REVENUE','EXPORT','CALC_TAX','PREPARE_DECL'],users:1,color:'#059669'},
+  {id:'ROLE-003',name:'DISPATCH',     label:'Opérations',        perms:['VIEW_DRIVERS','MANAGE_DRIVERS','VIEW_VEHICLES','VIEW_ACTIVITIES'],          users:1,color:'#003DA5'},
+  {id:'ROLE-004',name:'COMPLIANCE',   label:'Conformité',        perms:['VIEW_COMPLIANCE','MANAGE_CASES','VALIDATE_DOCS','VIEW_AUDIT'],              users:1,color:'#7C3AED'},
+  {id:'ROLE-005',name:'VIEWER',       label:'Lecture seule',     perms:['VIEW_DASHBOARD','VIEW_DRIVERS','VIEW_ACTIVITIES'],                          users:1,color:'#64748B'},
+]
+
+export const SECURITY_SESSIONS = [
+  {id:'SES-A002',user:'Sophie Marchand',  role:'OWNER',    device:'MacBook Pro',  browser:'Chrome 128',  location:'Montréal, QC (DEMO)',startAt:'2026-09-18T09:30:00Z',lastAt:'2026-09-18T10:38:00Z',status:'ACTIVE'},
+  {id:'SES-B003',user:'Jean-Philippe Roy',role:'FINANCE',  device:'Dell XPS',     browser:'Firefox 129', location:'Montréal, QC (DEMO)',startAt:'2026-09-18T08:00:00Z',lastAt:'2026-09-18T10:30:00Z',status:'ACTIVE'},
+  {id:'SES-C003',user:'Karim Benali',     role:'DISPATCH', device:'iPhone 15',    browser:'Safari iOS',  location:'Montréal, QC (DEMO)',startAt:'2026-09-18T07:30:00Z',lastAt:'2026-09-18T09:45:00Z',status:'ACTIVE'},
+  {id:'SES-C004',user:'Karim Benali',     role:'DISPATCH', device:'Windows PC',   browser:'Chrome 128',  location:'Laval, QC (DEMO)',   startAt:'2026-09-18T06:00:00Z',lastAt:'2026-09-18T06:30:00Z',status:'INACTIVE'},
+  {id:'SES-D002',user:'Marie-Ève Lapointe',role:'VIEWER', device:'iPad Pro',     browser:'Safari iOS',  location:'Québec, QC (DEMO)',  startAt:'2026-09-16T10:00:00Z',lastAt:'2026-09-16T11:30:00Z',status:'CLOSED'},
+]
+
+export const SECURITY_ALERTS = [
+  {id:'SEC-ALT-001',level:'MEDIUM', title:'Token API expirant',           desc:'Token connexion UBER DEMO expire dans 7 jours — renouveler avant le 2026-09-25',at:'2026-09-18T08:00:00Z',status:'OUVERT'},
+  {id:'SEC-ALT-002',level:'LOW',    title:'Session inactive détectée',    desc:'Session SES-C004 (Karim Benali) inactive depuis 4h — revue recommandée',at:'2026-09-18T10:30:00Z',status:'OUVERT'},
+  {id:'SEC-ALT-003',level:'HIGH',   title:'Webhook échoué répété',        desc:'WHE-007 — 3 tentatives sans succès · Source: UBER DEMO · Auth token',at:'2026-09-17T10:05:00Z',status:'RÉSOLU'},
+  {id:'SEC-ALT-004',level:'LOW',    title:'MFA non configuré',            desc:'2 utilisateurs sans MFA activé: Karim Benali, Marie-Ève Lapointe',at:'2026-09-17T08:00:00Z',status:'OUVERT'},
+  {id:'SEC-ALT-005',level:'INFO',   title:'Export rapport effectué',      desc:'Jean-Philippe Roy a exporté le rapport TPS/TVQ Q3 DEMO',at:'2026-09-17T14:05:00Z',status:'INFO'},
+]
+
+export const SECURITY_LEVEL_CONF: Record<string,{label:string;color:string;bg:string}> = {
+  CRITICAL:{label:'CRITIQUE',color:'#DC2626',bg:'rgba(220,38,38,0.12)'},
+  HIGH:    {label:'ÉLEVÉ',   color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+  MEDIUM:  {label:'MOYEN',   color:'#B45309',bg:'rgba(180,83,9,0.10)'},
+  LOW:     {label:'FAIBLE',  color:'#7C3AED',bg:'rgba(124,58,237,0.10)'},
+  INFO:    {label:'INFO',    color:'#003DA5',bg:'rgba(0,61,165,0.08)'},
+}
+
+// ── PERMISSIONS RBAC ──────────────────────────────────────────
+export const PERMISSIONS_MATRIX = [
+  {perm:'VIEW_DASHBOARD',    label:'Voir tableau de bord',    OWNER:true, FINANCE:true,  DISPATCH:true,  COMPLIANCE:true,  VIEWER:true},
+  {perm:'VIEW_DRIVERS',      label:'Voir chauffeurs',         OWNER:true, FINANCE:false, DISPATCH:true,  COMPLIANCE:true,  VIEWER:true},
+  {perm:'MANAGE_DRIVERS',    label:'Gérer chauffeurs',        OWNER:true, FINANCE:false, DISPATCH:true,  COMPLIANCE:false, VIEWER:false},
+  {perm:'VIEW_FINANCE',      label:'Voir finances',           OWNER:true, FINANCE:true,  DISPATCH:false, COMPLIANCE:false, VIEWER:false},
+  {perm:'CALC_TAX',          label:'Calculer TPS/TVQ',        OWNER:true, FINANCE:true,  DISPATCH:false, COMPLIANCE:false, VIEWER:false},
+  {perm:'PREPARE_DECL',      label:'Préparer déclarations',   OWNER:true, FINANCE:true,  DISPATCH:false, COMPLIANCE:false, VIEWER:false},
+  {perm:'VIEW_COMPLIANCE',   label:'Voir conformité',         OWNER:true, FINANCE:false, DISPATCH:false, COMPLIANCE:true,  VIEWER:false},
+  {perm:'MANAGE_CASES',      label:'Gérer dossiers',          OWNER:true, FINANCE:false, DISPATCH:false, COMPLIANCE:true,  VIEWER:false},
+  {perm:'VALIDATE_DOCS',     label:'Valider documents',       OWNER:true, FINANCE:false, DISPATCH:false, COMPLIANCE:true,  VIEWER:false},
+  {perm:'VIEW_AUDIT',        label:'Voir audit',              OWNER:true, FINANCE:false, DISPATCH:false, COMPLIANCE:true,  VIEWER:false},
+  {perm:'MANAGE_API',        label:'Gérer API/Webhooks',      OWNER:true, FINANCE:false, DISPATCH:false, COMPLIANCE:false, VIEWER:false},
+  {perm:'EXPORT',            label:'Exporter rapports',       OWNER:true, FINANCE:true,  DISPATCH:false, COMPLIANCE:true,  VIEWER:false},
+  {perm:'MANAGE_USERS',      label:'Gérer utilisateurs',      OWNER:true, FINANCE:false, DISPATCH:false, COMPLIANCE:false, VIEWER:false},
+]

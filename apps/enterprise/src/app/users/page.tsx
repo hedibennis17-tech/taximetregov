@@ -112,16 +112,12 @@ export default function UsersPage() {
                     ))}
                   </tr></thead>
                   <tbody>
-                    {PERMISSIONS_MATRIX.map(row=>(
-                      <tr key={row.resource} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="px-4 py-2 text-[10px] font-bold text-slate-700 dark:text-slate-300">{row.resource}</td>
-                        {[row.owner,row.finance,row.compliance,row.dispatch,row.viewer].map((perms,i)=>(
+                    {(PERMISSIONS_MATRIX as any[]).map(row=>(
+                      <tr key={row.perm??row.resource} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <td className="px-4 py-2 text-[10px] font-bold text-slate-700 dark:text-slate-300">{row.label??row.resource}</td>
+                        {(['OWNER','FINANCE','COMPLIANCE','DISPATCH','VIEWER']).map((role,i)=>(
                           <td key={i} className="px-3 py-2 text-center">
-                            {perms.length>0?(
-                              <div className="flex flex-wrap gap-0.5 justify-center">
-                                {perms.map(p=><span key={p} className="text-[6px] font-bold bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1 py-0.5 rounded">{p}</span>)}
-                              </div>
-                            ):<span className="text-[10px] text-slate-200 dark:text-slate-700">—</span>}
+                            {row[role]||row[role.toLowerCase()] ? <span className="text-sm">✅</span> : <span className="text-[10px] text-slate-200 dark:text-slate-700">—</span>}
                           </td>
                         ))}
                       </tr>
