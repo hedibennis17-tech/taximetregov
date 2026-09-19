@@ -329,3 +329,34 @@ export const TX_STATUS_FULL: Record<string,{label:string;color:string;bg:string}
 export const ACT_TYPE_ICONS: Record<string,string> = {
   TAXI:'🚕', RIDESHARE:'🚗', DELIVERY:'📦', PARCEL:'📬', LOGISTICS:'🚚', COURIER:'✉️',
 }
+
+// ── DÉCLARATIONS ÉTENDUES ─────────────────────────────────────
+export const ALL_DECLARATIONS = [
+  {id:'DCL-Q1-2026',period:'Q1 2026',type:'TPS/TVQ',status:'ACCEPTED', tps:6840,tvq:13653.60,total:20493.60,gross:136_800,draftAt:'2026-04-20',preparedAt:'2026-04-22',submittedAt:'2026-04-25',receivedAt:'2026-04-26',acceptedAt:'2026-04-28',paidAt:'2026-04-28',ref:'DAS-2026-Q1-ENT001',govRef:'RQ-2026-Q1-00142',notes:null},
+  {id:'DCL-Q2-2026',period:'Q2 2026',type:'TPS/TVQ',status:'ACCEPTED', tps:7224,tvq:14415.78,total:21639.78,gross:144_480,draftAt:'2026-07-18',preparedAt:'2026-07-22',submittedAt:'2026-07-28',receivedAt:'2026-07-29',acceptedAt:'2026-07-30',paidAt:'2026-07-30',ref:'DAS-2026-Q2-ENT001',govRef:'RQ-2026-Q2-00098',notes:null},
+  {id:'DCL-Q3-2026',period:'Q3 2026',type:'TPS/TVQ',status:'DRAFT',    tps:20640,tvq:41178.72,total:61818.72,gross:412_800,draftAt:'2026-09-18',preparedAt:null,submittedAt:null,receivedAt:null,acceptedAt:null,paidAt:null,ref:null,govRef:null,notes:'En préparation — échéance 2026-10-31'},
+]
+
+// ── PAIEMENTS ÉTENDUES ────────────────────────────────────────
+export const ALL_PAYMENTS = [
+  {id:'PAY-Q1-2026',declId:'DCL-Q1-2026',period:'Q1 2026',type:'TPS/TVQ',due:20493.60,paid:20493.60,balance:0,   method:'VIREMENT BANCAIRE DEMO',ref:'VIR-2026-04-28-001',dueDate:'2026-04-30',paidAt:'2026-04-28',status:'PAID',   lateDays:0,   penaltyAmt:0,   notes:'Paiement reçu 2 jours avant l\'échéance'},
+  {id:'PAY-Q2-2026',declId:'DCL-Q2-2026',period:'Q2 2026',type:'TPS/TVQ',due:21639.78,paid:21639.78,balance:0,   method:'VIREMENT BANCAIRE DEMO',ref:'VIR-2026-07-30-001',dueDate:'2026-07-31',paidAt:'2026-07-30',status:'PAID',   lateDays:0,   penaltyAmt:0,   notes:'Paiement reçu 1 jour avant l\'échéance'},
+  {id:'PAY-Q3-2026',declId:'DCL-Q3-2026',period:'Q3 2026',type:'TPS/TVQ',due:61818.72,paid:0,       balance:61818.72,method:null,ref:null,dueDate:'2026-10-31',paidAt:null,status:'UPCOMING',lateDays:0,penaltyAmt:0,notes:'Déclaration en cours de préparation — paiement à venir'},
+]
+
+// ── DÉCLARATION STATUS CONF ───────────────────────────────────
+export const DECL_STATUS_CONF: Record<string,{label:string;color:string;bg:string;icon:string}> = {
+  DRAFT:     {label:'Brouillon',  color:'#64748B',bg:'rgba(100,116,139,0.10)',icon:'📝'},
+  PREPARED:  {label:'Préparée',   color:'#003DA5',bg:'rgba(0,61,165,0.10)',   icon:'📋'},
+  SUBMITTED: {label:'Soumise',    color:'#7C3AED',bg:'rgba(124,58,237,0.12)', icon:'📤'},
+  RECEIVED:  {label:'Reçue',      color:'#B45309', bg:'rgba(180,83,9,0.10)',  icon:'📥'},
+  ACCEPTED:  {label:'Acceptée',   color:'#059669',bg:'rgba(5,150,105,0.12)',  icon:'✅'},
+  CORRECTED: {label:'Corrigée',   color:'#DC2626',bg:'rgba(220,38,38,0.10)', icon:'✏️'},
+  MISSING:   {label:'Manquante',  color:'#DC2626',bg:'rgba(220,38,38,0.10)', icon:'❌'},
+}
+export const PAY_STATUS_CONF: Record<string,{label:string;color:string;bg:string;icon:string}> = {
+  PAID:     {label:'Payé',       color:'#059669',bg:'rgba(5,150,105,0.12)',  icon:'✅'},
+  UPCOMING: {label:'À venir',    color:'#003DA5',bg:'rgba(0,61,165,0.10)',   icon:'📅'},
+  OVERDUE:  {label:'En retard',  color:'#DC2626',bg:'rgba(220,38,38,0.10)', icon:'⚠️'},
+  PARTIAL:  {label:'Partiel',    color:'#B45309', bg:'rgba(180,83,9,0.10)',  icon:'🔸'},
+}
