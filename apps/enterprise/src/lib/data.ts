@@ -508,23 +508,6 @@ export const EXCEPTIONS = [
 ]
 
 // ── RAPPORTS DISPONIBLES ──────────────────────────────────────
-export const REPORT_TEMPLATES = [
-  {id:'RPT-001',name:'Rapport de revenus',      cat:'FINANCIAL',icon:'💰',desc:'Revenus bruts, nets, par chauffeur, par fournisseur, par période',formats:['PDF','CSV','XLSX'],lastGenAt:'2026-09-17T08:00:00Z',status:'AVAILABLE'},
-  {id:'RPT-002',name:'Déclaration TPS/TVQ',     cat:'FISCAL',   icon:'🧾',desc:'Calcul TPS/TVQ par période — prêt pour préparation déclaration',formats:['PDF','CSV'],        lastGenAt:'2026-09-17T08:00:00Z',status:'AVAILABLE'},
-  {id:'RPT-003',name:'Rapport de réconciliation',cat:'RECON',   icon:'🔄',desc:'Comparaison source vs Revenue Ledger — variances et exceptions',formats:['PDF','XLSX'],       lastGenAt:'2026-09-18T10:38:00Z',status:'AVAILABLE'},
-  {id:'RPT-004',name:'Rapport chauffeurs',       cat:'DRIVERS',  icon:'👨‍✈️',desc:'Performance, revenus, activités, conformité par chauffeur',  formats:['PDF','CSV'],        lastGenAt:'2026-09-17T08:00:00Z',status:'AVAILABLE'},
-  {id:'RPT-005',name:'Rapport de conformité',    cat:'COMPLIANCE',icon:'⚖️',desc:'Documents, obligations, statuts de conformité globale',      formats:['PDF'],              lastGenAt:'2026-09-16T08:00:00Z',status:'AVAILABLE'},
-  {id:'RPT-006',name:'Rapport d\'activités',     cat:'ACTIVITIES',icon:'📍',desc:'Activités par type, fournisseur, chauffeur, période',        formats:['PDF','CSV','XLSX'],lastGenAt:'2026-09-17T08:00:00Z',status:'AVAILABLE'},
-  {id:'RPT-007',name:'Rapport d\'audit',         cat:'AUDIT',    icon:'🛡️',desc:'Journal complet des actions et modifications',               formats:['PDF','CSV'],        lastGenAt:'2026-09-18T10:38:00Z',status:'AVAILABLE'},
-  {id:'RPT-008',name:'Rapport fiscal annuel',    cat:'FISCAL',   icon:'📊',desc:'Synthèse annuelle TPS/TVQ pour préparation comptable',       formats:['PDF','XLSX'],       lastGenAt:null,                  status:'AVAILABLE'},
-]
-
-export const GENERATED_REPORTS = [
-  {id:'GEN-001',templateId:'RPT-002',name:'Déclaration TPS/TVQ Q2 2026',period:'Q2 2026',generatedAt:'2026-07-25T10:00:00Z',generatedBy:'Louise Côté',size:'48 KB', format:'PDF',status:'SENT',   sentTo:'Comptable externe',sentAt:'2026-07-25T10:05:00Z'},
-  {id:'GEN-002',templateId:'RPT-001',name:'Rapport revenus Q2 2026',    period:'Q2 2026',generatedAt:'2026-07-26T08:00:00Z',generatedBy:'Sophie Marchand',size:'124 KB',format:'XLSX',status:'SAVED',  sentTo:null,               sentAt:null},
-  {id:'GEN-003',templateId:'RPT-003',name:'Réconciliation Q3 Sept 18',  period:'2026-09-18',generatedAt:'2026-09-18T10:40:00Z',generatedBy:'SYSTEM',size:'32 KB', format:'PDF',status:'SAVED',  sentTo:null,               sentAt:null},
-]
-
 export const RECON_STATUS_CONF: Record<string,{label:string;color:string;bg:string;icon:string}> = {
   MATCHED:  {label:'Équilibré', color:'#059669',bg:'rgba(5,150,105,0.12)', icon:'✅'},
   VARIANCE: {label:'Variance',  color:'#B45309', bg:'rgba(180,83,9,0.10)', icon:'⚠️'},
@@ -543,16 +526,6 @@ export const EXC_STATUS_CONF: Record<string,{label:string;color:string;bg:string
   INVESTIGATING:{label:'En analyse',    color:'#B45309', bg:'rgba(180,83,9,0.10)'},
   CLOSED:       {label:'Fermé',         color:'#059669',bg:'rgba(5,150,105,0.12)'},
 }
-export const RPT_CAT_CONF: Record<string,{label:string;color:string}> = {
-  FINANCIAL:  {label:'Financier',   color:'#059669'},
-  FISCAL:     {label:'Fiscal',      color:'#7C3AED'},
-  RECON:      {label:'Réconciliation',color:'#B45309'},
-  DRIVERS:    {label:'Chauffeurs',  color:'#003DA5'},
-  COMPLIANCE: {label:'Conformité',  color:'#003DA5'},
-  ACTIVITIES: {label:'Activités',   color:'#003DA5'},
-  AUDIT:      {label:'Audit',       color:'#64748B'},
-}
-
 // ── OBLIGATIONS CONFORMITÉ ────────────────────────────────────
 export const COMPLIANCE_OBLIGATIONS = [
   {id:'OBL-C-001',type:'FISCAL',     label:'Déclaration TPS/TVQ Q3',     desc:'Préparer et soumettre la déclaration pour Q3 2026',due:'2026-10-31',status:'UPCOMING',  priority:'HIGH',   relatedId:'DCL-Q3-2026',category:'TAX',       progress:15},
@@ -945,4 +918,88 @@ export const DRIVERS_SUMMARY = {
   totalSynthetic: 10_724, // total synthétique Uber QC tous depts
   note: 'DONNÉES SYNTHÉTIQUES — Nb exact chauffeurs Uber QC non publié officiellement',
   publicRef: '12 351 véhicules Uber QC (réf. publique 2024, Travelnet)',
+}
+
+// ── ANALYTICS DATA ────────────────────────────────────────────
+export const ANALYTICS_MONTHLY = [
+  {m:'Oct 2025',gross:28_400,tps:r2(28_400*TPS),tvq:r2(28_400*TVQ),acts:1_820,drivers:9_200},
+  {m:'Nov 2025',gross:31_200,tps:r2(31_200*TPS),tvq:r2(31_200*TVQ),acts:2_010,drivers:9_400},
+  {m:'Déc 2025',gross:38_600,tps:r2(38_600*TPS),tvq:r2(38_600*TVQ),acts:2_480,drivers:9_600},
+  {m:'Jan 2026',gross:29_800,tps:r2(29_800*TPS),tvq:r2(29_800*TVQ),acts:1_920,drivers:9_800},
+  {m:'Fév 2026',gross:27_400,tps:r2(27_400*TPS),tvq:r2(27_400*TVQ),acts:1_760,drivers:9_900},
+  {m:'Mar 2026',gross:32_100,tps:r2(32_100*TPS),tvq:r2(32_100*TVQ),acts:2_060,drivers:10_100},
+  {m:'Avr 2026',gross:44_200,tps:r2(44_200*TPS),tvq:r2(44_200*TVQ),acts:2_840,drivers:10_200},
+  {m:'Mai 2026',gross:48_600,tps:r2(48_600*TPS),tvq:r2(48_600*TVQ),acts:3_120,drivers:10_400},
+  {m:'Jun 2026',gross:51_680,tps:r2(51_680*TPS),tvq:r2(51_680*TVQ),acts:3_320,drivers:10_600},
+  {m:'Jul 2026',gross:58_200,tps:r2(58_200*TPS),tvq:r2(58_200*TVQ),acts:3_740,drivers:10_800},
+  {m:'Aoû 2026',gross:61_400,tps:r2(61_400*TPS),tvq:r2(61_400*TVQ),acts:3_950,drivers:10_900},
+  {m:'Sep 2026',gross:121_600,tps:r2(121_600*TPS),tvq:r2(121_600*TVQ),acts:7_820,drivers:10_724},
+]
+
+export const ANALYTICS_REGIONS = [
+  {region:'Montréal',          drivers:5_840,vehicles:5_620,acts:198_400,gross:14_280_000,tps:r2(14_280_000*TPS)},
+  {region:'Laval',             drivers:1_240,vehicles:1_180,acts:38_200, gross:2_750_400, tps:r2(2_750_400*TPS)},
+  {region:'Longueuil',         drivers:980, vehicles:940,  acts:28_600,  gross:2_059_200, tps:r2(2_059_200*TPS)},
+  {region:'Québec (ville)',    drivers:840, vehicles:810,  acts:22_400,  gross:1_612_800, tps:r2(1_612_800*TPS)},
+  {region:'Gatineau',          drivers:420, vehicles:400,  acts:10_200,  gross:734_400,   tps:r2(734_400*TPS)},
+  {region:'Montérégie',        drivers:380, vehicles:362,  acts:8_800,   gross:633_600,   tps:r2(633_600*TPS)},
+  {region:'Laurentides',       drivers:280, vehicles:268,  acts:6_200,   gross:446_400,   tps:r2(446_400*TPS)},
+  {region:'Lanaudière',        drivers:240, vehicles:228,  acts:5_100,   gross:367_200,   tps:r2(367_200*TPS)},
+  {region:'Estrie',            drivers:180, vehicles:172,  acts:3_800,   gross:273_600,   tps:r2(273_600*TPS)},
+  {region:'Autres régions',   drivers:320, vehicles:305,  acts:6_300,   gross:453_600,   tps:r2(453_600*TPS)},
+]
+
+// ── ANOMALIES INTELLIGENCE ────────────────────────────────────
+export const ANOMALIES = [
+  {id:'ANOM-001',type:'ÉCART_TX',    dept:'taxi',   level:'IMPORTANT',status:'À VÉRIFIER',at:'2026-09-18T10:05:00Z',actId:'ACT-ENT-005',txId:'TX-ENT-005',   actAmt:16.50,txAmt:50.00,diff:33.50,  desc:'Montant activité (16,50$) ≠ transaction (50,00$) — écart de 33,50$ à analyser',src:'Réconciliation automatique'},
+  {id:'ANOM-002',type:'TX_MANQUANTE',dept:'taxi',   level:'IMPORTANT',status:'OUVERTE',   at:'2026-09-17T22:05:00Z',actId:'ACT-ENT-005',txId:null,           actAmt:16.50,txAmt:0,    diff:16.50, desc:'Activité sans transaction correspondante dans le ledger',src:'Validation automatique'},
+  {id:'ANOM-003',type:'DOC_EXPIRÉ',  dept:'taxi',   level:'ATTENTION',status:'OUVERTE',   at:'2026-09-17T08:00:00Z',actId:null,         txId:null,           actAmt:0,    txAmt:0,    diff:0,     desc:'Permis DRV-QC-0004 expire 2026-09-30 — 12 jours restants',src:'Moteur conformité'},
+  {id:'ANOM-004',type:'DOC_EXPIRÉ',  dept:'taxi',   level:'CRITIQUE', status:'OUVERTE',   at:'2026-09-17T08:00:00Z',actId:null,         txId:null,           actAmt:0,    txAmt:0,    diff:0,     desc:'Permis DRV-QC-0005 expiré depuis 2026-03-01 — chauffeur suspendu',src:'Moteur conformité'},
+  {id:'ANOM-005',type:'WEBHOOK_FAIL',dept:'rides',  level:'ATTENTION',status:'RÉSOLUE',   at:'2026-09-17T10:00:00Z',actId:null,         txId:'UBER-TX-FAIL1',actAmt:0,    txAmt:0,    diff:0,     desc:'Webhook UBER-TX-FAIL1 échoué (3 tentatives) — auth token expiré',src:'Webhook engine'},
+  {id:'ANOM-006',type:'SYNC_ERR',    dept:'rides',  level:'INFO',     status:'RÉSOLUE',   at:'2026-09-17T22:02:00Z',actId:null,         txId:null,           actAmt:0,    txAmt:0,    diff:0,     desc:'1 activité non réconciliée lors sync incrémentale — auto-résolu sync suivante',src:'TAXIMETER.GOV'},
+  {id:'ANOM-007',type:'INSPECTION',  dept:'taxi',   level:'IMPORTANT',status:'OUVERTE',   at:'2026-09-15T08:00:00Z',actId:null,         txId:null,           actAmt:0,    txAmt:0,    diff:0,     desc:'Inspection TXM-004 expire 2026-09-30 — 12 jours',src:'Moteur conformité'},
+]
+
+export const ANOMALY_TYPE_CONF: Record<string,{label:string;icon:string;color:string}> = {
+  ÉCART_TX:     {label:'Écart transactionnel',   icon:'💸',color:'#DC2626'},
+  TX_MANQUANTE: {label:'Transaction manquante',  icon:'❌',color:'#DC2626'},
+  DOC_EXPIRÉ:   {label:'Document expiré/expirant',icon:'📄',color:'#B45309'},
+  WEBHOOK_FAIL: {label:'Webhook échoué',          icon:'📡',color:'#7C3AED'},
+  SYNC_ERR:     {label:'Erreur synchronisation',  icon:'🔄',color:'#003DA5'},
+  INSPECTION:   {label:'Inspection véhicule',     icon:'🔧',color:'#B45309'},
+}
+export const ANOMALY_LEVEL_CONF: Record<string,{label:string;color:string;bg:string}> = {
+  CRITIQUE:  {label:'CRITIQUE',  color:'#DC2626',bg:'rgba(220,38,38,0.12)'},
+  IMPORTANT: {label:'IMPORTANT', color:'#B45309',bg:'rgba(180,83,9,0.10)'},
+  ATTENTION: {label:'ATTENTION', color:'#7C3AED',bg:'rgba(124,58,237,0.12)'},
+  INFO:      {label:'INFO',      color:'#003DA5',bg:'rgba(0,61,165,0.10)'},
+}
+
+// ── REPORT TEMPLATES ENRICHIS ─────────────────────────────────
+export const REPORT_TEMPLATES = [
+  {id:'RPT-001',name:'Rapport revenus entreprise',      cat:'FINANCIAL',  icon:'💰',formats:['PDF','CSV','Excel'],desc:'Revenus bruts/nets, commissions, pourboires par département et période',lastGenAt:'2026-09-17T10:00:00Z'},
+  {id:'RPT-002',name:'Déclaration TPS/TVQ estimée',     cat:'FISCAL',     icon:'🧾',formats:['PDF','CSV'],       desc:'Estimation TPS/TVQ par période — MODE PILOTE · À valider avant transmission',lastGenAt:'2026-09-10T08:00:00Z'},
+  {id:'RPT-003',name:'Rapport réconciliation',          cat:'RECON',      icon:'🔄',formats:['PDF','CSV','Excel'],desc:'Correspondances, écarts et exceptions par source de données',lastGenAt:'2026-09-15T14:00:00Z'},
+  {id:'RPT-004',name:'Rapport chauffeurs & livreurs',   cat:'DRIVERS',    icon:'👤',formats:['PDF','CSV'],       desc:'Liste chauffeurs, conformité, revenus, activités par département',lastGenAt:'2026-09-16T09:00:00Z'},
+  {id:'RPT-005',name:'Rapport conformité',              cat:'COMPLIANCE', icon:'⚖️',formats:['PDF','CSV'],       desc:'Statut conformité, documents expirés, obligations en attente',lastGenAt:'2026-09-14T08:00:00Z'},
+  {id:'RPT-006',name:'Rapport activités opérationnelles',cat:'OPERATIONS',icon:'📍',formats:['PDF','CSV','Excel'],desc:'Courses, livraisons, km, heures par département et chauffeur',lastGenAt:'2026-09-18T07:00:00Z'},
+  {id:'RPT-007',name:'Rapport audit complet',           cat:'AUDIT',      icon:'🛡️',formats:['PDF'],            desc:'Journal complet des actions, modifications et accès',lastGenAt:'2026-09-01T08:00:00Z'},
+  {id:'RPT-008',name:'Dossier gouvernemental',          cat:'GOVERNMENT', icon:'🏛️',formats:['PDF'],            desc:'Préparation transmission TAXIMETER.GOV — MODE PILOTE',lastGenAt:null},
+]
+
+export const GENERATED_REPORTS = [
+  {id:'GR-001',templateId:'RPT-001',name:'Revenus Q3 2026 — Uber QC',     period:'Q3 2026',format:'PDF',  size:'2.4 MB',status:'SAVED',generatedAt:'2026-09-17T10:02:00Z',generatedBy:'Jean-Philippe Roy',sentTo:null,sentAt:null},
+  {id:'GR-002',templateId:'RPT-006',name:'Activités septembre 2026',       period:'Sep 2026',format:'CSV',  size:'1.8 MB',status:'SAVED',generatedAt:'2026-09-18T07:05:00Z',generatedBy:'SYSTEM',sentTo:null,sentAt:null},
+  {id:'GR-003',templateId:'RPT-002',name:'Estimation TPS/TVQ Q3 — PILOTE',period:'Q3 2026',format:'PDF',  size:'820 KB',status:'SENT', generatedAt:'2026-09-10T08:12:00Z',generatedBy:'Jean-Philippe Roy',sentTo:'s.marchand@uber-demo.taximetergov.demo',sentAt:'2026-09-10T08:15:00Z'},
+]
+
+export const RPT_CAT_CONF: Record<string,{label:string;color:string}> = {
+  FINANCIAL:  {label:'Financier',   color:'#059669'},
+  FISCAL:     {label:'Fiscal',      color:'#7C3AED'},
+  RECON:      {label:'Réconciliation',color:'#B45309'},
+  DRIVERS:    {label:'Chauffeurs',  color:'#003DA5'},
+  COMPLIANCE: {label:'Conformité',  color:'#DC2626'},
+  OPERATIONS: {label:'Opérations',  color:'#000000'},
+  AUDIT:      {label:'Audit',       color:'#64748B'},
+  GOVERNMENT: {label:'Gouvernemental',color:'#003DA5'},
 }

@@ -26,11 +26,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="text-[9px] text-qc-blue font-bold">Enterprise Gov</div>
             </div>
           </div>
-          {/* Entreprise courante — Logo Uber DEMO */}
+          {/* Entreprise courante — Logo Uber + Uber Eats */}
           <div className="rounded-xl px-3 py-2.5" style={{background:'#000000'}}>
+            {/* Uber logo */}
             <div className="text-white font-black tracking-tighter" style={{fontSize:'1.5rem',fontFamily:'system-ui',letterSpacing:'-0.04em',lineHeight:1}}>uber</div>
-            <div className="text-[8px] font-mono mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>DEMO · {CURRENT_ENT.id}</div>
-            <div className="flex items-center gap-1 mt-1.5">
+            {/* Uber Eats logo */}
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="font-black" style={{fontFamily:'system-ui',letterSpacing:'-0.5px',color:'#06B029',fontSize:'0.7rem'}}>Uber</span>
+              <span className="font-black" style={{fontFamily:'system-ui',letterSpacing:'-0.5px',color:'rgba(255,255,255,0.7)',fontSize:'0.7rem'}}>Eats</span>
+              <span className="text-[7px] font-bold" style={{color:'rgba(255,255,255,0.35)'}}>+ 5 services</span>
+            </div>
+            <div className="text-[7px] font-mono mt-1" style={{color:'rgba(255,255,255,0.35)'}}>DEMO · {CURRENT_ENT.id}</div>
+            <div className="flex items-center gap-1 mt-1">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400"/>
               <span className="text-[8px] font-bold" style={{color:'rgba(255,255,255,0.7)'}}>Connecté · PILOTE</span>
             </div>
