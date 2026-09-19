@@ -360,3 +360,81 @@ export const PAY_STATUS_CONF: Record<string,{label:string;color:string;bg:string
   OVERDUE:  {label:'En retard',  color:'#DC2626',bg:'rgba(220,38,38,0.10)', icon:'⚠️'},
   PARTIAL:  {label:'Partiel',    color:'#B45309', bg:'rgba(180,83,9,0.10)',  icon:'🔸'},
 }
+
+// ── CONNEXIONS API ────────────────────────────────────────────
+export const ENT_CONNECTIONS = [
+  {id:'CONN-001',name:'TAXIMETER.GOV',        type:'PLATFORM',  method:'OAuth 2.0',   status:'CONNECTED',   health:100,latency:42, dataRx:9840, errors:0,  lastSync:'2026-09-18T10:38:00Z',scopes:['read:activities','write:ledger','read:tax','read:drivers'],note:'Connexion principale pilote'},
+  {id:'CONN-002',name:'Taximètre numérique', type:'DEVICE',    method:'WebSocket',   status:'CONNECTED',   health:99, latency:18, dataRx:4820, errors:0,  lastSync:'2026-09-18T10:32:00Z',scopes:['trips','telemetry'],note:'Transmission directe courses'},
+  {id:'CONN-003',name:'UBER DEMO',            type:'PLATFORM',  method:'Webhook',     status:'CONNECTED',   health:97, latency:85, dataRx:3200, errors:2,  lastSync:'2026-09-18T10:20:00Z',scopes:['trips','payments'],note:'2 webhooks en erreur récupérés'},
+  {id:'CONN-004',name:'LYFT DEMO',            type:'PLATFORM',  method:'Webhook',     status:'CONNECTED',   health:95, latency:92, dataRx:1840, errors:0,  lastSync:'2026-09-18T09:45:00Z',scopes:['trips','payments'],note:'Connexion stable'},
+  {id:'CONN-005',name:'DOORDASH DEMO',        type:'PLATFORM',  method:'Webhook',     status:'CONNECTED',   health:92, latency:110,dataRx:980,  errors:3,  lastSync:'2026-09-18T08:30:00Z',scopes:['deliveries','tips'],note:'Latence légèrement élevée'},
+  {id:'CONN-006',name:'Revenu Québec',        type:'GOVERNMENT',method:'—',           status:'PLANNED',     health:0,  latency:0,  dataRx:0,    errors:0,  lastSync:null,scopes:[],note:'Intégration future — accord légal requis'},
+  {id:'CONN-007',name:'ARC (CRA)',            type:'GOVERNMENT',method:'—',           status:'PLANNED',     health:0,  latency:0,  dataRx:0,    errors:0,  lastSync:null,scopes:[],note:'Intégration future — accord légal requis'},
+]
+
+// ── WEBHOOKS LOG ──────────────────────────────────────────────
+export const WEBHOOK_LOG = [
+  {id:'WH-001',connId:'CONN-001',event:'activity.completed',extRef:'TAXGOV-ACT-001',at:'2026-09-18T10:32:00Z',status:'PROCESSED',attempts:1,latency:38, payload:'{"actId":"ACT-ENT-001","gross":42.50}',error:null},
+  {id:'WH-002',connId:'CONN-001',event:'activity.completed',extRef:'TAXGOV-ACT-002',at:'2026-09-18T09:12:00Z',status:'PROCESSED',attempts:1,latency:41, payload:'{"actId":"ACT-ENT-002","gross":18.75}',error:null},
+  {id:'WH-003',connId:'CONN-003',event:'trip.completed',    extRef:'UBER-TX-8421',  at:'2026-09-18T08:32:00Z',status:'PROCESSED',attempts:1,latency:88, payload:'{"tripId":"8421","amount":22.50}',    error:null},
+  {id:'WH-004',connId:'CONN-003',event:'trip.completed',    extRef:'UBER-TX-9103',  at:'2026-09-17T18:17:00Z',status:'PROCESSED',attempts:2,latency:95, payload:'{"tripId":"9103","amount":19.00}',    error:'Timeout initial — retry réussi'},
+  {id:'WH-005',connId:'CONN-004',event:'trip.completed',    extRef:'LYFT-TX-5521',  at:'2026-09-17T16:02:00Z',status:'PROCESSED',attempts:1,latency:90, payload:'{"tripId":"5521","amount":21.00}',    error:null},
+  {id:'WH-006',connId:'CONN-005',event:'delivery.completed',extRef:'DOORDASH-7710', at:'2026-09-17T12:02:00Z',status:'PROCESSED',attempts:3,latency:115,payload:'{"deliveryId":"7710","amount":12.00}',error:'2 tentatives échouées avant succès'},
+  {id:'WH-007',connId:'CONN-003',event:'trip.cancelled',    extRef:'UBER-TX-FAIL1', at:'2026-09-17T10:00:00Z',status:'FAILED',   attempts:3,latency:0,  payload:'{}',                                 error:'Auth token expiré — non récupéré'},
+]
+
+// ── SYNC HISTORY ──────────────────────────────────────────────
+export const SYNC_HISTORY = [
+  {id:'SYN-001',at:'2026-09-18T10:38:00Z',source:'TAXIMETER.GOV', type:'FULL',       duration:2840,records:9840, new:12, updated:3, skipped:0, errors:0, status:'SUCCESS',note:'Sync complète quotidienne'},
+  {id:'SYN-002',at:'2026-09-18T10:32:00Z',source:'Taximètre',     type:'REALTIME',   duration:180, records:1,   new:1,  updated:0, skipped:0, errors:0, status:'SUCCESS',note:'Course ACT-ENT-001 transmise'},
+  {id:'SYN-003',at:'2026-09-18T09:12:00Z',source:'Taximètre',     type:'REALTIME',   duration:175, records:1,   new:1,  updated:0, skipped:0, errors:0, status:'SUCCESS',note:'Course ACT-ENT-002 transmise'},
+  {id:'SYN-004',at:'2026-09-18T08:32:00Z',source:'UBER DEMO',     type:'WEBHOOK',    duration:88,  records:1,   new:1,  updated:0, skipped:0, errors:0, status:'SUCCESS',note:'Trip UBER-TX-8421'},
+  {id:'SYN-005',at:'2026-09-17T22:02:00Z',source:'TAXIMETER.GOV', type:'INCREMENTAL',duration:420, records:48,  new:5,  updated:2, skipped:1, errors:1, status:'WARNING',note:'1 activité non réconciliée'},
+  {id:'SYN-006',at:'2026-09-17T18:17:00Z',source:'UBER DEMO',     type:'WEBHOOK',    duration:95,  records:1,   new:1,  updated:0, skipped:0, errors:0, status:'SUCCESS',note:'Trip UBER-TX-9103 (retry 2)'},
+  {id:'SYN-007',at:'2026-09-17T12:02:00Z',source:'DOORDASH DEMO', type:'WEBHOOK',    duration:115, records:1,   new:1,  updated:0, skipped:0, errors:0, status:'SUCCESS',note:'Delivery DD-7710 (retry 3)'},
+  {id:'SYN-008',at:'2026-09-17T00:00:00Z',source:'TAXIMETER.GOV', type:'FULL',       duration:3120,records:9828,new:0,  updated:8, skipped:0, errors:0, status:'SUCCESS',note:'Sync journalière — aucune nouvelle activité'},
+]
+
+// ── DONNÉES TRANSPARENCE ──────────────────────────────────────
+export const TRANSPARENCY_DATA = {
+  dataCategories:[
+    {cat:'Identité entreprise',   purpose:'Identification et vérification',       retention:'Durée du pilote',access:'Admin Gov autorisé',   shared:'NON'},
+    {cat:'Données chauffeurs',    purpose:'Gestion dossier professionnel',         retention:'Durée du pilote',access:'Admin Gov + Chauffeur',shared:'CONTRÔLÉ'},
+    {cat:'Activités (courses)',   purpose:'Réconciliation et rapport fiscal',      retention:'Durée du pilote',access:'Admin Gov autorisé',   shared:'CONTRÔLÉ'},
+    {cat:'Transactions',          purpose:'Calcul TPS/TVQ et reconciliation',     retention:'Durée du pilote',access:'Admin Gov fiscal',     shared:'CONTRÔLÉ'},
+    {cat:'Données fiscales',      purpose:'Estimation déclarations TPS/TVQ',      retention:'Durée du pilote',access:'Admin Gov fiscal',     shared:'SIMULATION'},
+    {cat:'Documents',             purpose:'Validation conformité',                retention:'Durée du pilote',access:'Admin Gov autorisé',   shared:'NON'},
+    {cat:'Audit & logs',          purpose:'Traçabilité et sécurité',              retention:'Durée du pilote',access:'Auditeur autorisé',    shared:'NON'},
+  ],
+  rights:[
+    {right:'Accès',        desc:'Consulter les données vous concernant',      how:'Via l\'interface Enterprise Gov'},
+    {right:'Rectification',desc:'Corriger des informations inexactes',         how:'Via une demande à l\'administrateur Gov'},
+    {right:'Portabilité',  desc:'Exporter vos données en format structuré',   how:'Via le module Rapports'},
+    {right:'Effacement',   desc:'Demander la suppression de vos données',     how:'Via une demande formelle au pilote'},
+    {right:'Opposition',   desc:'S\'opposer à certains traitements',           how:'Via une demande à l\'administrateur Gov'},
+  ],
+  accessMatrix:[
+    {role:'Propriétaire',  sees:['Tout le dossier enterprise','Chauffeurs','Finances','Taxes'],cannot:['Données autres entreprises','Renseignements gouvernementaux internes']},
+    {role:'Finance',       sees:['Transactions','Revenus','TPS/TVQ','Déclarations','Paiements'],cannot:['Données chauffeurs personnelles','Sécurité']},
+    {role:'Dispatch',      sees:['Chauffeurs (vue limitée)','Véhicules','Activités'],cannot:['Données financières','Taxes','Audit']},
+    {role:'Compliance',    sees:['Documents','Obligations','Statuts conformité'],cannot:['Données financières détaillées']},
+    {role:'Lecteur',       sees:['Tableau de bord (lecture seule)'],cannot:['Modifications','Finances détaillées','Audit']},
+  ],
+}
+
+export const CONN_TYPE_ICONS: Record<string,string> = {
+  PLATFORM:'🔌', DEVICE:'🚕', GOVERNMENT:'🏛️', INTERNAL:'⚙️',
+}
+export const CONN_HEALTH_COLOR = (h:number) => h>=95?'#059669':h>=80?'#B45309':h>0?'#DC2626':'#64748B'
+export const SYNC_TYPE_CONF: Record<string,{label:string;color:string}> = {
+  FULL:        {label:'Complète',    color:'#003DA5'},
+  INCREMENTAL: {label:'Incrémentale',color:'#7C3AED'},
+  REALTIME:    {label:'Temps réel',  color:'#059669'},
+  WEBHOOK:     {label:'Webhook',     color:'#B45309'},
+}
+export const SYNC_STATUS_CONF: Record<string,{label:string;color:string;bg:string}> = {
+  SUCCESS: {label:'Succès',     color:'#059669',bg:'rgba(5,150,105,0.12)'},
+  WARNING: {label:'Avertissement',color:'#B45309',bg:'rgba(180,83,9,0.10)'},
+  ERROR:   {label:'Erreur',     color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+  RUNNING: {label:'En cours',   color:'#003DA5',bg:'rgba(0,61,165,0.10)'},
+}
