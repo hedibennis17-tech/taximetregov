@@ -1,22 +1,129 @@
 'use client'
 import { AppShell } from '@/components/layout/AppShell'
-import Link from 'next/link'
-import { PILOT, money, money2, fmtDt, fmtDate } from '@/lib/data'
+import { useState } from 'react'
+import { PILOT, fmtDt, fmtDate, REPORT_TEMPLATES, GENERATED_REPORTS, RPT_CAT_CONF } from '@/lib/data'
 
+const GEN_STATUS: Record<string,{label:string;color:string;bg:string}> = {
+  SAVED: {label:'Archivé',color:'#003DA5',bg:'rgba(0,61,165,0.10)'},
+  SENT:  {label:'Envoyé', color:'#059669',bg:'rgba(5,150,105,0.12)'},
+}
 
-export default function Page() {
+export default function ReportsPage() {
+  const [catF, setCatF] = useState('ALL')
+  const [generating, setGenerating] = useState<string|null>(null)
+
+  const filtered = REPORT_TEMPLATES.filter(r=>catF==='ALL'||r.cat===catF)
+  const cats = [...new Set(REPORT_TEMPLATES.map(r=>r.cat))]
+
+  const handleGenerate = (id:string) => {
+    setGenerating(id)
+    setTimeout(()=>setGenerating(null), 2000)
+  }
+
   return (
     <AppShell>
       <div className="px-4 md:px-6 py-6 space-y-5 max-w-4xl mx-auto">
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT}</div>
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white">Rapports</h1>
+          <p className="text-sm text-slate-500 mt-1">Revenus · TPS/TVQ · Réconciliation · Chauffeurs · Conformité · Audit</p>
+        </div>
+        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · Rapports générés à partir de données synthétiques DEMO</div>
 
-        <div className="space-y-2">
-          {['Rapport revenus Q3','Rapport TPS/TVQ Q3','Rapport transactions','Rapport chauffeurs','Rapport conformité','Rapport réconciliation'].map(r=>(
-            <div key={r} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 flex items-center justify-between shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800/50">
-              <div className="flex items-center gap-2"><span className="text-base">📊</span><div><div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{r}</div><div className="text-[8px] text-slate-400">PDF · CSV · PILOTE DEMO</div></div></div>
-              <button className="px-3 py-1.5 rounded-xl text-[9px] font-bold bg-qc-blue text-white hover:opacity-90 cursor-pointer">Export</button>
+        {/* KPI */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            {l:'Templates disponibles',v:REPORT_TEMPLATES.length,c:'#003DA5',bg:'bg-blue-50 dark:bg-blue-500/10'},
+            {l:'Rapports générés',     v:GENERATED_REPORTS.length,c:'#059669',bg:'bg-green-50 dark:bg-green-500/10'},
+            {l:'Envoyés',              v:GENERATED_REPORTS.filter(r=>r.status==='SENT').length,c:'#7C3AED',bg:'bg-purple-50 dark:bg-purple-500/10'},
+          ].map(s=>(
+            <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center`}>
+              <div className="text-2xl font-black" style={{color:s.c}}>{s.v}</div>
+              <div className="text-[9px] text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
+        </div>
+
+        {/* Filtres catégories */}
+        <div className="flex gap-1.5 flex-wrap">
+          <button onClick={()=>setCatF('ALL')} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:catF==='ALL'?'#003DA5':'transparent',color:catF==='ALL'?'white':'#64748B',borderColor:catF==='ALL'?'#003DA5':'rgba(148,163,184,0.30)'}}>
+            Tous
+          </button>
+          {cats.map(c=>{
+            const cc = RPT_CAT_CONF[c]!
+            return (
+              <button key={c} onClick={()=>setCatF(c)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:catF===c?cc.color:'transparent',color:catF===c?'white':'#64748B',borderColor:catF===c?cc.color:'rgba(148,163,184,0.30)'}}>
+                {cc.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Templates */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {filtered.map(r=>{
+            const cc = RPT_CAT_CONF[r.cat]!
+            const isGen = generating===r.id
+            return (
+              <div key={r.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-xl shrink-0">{r.icon}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{r.name}</span>
+                      <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full" style={{color:cc.color,background:`${cc.color}15`}}>{cc.label}</span>
+                    </div>
+                    <div className="text-[9px] text-slate-400">{r.desc}</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-1">
+                    {r.formats.map(f=>(
+                      <span key={f} className="text-[7px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded">{f}</span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={()=>handleGenerate(r.id)}
+                    disabled={isGen}
+                    className="px-3 py-1.5 rounded-xl text-[9px] font-bold text-white cursor-pointer transition-all disabled:opacity-60"
+                    style={{background:cc.color}}>
+                    {isGen?'Génération…':'Générer · DEMO'}
+                  </button>
+                </div>
+                {r.lastGenAt&&(
+                  <div className="text-[8px] text-slate-400 mt-2">Dernier: {fmtDt(r.lastGenAt)}</div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Rapports générés */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 text-sm font-bold text-slate-800 dark:text-white">
+            Rapports générés ({GENERATED_REPORTS.length})
+          </div>
+          {GENERATED_REPORTS.map(g=>{
+            const sc = GEN_STATUS[g.status]!
+            const tmpl = REPORT_TEMPLATES.find(t=>t.id===g.templateId)
+            return (
+              <div key={g.id} className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <span className="text-xl shrink-0">{tmpl?.icon??'📊'}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{g.name}</span>
+                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
+                    <span className="text-[7px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded">{g.format}</span>
+                  </div>
+                  <div className="text-[9px] text-slate-400">{g.period} · {g.size} · Généré par {g.generatedBy} · {fmtDt(g.generatedAt)}</div>
+                  {g.sentTo&&<div className="text-[9px] text-green-600 dark:text-green-400">✉️ Envoyé à: {g.sentTo} — {g.sentAt?fmtDt(g.sentAt):''}</div>}
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <button className="px-2 py-1 rounded-lg text-[8px] font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 cursor-pointer">Voir</button>
+                  <button className="px-2 py-1 rounded-lg text-[8px] font-bold bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 cursor-pointer">↓ Export</button>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </AppShell>

@@ -438,3 +438,103 @@ export const SYNC_STATUS_CONF: Record<string,{label:string;color:string;bg:strin
   ERROR:   {label:'Erreur',     color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
   RUNNING: {label:'En cours',   color:'#003DA5',bg:'rgba(0,61,165,0.10)'},
 }
+
+// ── RÉCONCILIATION ITEMS ──────────────────────────────────────
+export const RECON_ITEMS = [
+  {id:'REC-001',txId:'TX-ENT-001',actId:'ACT-ENT-001',provider:'DIRECT',     driverId:'DRV-QC-0001',at:'2026-09-18T10:32:00Z',sourceAmt:42.50,ledgerAmt:42.50,tpsSource:r2(42.50*TPS),tpsLedger:r2(42.50*TPS),tvqSource:r2(42.50*TVQ),tvqLedger:r2(42.50*TVQ),diff:0,   status:'MATCHED',  resolvedAt:'2026-09-18T10:32:00Z',note:null},
+  {id:'REC-002',txId:'TX-ENT-002',actId:'ACT-ENT-002',provider:'DIRECT',     driverId:'DRV-QC-0001',at:'2026-09-18T09:12:00Z',sourceAmt:18.75,ledgerAmt:18.75,tpsSource:r2(18.75*TPS),tpsLedger:r2(18.75*TPS),tvqSource:r2(18.75*TVQ),tvqLedger:r2(18.75*TVQ),diff:0,   status:'MATCHED',  resolvedAt:'2026-09-18T09:12:00Z',note:null},
+  {id:'REC-003',txId:'TX-ENT-003',actId:'ACT-ENT-003',provider:'UBER DEMO',  driverId:'DRV-QC-0002',at:'2026-09-18T08:32:00Z',sourceAmt:22.50,ledgerAmt:22.50,tpsSource:r2(22.50*TPS),tpsLedger:r2(22.50*TPS),tvqSource:r2(22.50*TVQ),tvqLedger:r2(22.50*TVQ),diff:0,   status:'MATCHED',  resolvedAt:'2026-09-18T08:32:00Z',note:null},
+  {id:'REC-004',txId:'TX-ENT-005',actId:'ACT-ENT-005',provider:'DIRECT',     driverId:'DRV-QC-0004',at:'2026-09-17T22:02:00Z',sourceAmt:50.00,ledgerAmt:16.50,tpsSource:r2(50.00*TPS),tpsLedger:r2(16.50*TPS),tvqSource:r2(50.00*TVQ),tvqLedger:r2(16.50*TVQ),diff:33.50,status:'VARIANCE', resolvedAt:null,   note:'Source plateforme 50$ vs Revenue Ledger 16.50$ — activité TXM-004 en maintenance?'},
+  {id:'REC-005',txId:'TX-ENT-013',actId:'ACT-ENT-005',provider:'DIRECT',     driverId:'DRV-QC-0004',at:'2026-09-17T22:05:00Z',sourceAmt:50.00,ledgerAmt:0,    tpsSource:r2(50.00*TPS),tpsLedger:0,               tvqSource:r2(50.00*TVQ),tvqLedger:0,               diff:50,   status:'MISSING',  resolvedAt:null,   note:'Transaction EXC-TX-001 non enregistrée dans Revenue Ledger — webhook échoué?'},
+  {id:'REC-006',txId:'TX-ENT-006',actId:'ACT-ENT-006',provider:'UBER DEMO',  driverId:'DRV-QC-0002',at:'2026-09-17T18:17:00Z',sourceAmt:19.00,ledgerAmt:19.00,tpsSource:r2(19.00*TPS),tpsLedger:r2(19.00*TPS),tvqSource:r2(19.00*TVQ),tvqLedger:r2(19.00*TVQ),diff:0,   status:'MATCHED',  resolvedAt:'2026-09-17T18:20:00Z',note:null},
+  {id:'REC-007',txId:'TX-ENT-007',actId:'ACT-ENT-007',provider:'LYFT DEMO',  driverId:'DRV-QC-0003',at:'2026-09-17T16:02:00Z',sourceAmt:21.00,ledgerAmt:21.00,tpsSource:r2(21.00*TPS),tpsLedger:r2(21.00*TPS),tvqSource:r2(21.00*TVQ),tvqLedger:r2(21.00*TVQ),diff:0,   status:'MATCHED',  resolvedAt:'2026-09-17T16:05:00Z',note:null},
+  {id:'REC-008',txId:'TX-ENT-011',actId:'ACT-ENT-001',provider:'DIRECT',     driverId:'DRV-QC-0001',at:'2026-09-18T11:00:00Z',sourceAmt:-5.00,ledgerAmt:-5.00,tpsSource:0,               tpsLedger:0,               tvqSource:0,               tvqLedger:0,               diff:0,   status:'MATCHED',  resolvedAt:'2026-09-18T11:00:00Z',note:'Ajustement -5$ appliqué aux deux sources'},
+]
+
+// ── EXCEPTIONS ────────────────────────────────────────────────
+export const EXCEPTIONS = [
+  {id:'EXC-001',type:'VARIANCE',   priority:'HIGH',    txId:'TX-ENT-005',actId:'ACT-ENT-005',at:'2026-09-17T22:02:00Z',sourceAmt:50.00,ledgerAmt:16.50,diff:33.50,status:'INVESTIGATING',assignedTo:'Finance',driverId:'DRV-QC-0004',provider:'DIRECT',    desc:'Montant source (50$) ≠ Revenue Ledger (16.50$) — diff: 33.50$. Véhicule TXM-004 en maintenance lors de la course?',action:'Vérifier le statut de TXM-004 et le log taximètre. Comparer avec données GPS.',resolution:null},
+  {id:'EXC-002',type:'MISSING_TX', priority:'HIGH',    txId:'TX-ENT-013',actId:'ACT-ENT-005',at:'2026-09-17T22:05:00Z',sourceAmt:50.00,ledgerAmt:0,    diff:50.00,status:'OPEN',        assignedTo:'Finance',driverId:'DRV-QC-0004',provider:'DIRECT',    desc:'Transaction EXC-TX-001 non trouvée dans Revenue Ledger. Webhook échoué ou non traité?',action:'Vérifier les logs webhook CONN-001. Créer manuellement si confirmé.',resolution:null},
+  {id:'EXC-003',type:'DISPUTED',   priority:'MEDIUM',  txId:'TX-ENT-013',actId:'ACT-ENT-005',at:'2026-09-17T22:05:00Z',sourceAmt:50.00,ledgerAmt:16.50,diff:33.50,status:'OPEN',        assignedTo:'Finance',driverId:'DRV-QC-0004',provider:'DIRECT',    desc:'TX contestée par le chauffeur — montant perçu vs montant taximètre différent.',action:'Demander clarification au chauffeur DRV-QC-0004. Comparer taximètre vs app plateforme.',resolution:null},
+  {id:'EXC-004',type:'WEBHOOK',    priority:'LOW',     txId:null,        actId:null,          at:'2026-09-17T10:00:00Z',sourceAmt:0,    ledgerAmt:0,    diff:0,    status:'CLOSED',      assignedTo:'Tech',   driverId:null,           provider:'UBER DEMO', desc:'Webhook UBER-TX-FAIL1 échoué — token auth expiré. Non récupérable.',action:'Renouveler token UBER DEMO. Vérifier si l\'activité est dans d\'autres sources.',resolution:'Token renouvelé. Activité non retrouvée — montant annulé. Accepté comme perte.'},
+  {id:'EXC-005',type:'DUPLICATE',  priority:'MEDIUM',  txId:'TX-ENT-001',actId:'ACT-ENT-001',at:'2026-09-18T10:32:00Z',sourceAmt:42.50,ledgerAmt:42.50,diff:0,    status:'CLOSED',      assignedTo:'Tech',   driverId:'DRV-QC-0001',provider:'DIRECT',    desc:'Doublon potentiel détecté — même extRef reçu 2 fois. Anti-doublon a bloqué le second.',action:'Confirmer que la déduplication a bien fonctionné.',resolution:'Déduplication confirmée — une seule entrée dans Revenue Ledger. Fermé.'},
+]
+
+// ── RAPPORTS DISPONIBLES ──────────────────────────────────────
+export const REPORT_TEMPLATES = [
+  {id:'RPT-001',name:'Rapport de revenus',      cat:'FINANCIAL',icon:'💰',desc:'Revenus bruts, nets, par chauffeur, par fournisseur, par période',formats:['PDF','CSV','XLSX'],lastGenAt:'2026-09-17T08:00:00Z',status:'AVAILABLE'},
+  {id:'RPT-002',name:'Déclaration TPS/TVQ',     cat:'FISCAL',   icon:'🧾',desc:'Calcul TPS/TVQ par période — prêt pour préparation déclaration',formats:['PDF','CSV'],        lastGenAt:'2026-09-17T08:00:00Z',status:'AVAILABLE'},
+  {id:'RPT-003',name:'Rapport de réconciliation',cat:'RECON',   icon:'🔄',desc:'Comparaison source vs Revenue Ledger — variances et exceptions',formats:['PDF','XLSX'],       lastGenAt:'2026-09-18T10:38:00Z',status:'AVAILABLE'},
+  {id:'RPT-004',name:'Rapport chauffeurs',       cat:'DRIVERS',  icon:'👨‍✈️',desc:'Performance, revenus, activités, conformité par chauffeur',  formats:['PDF','CSV'],        lastGenAt:'2026-09-17T08:00:00Z',status:'AVAILABLE'},
+  {id:'RPT-005',name:'Rapport de conformité',    cat:'COMPLIANCE',icon:'⚖️',desc:'Documents, obligations, statuts de conformité globale',      formats:['PDF'],              lastGenAt:'2026-09-16T08:00:00Z',status:'AVAILABLE'},
+  {id:'RPT-006',name:'Rapport d\'activités',     cat:'ACTIVITIES',icon:'📍',desc:'Activités par type, fournisseur, chauffeur, période',        formats:['PDF','CSV','XLSX'],lastGenAt:'2026-09-17T08:00:00Z',status:'AVAILABLE'},
+  {id:'RPT-007',name:'Rapport d\'audit',         cat:'AUDIT',    icon:'🛡️',desc:'Journal complet des actions et modifications',               formats:['PDF','CSV'],        lastGenAt:'2026-09-18T10:38:00Z',status:'AVAILABLE'},
+  {id:'RPT-008',name:'Rapport fiscal annuel',    cat:'FISCAL',   icon:'📊',desc:'Synthèse annuelle TPS/TVQ pour préparation comptable',       formats:['PDF','XLSX'],       lastGenAt:null,                  status:'AVAILABLE'},
+]
+
+export const GENERATED_REPORTS = [
+  {id:'GEN-001',templateId:'RPT-002',name:'Déclaration TPS/TVQ Q2 2026',period:'Q2 2026',generatedAt:'2026-07-25T10:00:00Z',generatedBy:'Louise Côté',size:'48 KB', format:'PDF',status:'SENT',   sentTo:'Comptable externe',sentAt:'2026-07-25T10:05:00Z'},
+  {id:'GEN-002',templateId:'RPT-001',name:'Rapport revenus Q2 2026',    period:'Q2 2026',generatedAt:'2026-07-26T08:00:00Z',generatedBy:'Robert Simard',size:'124 KB',format:'XLSX',status:'SAVED',  sentTo:null,               sentAt:null},
+  {id:'GEN-003',templateId:'RPT-003',name:'Réconciliation Q3 Sept 18',  period:'2026-09-18',generatedAt:'2026-09-18T10:40:00Z',generatedBy:'SYSTEM',size:'32 KB', format:'PDF',status:'SAVED',  sentTo:null,               sentAt:null},
+]
+
+export const RECON_STATUS_CONF: Record<string,{label:string;color:string;bg:string;icon:string}> = {
+  MATCHED:  {label:'Équilibré', color:'#059669',bg:'rgba(5,150,105,0.12)', icon:'✅'},
+  VARIANCE: {label:'Variance',  color:'#B45309', bg:'rgba(180,83,9,0.10)', icon:'⚠️'},
+  MISSING:  {label:'Manquant',  color:'#DC2626',bg:'rgba(220,38,38,0.10)',icon:'❌'},
+  PARTIAL:  {label:'Partiel',   color:'#7C3AED',bg:'rgba(124,58,237,0.12)',icon:'🔸'},
+}
+export const EXC_TYPE_CONF: Record<string,{label:string;color:string;icon:string}> = {
+  VARIANCE:   {label:'Écart montant',   color:'#B45309', icon:'📊'},
+  MISSING_TX: {label:'TX manquante',   color:'#DC2626', icon:'❌'},
+  DISPUTED:   {label:'Contestée',      color:'#DC2626', icon:'⚔️'},
+  WEBHOOK:    {label:'Webhook échoué', color:'#7C3AED', icon:'📡'},
+  DUPLICATE:  {label:'Doublon',        color:'#64748B', icon:'🔄'},
+}
+export const EXC_STATUS_CONF: Record<string,{label:string;color:string;bg:string}> = {
+  OPEN:         {label:'Ouvert',        color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+  INVESTIGATING:{label:'En analyse',    color:'#B45309', bg:'rgba(180,83,9,0.10)'},
+  CLOSED:       {label:'Fermé',         color:'#059669',bg:'rgba(5,150,105,0.12)'},
+}
+export const RPT_CAT_CONF: Record<string,{label:string;color:string}> = {
+  FINANCIAL:  {label:'Financier',   color:'#059669'},
+  FISCAL:     {label:'Fiscal',      color:'#7C3AED'},
+  RECON:      {label:'Réconciliation',color:'#B45309'},
+  DRIVERS:    {label:'Chauffeurs',  color:'#003DA5'},
+  COMPLIANCE: {label:'Conformité',  color:'#003DA5'},
+  ACTIVITIES: {label:'Activités',   color:'#003DA5'},
+  AUDIT:      {label:'Audit',       color:'#64748B'},
+}
+
+// ── OBLIGATIONS CONFORMITÉ ────────────────────────────────────
+export const COMPLIANCE_OBLIGATIONS = [
+  {id:'OBL-C-001',type:'FISCAL',     label:'Déclaration TPS/TVQ Q3',     desc:'Préparer et soumettre la déclaration pour Q3 2026',due:'2026-10-31',status:'UPCOMING',  priority:'HIGH',   relatedId:'DCL-Q3-2026',category:'TAX',       progress:15},
+  {id:'OBL-C-002',type:'FISCAL',     label:'Paiement TPS/TVQ Q3',        desc:'Remettre les montants TPS/TVQ dus pour Q3 2026',   due:'2026-10-31',status:'UPCOMING',  priority:'HIGH',   relatedId:'PAY-Q3-2026',category:'TAX',       progress:0},
+  {id:'OBL-C-003',type:'DOCUMENT',   label:'Renouveler inspection TXM-004',desc:'Inspection véhicule expire 2026-09-30',           due:'2026-09-30',status:'PENDING',   priority:'HIGH',   relatedId:'TXM-004',    category:'VEHICLE',   progress:0},
+  {id:'OBL-C-004',type:'DOCUMENT',   label:'Renouveler permis DRV-QC-0004',desc:'Permis de conduire expire 2026-09-30',           due:'2026-09-30',status:'PENDING',   priority:'HIGH',   relatedId:'DRV-QC-0004',category:'DRIVER',    progress:0},
+  {id:'OBL-C-005',type:'RECON',      label:'Résoudre exception EXC-001',  desc:'Écart 33.50$ entre source et Revenue Ledger',     due:'2026-09-25',status:'IN_PROGRESS',priority:'HIGH',   relatedId:'EXC-001',    category:'RECON',     progress:40},
+  {id:'OBL-C-006',type:'RECON',      label:'Résoudre exception EXC-002',  desc:'Transaction manquante — 50$ non inscrite',        due:'2026-09-25',status:'OPEN',      priority:'HIGH',   relatedId:'EXC-002',    category:'RECON',     progress:0},
+  {id:'OBL-C-007',type:'CONNEXION',  label:'Renouveler token UBER DEMO',  desc:'Token API expiré — reconnexion requise',          due:'2026-09-20',status:'PENDING',   priority:'MEDIUM', relatedId:'CONN-003',   category:'CONNECTION',progress:0},
+  {id:'OBL-C-008',type:'REPORTING',  label:'Relevé mensuel septembre',    desc:'Générer et archiver le relevé de septembre 2026', due:'2026-10-05',status:'UPCOMING',  priority:'LOW',    relatedId:null,         category:'REPORTING', progress:0},
+  {id:'OBL-C-009',type:'DRIVER',     label:'Valider dossier DRV-QC-0005', desc:'Chauffeur suspendu — vérifier résolution docs',   due:'2026-10-01',status:'PENDING',   priority:'MEDIUM', relatedId:'DRV-QC-0005',category:'DRIVER',    progress:20},
+  {id:'OBL-C-010',type:'FISCAL',     label:'Déclaration annuelle 2026',   desc:'Préparer la déclaration fiscale annuelle',        due:'2027-03-31',status:'UPCOMING',  priority:'LOW',    relatedId:null,         category:'TAX',       progress:0},
+]
+
+export const COMPLIANCE_STATUS_CONF: Record<string,{label:string;color:string;bg:string;icon:string}> = {
+  COMPLETED:   {label:'Complété',      color:'#059669',bg:'rgba(5,150,105,0.12)',   icon:'✅'},
+  IN_PROGRESS: {label:'En cours',      color:'#003DA5',bg:'rgba(0,61,165,0.10)',    icon:'🔄'},
+  UPCOMING:    {label:'À venir',       color:'#7C3AED',bg:'rgba(124,58,237,0.12)',  icon:'📅'},
+  PENDING:     {label:'Action requise',color:'#B45309',bg:'rgba(180,83,9,0.10)',    icon:'⚠️'},
+  OPEN:        {label:'Ouvert',        color:'#DC2626',bg:'rgba(220,38,38,0.10)',   icon:'🔴'},
+  OVERDUE:     {label:'En retard',     color:'#DC2626',bg:'rgba(220,38,38,0.10)',   icon:'🚨'},
+  EXEMPT:      {label:'Exempt',        color:'#64748B',bg:'rgba(100,116,139,0.10)', icon:'➖'},
+}
+export const COMP_CATEGORY_CONF: Record<string,{label:string;icon:string;color:string}> = {
+  TAX:        {label:'Fiscal',       icon:'🧾',color:'#7C3AED'},
+  VEHICLE:    {label:'Véhicule',     icon:'🚗',color:'#003DA5'},
+  DRIVER:     {label:'Chauffeur',    icon:'👤',color:'#059669'},
+  RECON:      {label:'Réconciliation',icon:'🔄',color:'#B45309'},
+  CONNECTION: {label:'Connexion',    icon:'🔌',color:'#DC2626'},
+  REPORTING:  {label:'Rapports',     icon:'📊',color:'#64748B'},
+  DOCUMENT:   {label:'Documents',    icon:'📄',color:'#B45309'},
+}
