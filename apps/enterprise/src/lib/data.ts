@@ -909,3 +909,40 @@ export const READINESS_CHECKLIST = [
   {id:'RC-009',label:'Déclarations préparées',status:'WARN',note:'Q3 en cours de préparation'},
   {id:'RC-010',label:'Rapprochement effectué',status:'WARN',note:'2 exceptions ouvertes'},
 ]
+
+// ── CHAUFFEURS SYNTHÉTIQUES UBER QC (représentatifs, non exhaustifs) ──
+// ⚠️ DONNÉES SYNTHÉTIQUES — PILOTE — NE REPRÉSENTE PAS LES CHAUFFEURS RÉELS D'UBER
+const mkDrv=(id:string,name:string,dept:string,svc:string[],status:string,plate:string,veh:string,rel:string,score:number,docs:string)=>({
+  id,name,dept,services:svc,status,plate,vehicle:veh,relation:rel,complianceScore:score,docs,
+  actQ3:Math.floor(Math.random()*800+100),
+  revQ3:r2(Math.floor(Math.random()*800+100)*r2(Math.random()*15+12)),
+})
+export const UBER_DRIVERS_SAMPLE = [
+  // Taxi
+  ...Array.from({length:8},(_,i)=>mkDrv(`DRV-TAXI-${String(i+1).padStart(4,'0')}`,`Chauffeur Taxi ${i+1}`,'taxi',['UBER TAXI'],'ACTIVE',`TAX-${1000+i}`,`VEH-TAXI-${1000+i}`,'CONTRACTOR',Math.floor(Math.random()*20+78),'OK')),
+  // Rides
+  ...Array.from({length:10},(_,i)=>mkDrv(`DRV-RIDE-${String(i+1).padStart(4,'0')}`,`Chauffeur Rides ${i+1}`,'rides',['UBERX','UBERXL'],'ACTIVE',`RID-${2000+i}`,`VEH-RIDE-${2000+i}`,'CONTRACTOR',Math.floor(Math.random()*20+75),'OK')),
+  // Green
+  ...Array.from({length:4},(_,i)=>mkDrv(`DRV-GRN-${String(i+1).padStart(4,'0')}`,`Chauffeur Green ${i+1}`,'green',['UBER GREEN'],'ACTIVE',`GRN-${3000+i}`,`VEH-GREEN-${3000+i}`,'CONTRACTOR',Math.floor(Math.random()*15+82),'OK')),
+  // Eats
+  ...Array.from({length:10},(_,i)=>mkDrv(`DRV-EAT-${String(i+1).padStart(4,'0')}`,`Livreur Eats ${i+1}`,'eats',['UBER EATS'],'ACTIVE',`EAT-${4000+i}`,`VEH-EATS-${4000+i}`,'CONTRACTOR',Math.floor(Math.random()*20+70),'OK')),
+  // Grocery
+  ...Array.from({length:4},(_,i)=>mkDrv(`DRV-GRC-${String(i+1).padStart(4,'0')}`,`Livreur Épicerie ${i+1}`,'grocery',['UBER EATS GROCERY'],'ACTIVE',`GRC-${5000+i}`,`VEH-GRC-${5000+i}`,'CONTRACTOR',Math.floor(Math.random()*15+75),'OK')),
+  // Courier
+  ...Array.from({length:4},(_,i)=>mkDrv(`DRV-COR-${String(i+1).padStart(4,'0')}`,`Livreur Courier ${i+1}`,'courier',['UBER COURIER'],'ACTIVE',`COR-${6000+i}`,`VEH-COR-${6000+i}`,'CONTRACTOR',Math.floor(Math.random()*20+72),'OK')),
+  // Multi-services + quelques avec docs ⚠️
+  mkDrv('DRV-MULTI-001','Multi-services A','rides',['UBERX','UBER TAXI','UBER GREEN'],'ACTIVE','MLT-7001','VEH-MLT-7001','CONTRACTOR',92,'OK'),
+  mkDrv('DRV-MULTI-002','Multi-services B','eats', ['UBER EATS','UBER EATS GROCERY'],'ACTIVE','MLT-7002','VEH-MLT-7002','CONTRACTOR',88,'OK'),
+  mkDrv('DRV-DOC-001','Docs expirants 1','taxi', ['UBER TAXI'],'ACTIVE','EXP-8001','VEH-EXP-8001','CONTRACTOR',72,'EXPIRING'),
+  mkDrv('DRV-DOC-002','Docs expirants 2','rides',['UBERX'],        'ACTIVE','EXP-8002','VEH-EXP-8002','CONTRACTOR',68,'EXPIRING'),
+  mkDrv('DRV-SUS-001','Suspendu 1',      'eats', ['UBER EATS'],    'SUSPENDED','SUS-9001','VEH-SUS-9001','CONTRACTOR',40,'EXPIRED'),
+]
+
+// Résumé pour affichage dans la liste chauffeurs
+export const DRIVERS_SUMMARY = {
+  totalPilot: 6,        // chauffeurs avec profil complet (détaillés)
+  totalSample: UBER_DRIVERS_SAMPLE.length, // chauffeurs échantillon demo
+  totalSynthetic: 10_724, // total synthétique Uber QC tous depts
+  note: 'DONNÉES SYNTHÉTIQUES — Nb exact chauffeurs Uber QC non publié officiellement',
+  publicRef: '12 351 véhicules Uber QC (réf. publique 2024, Travelnet)',
+}
