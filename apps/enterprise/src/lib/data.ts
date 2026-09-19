@@ -844,3 +844,68 @@ export const UBER_QC_PUBLIC = {
   source_impact: 'Uber Canada / Public First — décembre 2025',
   chauffeurs_note: 'Nombre de chauffeurs actifs par département: données non publiées officiellement — chiffres pilote = SYNTHÉTIQUES',
 }
+
+// ── ACTIVITÉS OPÉRATIONNELLES DEMO (30 activités multi-depts) ─
+const mkAct=(id:string,dept:string,svc:string,drvId:string,vehId:string,at:string,origin:string,dest:string,dist:number,dur:number,fare:number,tip:number)=>({
+  id,dept,svc,driverId:drvId,vehicleId:vehId,at,origin,dest,dist,dur,fare,tip,
+  tps:r2(fare*TPS),tvq:r2(fare*TVQ),
+  commission:r2(fare*(svc.includes('EATS')||svc.includes('COURIER')?0.30:0.25)),
+  driverAmt:r2(fare*(svc.includes('EATS')||svc.includes('COURIER')?0.65:0.75)),
+  status:Math.random()>0.05?'TERMINÉE':'À VÉRIFIER',
+  syncStatus:'SYNCED',
+  txId:`TX-OPS-${id.split('-').pop()}`,
+})
+
+export const OPS_ACTIVITIES = [
+  mkAct('OPS-001','taxi',   'UBER TAXI',  'DRV-QC-0001','TXM-001','2026-09-18T10:30:00Z','Montréal-Nord','YUL',         22.4,28,42.50,5.00),
+  mkAct('OPS-002','taxi',   'UBER TAXI',  'DRV-QC-0001','TXM-001','2026-09-18T09:10:00Z','Plateau',      'Centre-ville', 4.8,12,18.75,2.00),
+  mkAct('OPS-003','rides',  'UBERX',      'DRV-QC-0002','TXM-002','2026-09-18T08:30:00Z','Mile-End',     'Westmount',    5.2,14,22.50,3.00),
+  mkAct('OPS-004','taxi',   'UBER TAXI',  'DRV-QC-0003','TXM-003','2026-09-18T07:45:00Z','Rosemont',     'Plateau',      3.1, 9,14.00,1.50),
+  mkAct('OPS-005','rides',  'UBER GREEN', 'DRV-QC-0002','TXM-002','2026-09-17T18:15:00Z','NDG',          'Côte-des-Neiges',3.8,10,19.00,2.50),
+  mkAct('OPS-006','green',  'UBER GREEN', 'DRV-QC-0003','TXM-003','2026-09-17T16:00:00Z','Verdun',       'LaSalle',      6.2,16,21.00,0),
+  mkAct('OPS-007','taxi',   'UBER TAXI',  'DRV-QC-0006','TXM-006','2026-09-17T14:30:00Z','Ahuntsic',     'Montréal-Nord',7.1,18,24.50,3.00),
+  mkAct('OPS-008','eats',   'UBER EATS',  'DRV-QC-0006','TXM-006','2026-09-17T12:00:00Z','Restaurant A', 'Client DEMO',  3.5,14,12.00,2.00),
+  mkAct('OPS-009','taxi',   'UBER TAXI',  'DRV-QC-0001','TXM-001','2026-09-17T08:00:00Z','Longueuil',    'Montréal',    15.2,22,38.00,4.00),
+  mkAct('OPS-010','courier','UBER COURIER','DRV-QC-0004','TXM-004','2026-09-17T22:00:00Z','Entrepôt DEMO','Client DEMO',  8.2,20,16.50,0),
+  mkAct('OPS-011','rides',  'UBERXL',     'DRV-QC-0005','TXM-005','2026-09-16T15:30:00Z','Laval',        'YUL',         28.4,35,52.00,6.00),
+  mkAct('OPS-012','eats',   'UBER EATS',  'DRV-QC-0006','TXM-006','2026-09-16T13:00:00Z','Restaurant B', 'Client DEMO',  2.8,10,10.50,1.50),
+  mkAct('OPS-013','grocery','UBER GROCERY','DRV-QC-0003','TXM-003','2026-09-16T11:00:00Z','IGA DEMO',     'Client DEMO',  4.2,15,14.00,0),
+  mkAct('OPS-014','taxi',   'UBER TAXI',  'DRV-QC-0001','TXM-001','2026-09-16T10:00:00Z','Anjou',        'Centre-ville',14.8,25,35.00,4.00),
+  mkAct('OPS-015','rides',  'UBERX',      'DRV-QC-0002','TXM-002','2026-09-16T09:00:00Z','Plateau',      'Rosemont',     2.4, 8,11.00,1.00),
+  mkAct('OPS-016','green',  'UBER GREEN', 'DRV-QC-0003','TXM-003','2026-09-15T18:00:00Z','Westmount',    'NDG',          3.9,11,15.50,2.00),
+  mkAct('OPS-017','eats',   'UBER EATS',  'DRV-QC-0006','TXM-006','2026-09-15T12:30:00Z','Restaurant C', 'Client DEMO',  1.8, 8, 9.00,1.00),
+  mkAct('OPS-018','courier','UBER COURIER','DRV-QC-0004','TXM-004','2026-09-15T10:00:00Z','Bureau DEMO',  'Client DEMO',  6.1,18,14.50,0),
+  mkAct('OPS-019','taxi',   'UBER TAXI',  'DRV-QC-0001','TXM-001','2026-09-15T08:00:00Z','Brossard',     'Montréal',    12.4,18,29.00,3.00),
+  mkAct('OPS-020','grocery','UBER GROCERY','DRV-QC-0003','TXM-003','2026-09-14T14:00:00Z','Metro DEMO',   'Client DEMO',  5.1,18,16.50,0),
+]
+
+// ── COMPLIANCE DATA ENRICHIE ──────────────────────────────────
+export const COMPLIANCE_DEPT_SUMMARY = DEPARTMENTS.filter(d=>d.status==='ACTIVE').map(d=>({
+  deptId:   d.id,
+  deptName: d.name,
+  emoji:    d.emoji,
+  color:    d.color,
+  scores: {
+    admin:     d.slug==='taxi'?98:d.slug==='rides'?96:d.slug==='eats'?94:d.slug==='green'?99:d.slug==='grocery'?92:95,
+    documents: d.slug==='taxi'?96:d.slug==='rides'?94:d.slug==='eats'?91:d.slug==='green'?98:d.slug==='grocery'?89:93,
+    vehicles:  d.slug==='taxi'?99:d.slug==='rides'?97:d.slug==='eats'?88:d.slug==='green'?100:d.slug==='grocery'?90:96,
+    fiscal:    d.slug==='taxi'?97:d.slug==='rides'?96:d.slug==='eats'?93:d.slug==='green'?98:d.slug==='grocery'?91:94,
+    data:      d.slug==='taxi'?95:d.slug==='rides'?98:d.slug==='eats'?96:d.slug==='green'?99:d.slug==='grocery'?94:97,
+  },
+  obligations: d.alerts+d.exceptions,
+  alerts:      d.alerts,
+  exceptions:  d.exceptions,
+}))
+
+export const READINESS_CHECKLIST = [
+  {id:'RC-001',label:'Identité entreprise',   status:'OK',  note:'NEQ, TPS, TVQ configurés (DEMO)'},
+  {id:'RC-002',label:'Chauffeurs vérifiés',   status:'WARN',note:`${ENT_DRIVERS?.length??6} actifs · 1 en attente`},
+  {id:'RC-003',label:'Véhicules conformes',   status:'WARN',note:'5/6 conformes · 1 inspection expirante'},
+  {id:'RC-004',label:'Documents valides',     status:'WARN',note:'7/9 valides · 2 expirants'},
+  {id:'RC-005',label:'Activités synchronisées',status:'OK', note:'Sync TAXIMETER.GOV à jour'},
+  {id:'RC-006',label:'Transactions vérifiées',status:'OK',  note:'13/15 réconciliées'},
+  {id:'RC-007',label:'Revenus calculés',      status:'OK',  note:'Revenue Ledger à jour'},
+  {id:'RC-008',label:'TPS/TVQ calculées',     status:'OK',  note:'Estimation Q3 disponible'},
+  {id:'RC-009',label:'Déclarations préparées',status:'WARN',note:'Q3 en cours de préparation'},
+  {id:'RC-010',label:'Rapprochement effectué',status:'WARN',note:'2 exceptions ouvertes'},
+]
