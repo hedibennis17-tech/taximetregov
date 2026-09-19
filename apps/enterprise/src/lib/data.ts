@@ -214,7 +214,7 @@ export const NAV_SECTIONS = [
   {section:'📊 Rapports & Audit', items:[
     {href:'/reports',         label:'Rapports'},
     {href:'/audit',           label:'Historique audit'},
-    {href:'/notifications',   label:'Notifications'},
+    {href:'/notifications',   label:'Notifications (30)'},
   ]},
 ]
 
@@ -1156,3 +1156,116 @@ export const PERMISSIONS_MATRIX = [
   {perm:'EXPORT',            label:'Exporter rapports',       OWNER:true, FINANCE:true,  DISPATCH:false, COMPLIANCE:true,  VIEWER:false},
   {perm:'MANAGE_USERS',      label:'Gérer utilisateurs',      OWNER:true, FINANCE:false, DISPATCH:false, COMPLIANCE:false, VIEWER:false},
 ]
+
+// ══════════════════════════════════════════════════════════════
+// PHASES 28-29-30 DATA — NOTIFICATIONS · INTELLIGENCE · GOV COM
+// ⚠️ DONNÉES SYNTHÉTIQUES — PILOTE
+// ══════════════════════════════════════════════════════════════
+
+// ── NOTIFICATIONS ENRICHIES (30) ─────────────────────────────
+export const ALL_NOTIFICATIONS = [
+  // FISCALITÉ
+  {id:'NTF-001',type:'TAX_DEADLINE',     priority:'HIGH',    title:'Déclaration TPS/TVQ Q3 à préparer',           desc:'Échéance: 2026-10-31 · Montant estimé: 47 650$ (TPS+TVQ) · MODE PILOTE',        dept:'ALL',  at:'2026-09-18T07:00:00Z',read:false,status:'NOUVELLE',to:'FINANCE',  source:'Moteur fiscal',   action:'→ Fiscal'},
+  {id:'NTF-002',type:'TAX_CALCULATION',  priority:'MEDIUM',  title:'Calcul TPS/TVQ Q3 2026 complété',              desc:'TPS: 20 640$ · TVQ: 41 179$ · Total: 61 819$ (DEMO) · À valider avant soumission',dept:'ALL',  at:'2026-09-18T09:00:00Z',read:true, status:'LUE',     to:'FINANCE',  source:'Moteur fiscal',   action:'→ Fiscal'},
+  {id:'NTF-003',type:'PAYMENT_DUE',      priority:'HIGH',    title:'Paiement TPS Q2 2026 — DEMO',                  desc:'Montant estimé: 18 125$ · Simulé — aucune transmission officielle',               dept:'ALL',  at:'2026-09-10T08:00:00Z',read:true, status:'LUE',     to:'FINANCE',  source:'Obligations',     action:'→ Paiements'},
+  {id:'NTF-004',type:'DECLARATION_READY',priority:'MEDIUM',  title:'Déclaration Q2 2026 acceptée',                 desc:'Acceptée par TAXIMETER.GOV DEMO · Référence: DCL-Q2-2026 · Simulation pilote',    dept:'ALL',  at:'2026-09-01T14:00:00Z',read:true, status:'FERMÉE',  to:'FINANCE',  source:'TAXIMETER.GOV',   action:'→ Déclarations'},
+  // DOCUMENTS
+  {id:'NTF-005',type:'DOCUMENT_EXPIRING',priority:'HIGH',    title:'Permis DRV-QC-0004 expire dans 12 jours',      desc:'Expiration: 2026-09-30 · Uber Taxi · Renouvellement urgent recommandé',            dept:'taxi', at:'2026-09-17T10:00:00Z',read:false,status:'NOUVELLE',to:'COMPLIANCE',source:'Conformité',      action:'→ Documents'},
+  {id:'NTF-006',type:'DOCUMENT_EXPIRED', priority:'CRITICAL',title:'Permis DRV-QC-0005 expiré — chauffeur suspendu',desc:'Expiré depuis 2026-03-01 · Chauffeur suspendu · Action immédiate requise',        dept:'taxi', at:'2026-09-01T08:00:00Z',read:true, status:'EN TRAITEMENT',to:'COMPLIANCE',source:'Conformité', action:'→ Conformité'},
+  {id:'NTF-007',type:'DOCUMENT_EXPIRING',priority:'HIGH',    title:'Inspection TXM-004 expire dans 12 jours',       desc:'Expiration: 2026-09-30 · Uber Taxi · Inspection à planifier immédiatement',       dept:'taxi', at:'2026-09-15T08:00:00Z',read:false,status:'NOUVELLE',to:'DISPATCH', source:'Conformité',      action:'→ Véhicules'},
+  {id:'NTF-008',type:'DOCUMENT_EXPIRED', priority:'CRITICAL',title:'Inspection TXM-006 expirée',                   desc:'Inspection expirée · Véhicule à suspendre jusqu\'au renouvellement',               dept:'eats', at:'2026-09-18T08:00:00Z',read:false,status:'NOUVELLE',to:'DISPATCH', source:'Conformité',      action:'→ Véhicules'},
+  // CONFORMITÉ
+  {id:'NTF-009',type:'COMPLIANCE_ALERT', priority:'HIGH',    title:'Dossier CASE-2026-0003 ouvert',                desc:'Écart de 33,50$ détecté · TX-ENT-005 vs ACT-ENT-005 · Analyse en cours',           dept:'taxi', at:'2026-09-18T10:05:00Z',read:false,status:'NOUVELLE',to:'COMPLIANCE',source:'Réconciliation',  action:'→ Conformité'},
+  {id:'NTF-010',type:'COMPLIANCE_ALERT', priority:'MEDIUM',  title:'2 utilisateurs sans MFA activé',               desc:'Karim Benali · Marie-Ève Lapointe · Activation recommandée pour sécurité',         dept:'ALL',  at:'2026-09-17T08:00:00Z',read:false,status:'NOUVELLE',to:'OWNER',    source:'Sécurité',        action:'→ Sécurité'},
+  // API & WEBHOOKS
+  {id:'NTF-011',type:'API_ERROR',        priority:'HIGH',    title:'Token API UBER DEMO expirant',                 desc:'Token expire dans 7 jours (2026-09-25) · Renouvellement préventif recommandé',     dept:'ALL',  at:'2026-09-18T08:00:00Z',read:false,status:'NOUVELLE',to:'OWNER',    source:'API Engine',      action:'→ Intégrations'},
+  {id:'NTF-012',type:'WEBHOOK_ERROR',    priority:'HIGH',    title:'Webhook WHE-007 échoué (3 tentatives)',         desc:'Auth token expiré · Source: UBER DEMO · Traitement en attente de relance',         dept:'rides',at:'2026-09-17T10:05:00Z',read:true, status:'RÉSOLUE', to:'OWNER',    source:'Webhook Engine',  action:'→ Intégrations'},
+  {id:'NTF-013',type:'SYNC_COMPLETED',   priority:'LOW',     title:'Sync TAXIMETER.GOV complétée',                 desc:'9 840 enregistrements · Durée: 23s · Statut: SUCCESS · PILOTE',                   dept:'ALL',  at:'2026-09-18T10:38:00Z',read:true, status:'LUE',     to:'OWNER',    source:'TAXIMETER.GOV',   action:null},
+  {id:'NTF-014',type:'SYNC_FAILED',      priority:'MEDIUM',  title:'Sync incrémentale partielle',                  desc:'1 activité non réconciliée · Reprise automatique à la prochaine sync',             dept:'ALL',  at:'2026-09-17T22:02:00Z',read:true, status:'RÉSOLUE', to:'OWNER',    source:'TAXIMETER.GOV',   action:null},
+  // TRANSACTIONS
+  {id:'NTF-015',type:'TRANSACTION_ALERT',priority:'HIGH',    title:'Transaction TX-ENT-005 — écart détecté',       desc:'Montant activité: 16,50$ · Transaction: 50,00$ · Écart: 33,50$ · À vérifier',     dept:'taxi', at:'2026-09-18T10:05:00Z',read:false,status:'NOUVELLE',to:'FINANCE',  source:'Réconciliation',  action:'→ Réconciliation'},
+  {id:'NTF-016',type:'RECONCILIATION_ALERT',priority:'HIGH', title:'1 transaction sans activité correspondante',   desc:'TX-ENT-005 · Montant: 16,50$ · Ledger: non réconcilié · Analyse requise',         dept:'taxi', at:'2026-09-17T22:05:00Z',read:false,status:'NOUVELLE',to:'FINANCE',  source:'Réconciliation',  action:'→ Réconciliation'},
+  // GOUVERNANCE
+  {id:'NTF-017',type:'GOVERNMENT_MESSAGE',priority:'MEDIUM', title:'Message TAXIMETER.GOV — PILOTE',               desc:'Nouveau message DEMO dans votre espace gouvernemental · Simulation pilote',         dept:'ALL',  at:'2026-09-16T10:00:00Z',read:true, status:'LUE',     to:'OWNER',    source:'TAXIMETER.GOV',   action:'→ Gouvernement'},
+  {id:'NTF-018',type:'GOVERNMENT_MESSAGE',priority:'HIGH',   title:'Demande de document — SIMULATION',             desc:'TAXIMETER.GOV DEMO demande le rapport Q3 · Délai: 2026-10-15 · Simulation pilote',dept:'ALL',  at:'2026-09-18T09:00:00Z',read:false,status:'NOUVELLE',to:'OWNER',    source:'TAXIMETER.GOV',   action:'→ Gouvernement'},
+  // SYSTÈME
+  {id:'NTF-019',type:'SYSTEM_ALERT',     priority:'LOW',     title:'Rapport mensuel généré — Août 2026',           desc:'Rapport activités complet disponible · Format PDF · 1,8 MB',                      dept:'ALL',  at:'2026-09-01T06:00:00Z',read:true, status:'LUE',     to:'FINANCE',  source:'Report Center',   action:'→ Rapports'},
+  {id:'NTF-020',type:'SYSTEM_ALERT',     priority:'LOW',     title:'Maintenance TAXIMETER.GOV planifiée',           desc:'Maintenance le 2026-10-05 de 02h00 à 04h00 · PILOTE — Aucun impact officiel',    dept:'ALL',  at:'2026-09-15T10:00:00Z',read:true, status:'LUE',     to:'ALL',      source:'TAXIMETER.GOV',   action:null},
+  // DEPTS
+  {id:'NTF-021',type:'COMPLIANCE_ALERT', priority:'MEDIUM',  title:'Uber Eats — obligations fiscales distinctes',  desc:'Rappel: livreurs Uber Eats QC ont des obligations propres (RQ) différentes des rides',dept:'eats', at:'2026-09-14T08:00:00Z',read:true, status:'LUE',     to:'FINANCE',  source:'Moteur fiscal',   action:'→ Fiscal'},
+  {id:'NTF-022',type:'SYNC_COMPLETED',   priority:'LOW',     title:'Sync Uber Eats Grocery — 820 actifs (SYNTH.)',  desc:'Synchronisation département épicerie · Données synthétiques pilote',               dept:'grocery',at:'2026-09-02T10:00:00Z',read:true,status:'LUE',     to:'DISPATCH', source:'TAXIMETER.GOV',   action:null},
+  {id:'NTF-023',type:'DOCUMENT_EXPIRING',priority:'MEDIUM',  title:'3 assurances véhicules à renouveler (Green)',  desc:'VEH-GREEN-3001/3002/3003 · Expiration: 2026-11-01 · 43 jours restants',          dept:'green',at:'2026-09-18T06:00:00Z',read:false,status:'NOUVELLE',to:'DISPATCH', source:'Conformité',      action:'→ Véhicules'},
+  {id:'NTF-024',type:'COMPLIANCE_ALERT', priority:'LOW',     title:'Score conformité Uber Courier: 94%',            desc:'Score indicatif DEMO légèrement en baisse · 8 exceptions actives · Révision recommandée',dept:'courier',at:'2026-09-16T14:00:00Z',read:true,status:'LUE',to:'COMPLIANCE',source:'Conformité', action:'→ Conformité'},
+  {id:'NTF-025',type:'API_ERROR',        priority:'MEDIUM',  title:'Erreur sync Courier — token partiel',           desc:'1 activité courier non réconciliée · Sync partielle · Reprise auto planifiée',    dept:'courier',at:'2026-09-15T22:00:00Z',read:true,status:'RÉSOLUE', to:'OWNER',    source:'API Engine',      action:null},
+  {id:'NTF-026',type:'AUDIT_EVENT',      priority:'LOW',     title:'Export rapport TPS/TVQ Q3 effectué',            desc:'Jean-Philippe Roy a exporté le rapport fiscal Q3 · PDF · 820 KB',                 dept:'ALL',  at:'2026-09-10T08:12:00Z',read:true, status:'LUE',     to:'FINANCE',  source:'Audit Center',    action:'→ Audit'},
+  {id:'NTF-027',type:'DECLARATION_READY',priority:'HIGH',    title:'Déclaration Q1 2026 — statut ACCEPTÉE',        desc:'Déclaration Q1 2026 acceptée par TAXIMETER.GOV DEMO · Archivée',                  dept:'ALL',  at:'2026-07-15T10:00:00Z',read:true, status:'FERMÉE',  to:'FINANCE',  source:'TAXIMETER.GOV',   action:'→ Déclarations'},
+  {id:'NTF-028',type:'TRANSACTION_ALERT',priority:'LOW',     title:'15 transactions réconciliées — Q3',            desc:'13/15 transactions réconciliées · 2 exceptions en attente de révision',           dept:'ALL',  at:'2026-09-12T14:00:00Z',read:true, status:'LUE',     to:'FINANCE',  source:'Réconciliation',  action:'→ Réconciliation'},
+  {id:'NTF-029',type:'SYSTEM_ALERT',     priority:'CRITICAL',title:'Alerte sécurité — session inhabituelle',        desc:'Session SES-C004 (Karim Benali) depuis Laval · Revue recommandée · DEMO',         dept:'ALL',  at:'2026-09-18T10:30:00Z',read:false,status:'NOUVELLE',to:'OWNER',    source:'Sécurité',        action:'→ Sécurité'},
+  {id:'NTF-030',type:'GOVERNMENT_MESSAGE',priority:'MEDIUM', title:'Accusé de réception — Transmission Q2 DEMO',   desc:'DEMO-GOV-2026-000126 · 15 enreg. · REÇU — SIMULATION · Aucune valeur officielle', dept:'ALL',  at:'2026-09-10T08:30:00Z',read:true, status:'FERMÉE',  to:'OWNER',    source:'TAXIMETER.GOV',   action:'→ Gouvernement'},
+]
+
+export const NOTIF_TYPE_CONF: Record<string,{label:string;icon:string;color:string;bg:string}> = {
+  TAX_DEADLINE:        {label:'Échéance fiscale',     icon:'🧾',color:'#7C3AED',bg:'rgba(124,58,237,0.10)'},
+  TAX_CALCULATION:     {label:'Calcul fiscal',        icon:'🧮',color:'#7C3AED',bg:'rgba(124,58,237,0.08)'},
+  PAYMENT_DUE:         {label:'Paiement à effectuer', icon:'💳',color:'#059669',bg:'rgba(5,150,105,0.10)'},
+  DECLARATION_READY:   {label:'Déclaration',          icon:'📤',color:'#003DA5',bg:'rgba(0,61,165,0.10)'},
+  DOCUMENT_EXPIRING:   {label:'Document expirant',    icon:'⚠️',color:'#B45309',bg:'rgba(180,83,9,0.10)'},
+  DOCUMENT_EXPIRED:    {label:'Document expiré',      icon:'❌',color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+  COMPLIANCE_ALERT:    {label:'Alerte conformité',    icon:'⚖️',color:'#B45309',bg:'rgba(180,83,9,0.08)'},
+  AUDIT_EVENT:         {label:'Audit',                icon:'🛡️',color:'#64748B',bg:'rgba(100,116,139,0.10)'},
+  API_ERROR:           {label:'Erreur API',           icon:'⚙️',color:'#DC2626',bg:'rgba(220,38,38,0.08)'},
+  WEBHOOK_ERROR:       {label:'Webhook échoué',       icon:'📡',color:'#DC2626',bg:'rgba(220,38,38,0.08)'},
+  SYNC_COMPLETED:      {label:'Sync complétée',       icon:'✅',color:'#059669',bg:'rgba(5,150,105,0.08)'},
+  SYNC_FAILED:         {label:'Sync échouée',         icon:'🔄',color:'#B45309',bg:'rgba(180,83,9,0.08)'},
+  TRANSACTION_ALERT:   {label:'Alerte transaction',   icon:'💸',color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+  RECONCILIATION_ALERT:{label:'Alerte réconciliation',icon:'🔄',color:'#DC2626',bg:'rgba(220,38,38,0.08)'},
+  GOVERNMENT_MESSAGE:  {label:'Message gouvernemental',icon:'🏛️',color:'#003DA5',bg:'rgba(0,61,165,0.10)'},
+  SYSTEM_ALERT:        {label:'Système',              icon:'🖥️',color:'#64748B',bg:'rgba(100,116,139,0.08)'},
+}
+export const NOTIF_PRIORITY_CONF: Record<string,{label:string;color:string;bg:string}> = {
+  CRITICAL:{label:'CRITIQUE',color:'#DC2626',bg:'rgba(220,38,38,0.12)'},
+  HIGH:    {label:'ÉLEVÉE',  color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+  MEDIUM:  {label:'MOYENNE', color:'#B45309',bg:'rgba(180,83,9,0.10)'},
+  LOW:     {label:'FAIBLE',  color:'#64748B',bg:'rgba(100,116,139,0.10)'},
+  INFO:    {label:'INFO',    color:'#003DA5',bg:'rgba(0,61,165,0.08)'},
+}
+
+// ── GOVERNMENT COMMUNICATIONS DATA ───────────────────────────
+export const GOV_MESSAGES = [
+  {id:'GOVMSG-001',from:'TAXIMETER.GOV DEMO',to:'Uber Québec (DEMO)',at:'2026-09-18T09:00:00Z',subject:'Demande rapport Q3 2026',body:'Dans le cadre du programme pilote TAXIMETER.GOV, nous vous demandons de préparer votre rapport Q3 2026 incluant les données de revenus, TPS/TVQ et activités de tous vos départements. Délai: 2026-10-15. SIMULATION.',priority:'HIGH',status:'NOUVELLE',type:'DEMANDE',responseRequired:true,dueAt:'2026-10-15'},
+  {id:'GOVMSG-002',from:'TAXIMETER.GOV DEMO',to:'Uber Québec (DEMO)',at:'2026-09-10T08:30:00Z',subject:'Accusé de réception — Transmission Q2',body:'Nous confirmons la réception de la transmission Q2 2026. Référence: DEMO-GOV-2026-000126. 15 enregistrements reçus. SIMULATION — aucune valeur officielle.',priority:'MEDIUM',status:'LUE',type:'ACCUSÉ',responseRequired:false,dueAt:null},
+  {id:'GOVMSG-003',from:'TAXIMETER.GOV DEMO',to:'Uber Québec (DEMO)',at:'2026-09-01T14:00:00Z',subject:'Déclaration Q2 — Statut ACCEPTÉE',body:'Votre déclaration Q2 2026 (réf. DCL-Q2-2026) a été traitée et acceptée dans le cadre du pilote TAXIMETER.GOV. SIMULATION.',priority:'LOW',status:'FERMÉE',type:'AVIS',responseRequired:false,dueAt:null},
+  {id:'GOVMSG-004',from:'TAXIMETER.GOV DEMO',to:'Uber Québec (DEMO)',at:'2026-08-15T10:00:00Z',subject:'Rappel obligations fiscales Q3',body:'Rappel: Les obligations TPS/TVQ Q3 2026 sont à préparer avant le 2026-10-31. Veuillez vous assurer que toutes vos données de revenus sont réconciliées. SIMULATION.',priority:'MEDIUM',status:'LUE',type:'RAPPEL',responseRequired:false,dueAt:'2026-10-31'},
+  {id:'GOVMSG-005',from:'TAXIMETER.GOV DEMO',to:'Uber Québec (DEMO)',at:'2026-07-15T09:00:00Z',subject:'Accusé de réception — Transmission Q1',body:'Réception confirmée. DEMO-GOV-2026-000118. 12 enregistrements. SIMULATION.',priority:'LOW',status:'FERMÉE',type:'ACCUSÉ',responseRequired:false,dueAt:null},
+  {id:'GOVMSG-006',from:'Uber Québec (DEMO)',to:'TAXIMETER.GOV DEMO',at:'2026-09-16T11:00:00Z',subject:'Réponse — Vérification identité NEQ',body:'Nous confirmons notre NEQ fictif: 8765432100 (DEMO UNIQUEMENT). Représentant: Sophie Marchand. SIMULATION.',priority:'LOW',status:'RÉPONDUE',type:'RÉPONSE',responseRequired:false,dueAt:null},
+  {id:'GOVMSG-007',from:'TAXIMETER.GOV DEMO',to:'Uber Québec (DEMO)',at:'2026-09-14T08:00:00Z',subject:'Information — Architecture API future',body:'TAXIMETER.GOV est en cours de développement d\'une API de transmission. Des informations supplémentaires seront communiquées. SIMULATION PILOTE.',priority:'LOW',status:'LUE',type:'INFORMATION',responseRequired:false,dueAt:null},
+  {id:'GOVMSG-008',from:'TAXIMETER.GOV DEMO',to:'Uber Québec (DEMO)',at:'2026-09-05T10:00:00Z',subject:'Maintenance planifiée — 2026-10-05',body:'Maintenance système 2026-10-05 02h00-04h00. Services TAXIMETER.GOV temporairement indisponibles. SIMULATION.',priority:'LOW',status:'LUE',type:'AVIS',responseRequired:false,dueAt:null},
+  {id:'GOVMSG-009',from:'Uber Québec (DEMO)',to:'TAXIMETER.GOV DEMO',at:'2026-09-12T14:00:00Z',subject:'Rapport réconciliation Q3 partiel',body:'Nous transmettons le rapport de réconciliation Q3 partiel. 13/15 transactions réconciliées. 2 exceptions en cours d\'analyse. SIMULATION.',priority:'MEDIUM',status:'RÉPONDUE',type:'SOUMISSION',responseRequired:false,dueAt:null},
+  {id:'GOVMSG-010',from:'TAXIMETER.GOV DEMO',to:'Uber Québec (DEMO)',at:'2026-09-01T08:00:00Z',subject:'Bienvenue programme pilote',body:'Bienvenue dans le programme pilote TAXIMETER.GOV. Votre compte Enterprise Gov est activé. AUCUNE transmission officielle n\'est active. MODE PILOTE UNIQUEMENT.',priority:'LOW',status:'FERMÉE',type:'INFORMATION',responseRequired:false,dueAt:null},
+]
+
+export const GOV_SUBMISSIONS = [
+  {id:'SUB-001',type:'DÉCLARATION',period:'Q2 2026',at:'2026-09-10T08:00:00Z',records:15,status:'ACCEPTÉE DEMO',txId:'DEMO-GOV-2026-000126',by:'Jean-Philippe Roy',source:'Enterprise Gov',note:'Simulation pilote — aucune valeur officielle'},
+  {id:'SUB-002',type:'RÉCONCILIATION',period:'Q3 partiel',at:'2026-09-12T14:00:00Z',records:13,status:'REÇUE DEMO',txId:'DEMO-GOV-2026-000127',by:'Jean-Philippe Roy',source:'Enterprise Gov',note:'Rapport partiel — 2 exceptions non résolues'},
+  {id:'SUB-003',type:'DÉCLARATION',period:'Q1 2026',at:'2026-07-10T10:00:00Z',records:12,status:'ACCEPTÉE DEMO',txId:'DEMO-GOV-2026-000118',by:'Sophie Marchand',source:'Enterprise Gov',note:'Simulation pilote'},
+  {id:'SUB-004',type:'RAPPORT',period:'Annuel 2025',at:'2026-03-31T08:00:00Z',records:8,status:'SOUMISE DEMO',txId:'DEMO-GOV-2026-000108',by:'Sophie Marchand',source:'Enterprise Gov',note:'Rapport annuel synthétique DEMO'},
+  {id:'SUB-005',type:'DÉCLARATION',period:'Q3 2026',at:null,records:0,status:'BROUILLON',txId:null,by:null,source:'Enterprise Gov',note:'En préparation — non soumise'},
+]
+
+export const GOV_SUBMISSION_STATUS_CONF: Record<string,{label:string;color:string;bg:string}> = {
+  'ACCEPTÉE DEMO':{label:'Acceptée (DEMO)',color:'#059669',bg:'rgba(5,150,105,0.12)'},
+  'REÇUE DEMO':   {label:'Reçue (DEMO)',   color:'#003DA5',bg:'rgba(0,61,165,0.10)'},
+  'SOUMISE DEMO': {label:'Soumise (DEMO)', color:'#7C3AED',bg:'rgba(124,58,237,0.10)'},
+  'BROUILLON':    {label:'Brouillon',       color:'#64748B',bg:'rgba(100,116,139,0.10)'},
+  'CORRECTION':   {label:'Correction req.', color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+}
+
+export const GOV_MSG_TYPE_CONF: Record<string,{icon:string;color:string}> = {
+  DEMANDE:     {icon:'📋',color:'#DC2626'},
+  ACCUSÉ:      {icon:'✅',color:'#059669'},
+  AVIS:        {icon:'ℹ️',color:'#003DA5'},
+  RAPPEL:      {icon:'⏰',color:'#B45309'},
+  RÉPONSE:     {icon:'↩️',color:'#7C3AED'},
+  INFORMATION: {icon:'📢',color:'#64748B'},
+  SOUMISSION:  {icon:'📤',color:'#003DA5'},
+}
