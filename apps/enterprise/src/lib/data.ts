@@ -138,6 +138,7 @@ export const NAV_SECTIONS = [
   {section:'🏠 Tableau de bord', items:[{href:'/',label:'Dashboard'}]},
   {section:'🏢 Organisation', items:[
     {href:'/profile',         label:'Profil entreprise'},
+    {href:'/representatives',  label:'Représentants'},
     {href:'/users',           label:'Utilisateurs & Rôles'},
     {href:'/documents',       label:'Documents'},
   ]},
@@ -169,4 +170,63 @@ export const NAV_SECTIONS = [
     {href:'/audit',           label:'Historique audit'},
     {href:'/notifications',   label:'Notifications'},
   ]},
+]
+
+// ── REPRÉSENTANTS ─────────────────────────────────────────────
+export const ENT_REPRESENTATIVES = [
+  {id:'REP-001',firstName:'Robert',lastName:'Simard',   role:'OWNER',       email:'r.simard@taximetro.demo',   phone:'(514) 555-0221',status:'ACTIVE', addedAt:'2026-01-15',lastLogin:'2026-09-18T08:02:00Z'},
+  {id:'REP-002',firstName:'Louise',lastName:'Côté',     role:'FINANCE',     email:'l.cote@taximetro.demo',     phone:'(514) 555-0222',status:'ACTIVE', addedAt:'2026-01-15',lastLogin:'2026-09-17T14:00:00Z'},
+  {id:'REP-003',firstName:'Marc',  lastName:'Dupont',   role:'DISPATCH',    email:'m.dupont@taximetro.demo',   phone:'(514) 555-0223',status:'ACTIVE', addedAt:'2026-02-01',lastLogin:'2026-09-18T07:30:00Z'},
+  {id:'REP-004',firstName:'Sophie',lastName:'Tran',     role:'VIEWER',      email:'s.tran@taximetro.demo',     phone:'(514) 555-0224',status:'ACTIVE', addedAt:'2026-03-15',lastLogin:'2026-09-16T10:00:00Z'},
+  {id:'REP-005',firstName:'Ali',   lastName:'Karim',    role:'COMPLIANCE',  email:'a.karim@taximetro.demo',    phone:'(514) 555-0225',status:'PENDING',addedAt:'2026-09-10',lastLogin:null},
+]
+
+// ── PERMISSIONS MATRICE ───────────────────────────────────────
+export const PERMISSIONS_MATRIX = [
+  {resource:'Chauffeurs',    owner:['view','manage'], admin:['view','manage'], finance:['view'], compliance:['view'], dispatch:['view','manage'], viewer:['view']},
+  {resource:'Véhicules',     owner:['view','manage'], admin:['view','manage'], finance:['view'], compliance:['view'], dispatch:['view','manage'], viewer:['view']},
+  {resource:'Documents',     owner:['view','upload','approve'], admin:['view','upload','approve'], finance:['view'], compliance:['view','upload','approve'], dispatch:['view'], viewer:['view']},
+  {resource:'Activités',     owner:['view'],          admin:['view'],          finance:['view'], compliance:['view'], dispatch:['view'],          viewer:['view']},
+  {resource:'Transactions',  owner:['view'],          admin:['view'],          finance:['view'], compliance:['view'], dispatch:[],               viewer:['view']},
+  {resource:'Revenus',       owner:['view'],          admin:['view'],          finance:['view'], compliance:[],       dispatch:[],               viewer:[]},
+  {resource:'Taxes',         owner:['view','manage'], admin:['view'],          finance:['view','manage'], compliance:['view'], dispatch:[], viewer:[]},
+  {resource:'Déclarations',  owner:['prepare','submit'], admin:['view'],       finance:['prepare','submit'], compliance:['view'], dispatch:[], viewer:[]},
+  {resource:'Paiements',     owner:['view','manage'], admin:['view'],          finance:['view','manage'], compliance:[], dispatch:[], viewer:[]},
+  {resource:'Connexions',    owner:['view','manage'], admin:['view','manage'], finance:[], compliance:[], dispatch:[], viewer:[]},
+  {resource:'Rapports',      owner:['view','export'], admin:['view','export'], finance:['view','export'], compliance:['view','export'], dispatch:['view'], viewer:['view']},
+  {resource:'Audit',         owner:['view'],          admin:['view'],          finance:['view'], compliance:['view'], dispatch:[], viewer:[]},
+]
+
+// ── AUDIT LOG DEMO ────────────────────────────────────────────
+export const AUDIT_LOG = [
+  {id:'AL-001',at:'2026-09-18T10:38:00Z',user:'Robert Simard',    role:'OWNER',    action:'SYNC_COMPLETED',    obj:'Revenue Ledger',   result:'OK',   note:'9840 enregistrements synchronisés'},
+  {id:'AL-002',at:'2026-09-18T08:00:00Z',user:'SYSTEM',           role:'SYSTEM',   action:'DOCUMENT_FLAGGED',  obj:'DOC-007',          result:'WARN', note:'Inspection TXM-004 expirée'},
+  {id:'AL-003',at:'2026-09-17T14:00:00Z',user:'Louise Côté',      role:'FINANCE',  action:'DECLARATION_VIEWED',obj:'OBL-Q3',           result:'OK',   note:'Consultation obligations Q3'},
+  {id:'AL-004',at:'2026-09-16T10:00:00Z',user:'Sophie Tran',      role:'VIEWER',   action:'DASHBOARD_VIEWED',  obj:'Dashboard',        result:'OK',   note:'Connexion et consultation'},
+  {id:'AL-005',at:'2026-09-15T09:00:00Z',user:'Robert Simard',    role:'OWNER',    action:'DRIVER_UPDATED',    obj:'DRV-QC-0004',      result:'OK',   note:'Statut mis à jour'},
+  {id:'AL-006',at:'2026-09-10T11:00:00Z',user:'Robert Simard',    role:'OWNER',    action:'USER_INVITED',      obj:'a.karim@taximetro.demo',result:'OK',note:'Invitation envoyée — rôle COMPLIANCE'},
+  {id:'AL-007',at:'2026-09-01T08:00:00Z',user:'SYSTEM',           role:'SYSTEM',   action:'OBLIGATION_CREATED',obj:'OBL-Q3',           result:'OK',   note:'Obligation Q3 générée automatiquement'},
+  {id:'AL-008',at:'2026-07-30T16:00:00Z',user:'Louise Côté',      role:'FINANCE',  action:'PAYMENT_SUBMITTED', obj:'OBL-Q2',           result:'OK',   note:'Paiement TPS/TVQ Q2 soumis'},
+]
+
+// ── ACTIVITY HISTORY RECENT ───────────────────────────────────
+export const RECENT_EVENTS = [
+  {at:'2026-09-18T10:38:00Z',icon:'🔄',title:'Synchronisation complétée',desc:'9 840 enregistrements · TAXIMETER.GOV',type:'SYNC'},
+  {at:'2026-09-18T10:32:00Z',icon:'💳',title:'Transaction reçue',        desc:'TX-001 · Jean Tremblay · 42,50 $',    type:'TRANSACTION'},
+  {at:'2026-09-18T09:12:00Z',icon:'💳',title:'Transaction reçue',        desc:'TX-002 · Jean Tremblay · 18,75 $',    type:'TRANSACTION'},
+  {at:'2026-09-18T08:32:00Z',icon:'💳',title:'Transaction reçue',        desc:'TX-003 · Marie Gagnon · 22,50 $',     type:'TRANSACTION'},
+  {at:'2026-09-18T08:00:00Z',icon:'⚠️','title':'Document expiré détecté',desc:'Inspection TXM-004 — action requise', type:'ALERT'},
+  {at:'2026-09-17T10:00:00Z',icon:'🔔','title':'Permis expirant',        desc:'DRV-QC-0004 — expire 2026-09-30',     type:'WARNING'},
+  {at:'2026-09-16T10:00:00Z',icon:'👤','title':'Connexion utilisateur',  desc:'Sophie Tran · Lecteur',               type:'AUTH'},
+  {at:'2026-09-15T09:00:00Z',icon:'👤','title':'Chauffeur mis à jour',   desc:'DRV-QC-0004 · Statut modifié',        type:'DRIVER'},
+]
+
+// ── MONTHLY ANALYTICS ─────────────────────────────────────────
+export const MONTHLY = [
+  {m:'Avr',acts:1240,gross:27_776},
+  {m:'Mai',acts:1380,gross:30_912},
+  {m:'Juin',acts:1520,gross:34_048},
+  {m:'Juil',acts:1680,gross:37_632},
+  {m:'Août',acts:1820,gross:40_768},
+  {m:'Sep', acts:1182,gross:26_476},
 ]
