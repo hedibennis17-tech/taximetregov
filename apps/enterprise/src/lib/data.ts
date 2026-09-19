@@ -272,3 +272,60 @@ export const SYNC_STATUS: Record<string,{label:string;color:string;dot:string}> 
   DISCONNECTED: {label:'Non connecté', color:'#64748B',dot:'bg-slate-400'},
   DEMO:         {label:'DEMO',         color:'#7C3AED',dot:'bg-purple-400'},
 }
+
+// ── ACTIVITÉS ÉTENDUES (10 activités DEMO) ───────────────────
+
+export const ALL_ACTIVITIES = [
+  {id:'ACT-ENT-001',extRef:'TAXGOV-ACT-001',type:'TAXI',     provider:'DIRECT',       driverId:'DRV-QC-0001',vehicleId:'TXM-001',at:'2026-09-18T10:30:00Z',origin:'Montréal-Nord',dest:'YUL',      dist:22.4,dur:28,wait:3,  fare:42.50,tip:5.00,tps:r2(42.50*TPS),tvq:r2(42.50*TVQ),fees:r2(42.50*0.08),driverAmt:r2(42.50*0.80),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-001'},
+  {id:'ACT-ENT-002',extRef:'TAXGOV-ACT-002',type:'TAXI',     provider:'DIRECT',       driverId:'DRV-QC-0001',vehicleId:'TXM-001',at:'2026-09-18T09:10:00Z',origin:'Plateau',     dest:'Centre-ville',dist:4.8, dur:12,wait:1,  fare:18.75,tip:2.00,tps:r2(18.75*TPS),tvq:r2(18.75*TVQ),fees:r2(18.75*0.08),driverAmt:r2(18.75*0.80),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-002'},
+  {id:'ACT-ENT-003',extRef:'UBER-ACT-8421', type:'RIDESHARE',provider:'UBER DEMO',    driverId:'DRV-QC-0002',vehicleId:'TXM-002',at:'2026-09-18T08:30:00Z',origin:'Mile-End',    dest:'Westmount',   dist:5.2, dur:14,wait:0,  fare:22.50,tip:3.00,tps:r2(22.50*TPS),tvq:r2(22.50*TVQ),fees:r2(22.50*0.25),driverAmt:r2(22.50*0.72),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-003'},
+  {id:'ACT-ENT-004',extRef:'TAXGOV-ACT-004',type:'TAXI',     provider:'DIRECT',       driverId:'DRV-QC-0003',vehicleId:'TXM-003',at:'2026-09-18T07:45:00Z',origin:'Rosemont',    dest:'Plateau',     dist:3.1, dur:9, wait:0,  fare:14.00,tip:1.50,tps:r2(14.00*TPS),tvq:r2(14.00*TVQ),fees:r2(14.00*0.08),driverAmt:r2(14.00*0.80),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-004'},
+  {id:'ACT-ENT-005',extRef:'TAXGOV-ACT-005',type:'TAXI',     provider:'DIRECT',       driverId:'DRV-QC-0004',vehicleId:'TXM-004',at:'2026-09-17T22:00:00Z',origin:'Centre-ville',dest:'Outremont',   dist:4.5, dur:11,wait:2,  fare:16.50,tip:0,   tps:r2(16.50*TPS),tvq:r2(16.50*TVQ),fees:r2(16.50*0.08),driverAmt:r2(16.50*0.80),status:'COMPLETED',syncStatus:'PENDING', txId:'TX-ENT-005'},
+  {id:'ACT-ENT-006',extRef:'UBER-ACT-9103', type:'RIDESHARE',provider:'UBER DEMO',    driverId:'DRV-QC-0002',vehicleId:'TXM-002',at:'2026-09-17T18:15:00Z',origin:'NDG',         dest:'Côte-des-Neiges',dist:3.8,dur:10,wait:0,fare:19.00,tip:2.50,tps:r2(19.00*TPS),tvq:r2(19.00*TVQ),fees:r2(19.00*0.25),driverAmt:r2(19.00*0.72),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-006'},
+  {id:'ACT-ENT-007',extRef:'LYFT-ACT-5521', type:'RIDESHARE',provider:'LYFT DEMO',    driverId:'DRV-QC-0003',vehicleId:'TXM-003',at:'2026-09-17T16:00:00Z',origin:'Verdun',      dest:'LaSalle',     dist:6.2, dur:16,wait:1,  fare:21.00,tip:0,   tps:r2(21.00*TPS),tvq:r2(21.00*TVQ),fees:r2(21.00*0.22),driverAmt:r2(21.00*0.75),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-007'},
+  {id:'ACT-ENT-008',extRef:'TAXGOV-ACT-008',type:'TAXI',     provider:'DIRECT',       driverId:'DRV-QC-0006',vehicleId:'TXM-006',at:'2026-09-17T14:30:00Z',origin:'Ahuntsic',    dest:'Montréal-Nord',dist:7.1,dur:18,wait:0, fare:24.50,tip:3.00,tps:r2(24.50*TPS),tvq:r2(24.50*TVQ),fees:r2(24.50*0.08),driverAmt:r2(24.50*0.80),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-008'},
+  {id:'ACT-ENT-009',extRef:'DOORDASH-7710', type:'DELIVERY', provider:'DOORDASH DEMO',driverId:'DRV-QC-0006',vehicleId:'TXM-006',at:'2026-09-17T12:00:00Z',origin:'Restaurant DEMO',dest:'Client DEMO',dist:3.5,dur:14,wait:5,fare:12.00,tip:2.00,tps:r2(12.00*TPS),tvq:r2(12.00*TVQ),fees:r2(12.00*0.30),driverAmt:r2(12.00*0.65),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-009'},
+  {id:'ACT-ENT-010',extRef:'TAXGOV-ACT-010',type:'TAXI',     provider:'DIRECT',       driverId:'DRV-QC-0001',vehicleId:'TXM-001',at:'2026-09-17T08:00:00Z',origin:'Longueuil',   dest:'Montréal',    dist:15.2,dur:22,wait:0, fare:38.00,tip:4.00,tps:r2(38.00*TPS),tvq:r2(38.00*TVQ),fees:r2(38.00*0.08),driverAmt:r2(38.00*0.80),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-010'},
+]
+
+// ── TRANSACTIONS ÉTENDUES (15 transactions DEMO) ──────────────
+export const ALL_TRANSACTIONS = [
+  {id:'TX-ENT-001',actId:'ACT-ENT-001',extId:'TAXGOV-TX-001',provider:'DIRECT',  driverId:'DRV-QC-0001',vehicleId:'TXM-001',gross:42.50,tip:5.00,tps:r2(42.50*TPS),tvq:r2(42.50*TVQ),fees:r2(42.50*0.08),driverAmt:r2(42.50*0.80),entAmt:r2(42.50*0.20),adj:0,   refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-18T10:32:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-002',actId:'ACT-ENT-002',extId:'TAXGOV-TX-002',provider:'DIRECT',  driverId:'DRV-QC-0001',vehicleId:'TXM-001',gross:18.75,tip:2.00,tps:r2(18.75*TPS),tvq:r2(18.75*TVQ),fees:r2(18.75*0.08),driverAmt:r2(18.75*0.80),entAmt:r2(18.75*0.20),adj:0,   refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-18T09:12:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-003',actId:'ACT-ENT-003',extId:'UBER-TX-8421',  provider:'UBER DEMO',driverId:'DRV-QC-0002',vehicleId:'TXM-002',gross:22.50,tip:3.00,tps:r2(22.50*TPS),tvq:r2(22.50*TVQ),fees:r2(22.50*0.25),driverAmt:r2(22.50*0.72),entAmt:r2(22.50*0.03),adj:0,  refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-18T08:32:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-004',actId:'ACT-ENT-004',extId:'TAXGOV-TX-004',provider:'DIRECT',  driverId:'DRV-QC-0003',vehicleId:'TXM-003',gross:14.00,tip:1.50,tps:r2(14.00*TPS),tvq:r2(14.00*TVQ),fees:r2(14.00*0.08),driverAmt:r2(14.00*0.80),entAmt:r2(14.00*0.20),adj:0,   refund:0,   status:'VALIDATED', syncStatus:'SYNCED', at:'2026-09-18T07:47:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-005',actId:'ACT-ENT-005',extId:'TAXGOV-TX-005',provider:'DIRECT',  driverId:'DRV-QC-0004',vehicleId:'TXM-004',gross:16.50,tip:0,   tps:r2(16.50*TPS),tvq:r2(16.50*TVQ),fees:r2(16.50*0.08),driverAmt:r2(16.50*0.80),entAmt:r2(16.50*0.20),adj:0,   refund:0,   status:'EXCEPTION', syncStatus:'PENDING',at:'2026-09-17T22:02:00Z',recon:'VARIANCE'},
+  {id:'TX-ENT-006',actId:'ACT-ENT-006',extId:'UBER-TX-9103',  provider:'UBER DEMO',driverId:'DRV-QC-0002',vehicleId:'TXM-002',gross:19.00,tip:2.50,tps:r2(19.00*TPS),tvq:r2(19.00*TVQ),fees:r2(19.00*0.25),driverAmt:r2(19.00*0.72),entAmt:r2(19.00*0.03),adj:0,  refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T18:17:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-007',actId:'ACT-ENT-007',extId:'LYFT-TX-5521',  provider:'LYFT DEMO',driverId:'DRV-QC-0003',vehicleId:'TXM-003',gross:21.00,tip:0,   tps:r2(21.00*TPS),tvq:r2(21.00*TVQ),fees:r2(21.00*0.22),driverAmt:r2(21.00*0.75),entAmt:r2(21.00*0.03),adj:0,  refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T16:02:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-008',actId:'ACT-ENT-008',extId:'TAXGOV-TX-008',provider:'DIRECT',  driverId:'DRV-QC-0006',vehicleId:'TXM-006',gross:24.50,tip:3.00,tps:r2(24.50*TPS),tvq:r2(24.50*TVQ),fees:r2(24.50*0.08),driverAmt:r2(24.50*0.80),entAmt:r2(24.50*0.20),adj:0,   refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T14:32:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-009',actId:'ACT-ENT-009',extId:'DOORDASH-7710', provider:'DOORDASH DEMO',driverId:'DRV-QC-0006',vehicleId:'TXM-006',gross:12.00,tip:2.00,tps:r2(12.00*TPS),tvq:r2(12.00*TVQ),fees:r2(12.00*0.30),driverAmt:r2(12.00*0.65),entAmt:r2(12.00*0.05),adj:0,refund:0,  status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T12:02:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-010',actId:'ACT-ENT-010',extId:'TAXGOV-TX-010',provider:'DIRECT',  driverId:'DRV-QC-0001',vehicleId:'TXM-001',gross:38.00,tip:4.00,tps:r2(38.00*TPS),tvq:r2(38.00*TVQ),fees:r2(38.00*0.08),driverAmt:r2(38.00*0.80),entAmt:r2(38.00*0.20),adj:0,   refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T08:02:00Z',recon:'MATCHED'},
+  // Extras: ajustement et remboursement
+  {id:'TX-ENT-011',actId:'ACT-ENT-001',extId:'ADJ-TX-001',    provider:'DIRECT',  driverId:'DRV-QC-0001',vehicleId:'TXM-001',gross:0,   tip:0,   tps:0,               tvq:0,               fees:0,             driverAmt:0,              entAmt:0,             adj:-5.00,refund:0,   status:'ADJUSTED',  syncStatus:'SYNCED', at:'2026-09-18T11:00:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-012',actId:'ACT-ENT-003',extId:'REF-TX-001',    provider:'UBER DEMO',driverId:'DRV-QC-0002',vehicleId:'TXM-002',gross:0,  tip:0,   tps:0,               tvq:0,               fees:0,             driverAmt:0,              entAmt:0,             adj:0,   refund:-3.50,status:'REFUNDED',  syncStatus:'SYNCED', at:'2026-09-18T10:00:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-013',actId:'ACT-ENT-005',extId:'EXC-TX-001',    provider:'DIRECT',  driverId:'DRV-QC-0004',vehicleId:'TXM-004',gross:50.00,tip:0,  tps:r2(50.00*TPS),   tvq:r2(50.00*TVQ),   fees:r2(50.00*0.08),driverAmt:r2(16.50*0.80), entAmt:r2(16.50*0.20),adj:0,   refund:0,   status:'DISPUTED',  syncStatus:'PENDING',at:'2026-09-17T22:05:00Z',recon:'VARIANCE'},
+  {id:'TX-ENT-014',actId:'ACT-ENT-002',extId:'TAXGOV-TX-014',provider:'DIRECT',  driverId:'DRV-QC-0001',vehicleId:'TXM-001',gross:31.00,tip:3.50,tps:r2(31.00*TPS),   tvq:r2(31.00*TVQ),   fees:r2(31.00*0.08),driverAmt:r2(31.00*0.80), entAmt:r2(31.00*0.20),adj:0,   refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-16T15:30:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-015',actId:'ACT-ENT-004',extId:'TAXGOV-TX-015',provider:'DIRECT',  driverId:'DRV-QC-0003',vehicleId:'TXM-003',gross:28.50,tip:2.00,tps:r2(28.50*TPS),   tvq:r2(28.50*TVQ),   fees:r2(28.50*0.08),driverAmt:r2(28.50*0.80), entAmt:r2(28.50*0.20),adj:0,   refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-16T10:00:00Z',recon:'MATCHED'},
+]
+
+// ── PÉRIODES FISCALES ENTERPRISE ──────────────────────────────
+export const TAX_PERIODS = [
+  {id:'TP-Q1-2026',period:'Q1 2026',start:'2026-01-01',end:'2026-03-31',gross:136_800,tips:r2(136_800*0.10),tpsCollected:r2(136_800*TPS),tvqCollected:r2(136_800*TVQ),tpsPaid:r2(136_800*TPS*0.98),tvqPaid:r2(136_800*TVQ*0.98),tpsRefund:0,tvqRefund:0,status:'PAID',   closedAt:'2026-04-28'},
+  {id:'TP-Q2-2026',period:'Q2 2026',start:'2026-04-01',end:'2026-06-30',gross:144_480,tips:r2(144_480*0.10),tpsCollected:r2(144_480*TPS),tvqCollected:r2(144_480*TVQ),tpsPaid:r2(144_480*TPS),     tvqPaid:r2(144_480*TVQ),     tpsRefund:0,tvqRefund:0,status:'PAID',   closedAt:'2026-07-30'},
+  {id:'TP-Q3-2026',period:'Q3 2026',start:'2026-07-01',end:'2026-09-30',gross:412_800,tips:r2(412_800*0.10),tpsCollected:r2(412_800*TPS),tvqCollected:r2(412_800*TVQ),tpsPaid:0,                  tvqPaid:0,                  tpsRefund:0,tvqRefund:0,status:'OPEN',   closedAt:null},
+]
+
+// ── TX STATUS CONF ────────────────────────────────────────────
+export const TX_STATUS_FULL: Record<string,{label:string;color:string;bg:string}> = {
+  RECONCILED:{label:'Réconciliée', color:'#059669',bg:'rgba(5,150,105,0.12)'},
+  VALIDATED: {label:'Validée',     color:'#003DA5',bg:'rgba(0,61,165,0.10)'},
+  PENDING:   {label:'En attente',  color:'#B45309', bg:'rgba(180,83,9,0.10)'},
+  EXCEPTION: {label:'Exception',   color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+  DISPUTED:  {label:'Contestée',   color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
+  ADJUSTED:  {label:'Ajustée',     color:'#7C3AED',bg:'rgba(124,58,237,0.12)'},
+  REFUNDED:  {label:'Remboursée',  color:'#7C3AED',bg:'rgba(124,58,237,0.12)'},
+  CANCELLED: {label:'Annulée',     color:'#64748B',bg:'rgba(100,116,139,0.10)'},
+}
+export const ACT_TYPE_ICONS: Record<string,string> = {
+  TAXI:'🚕', RIDESHARE:'🚗', DELIVERY:'📦', PARCEL:'📬', LOGISTICS:'🚚', COURIER:'✉️',
+}
