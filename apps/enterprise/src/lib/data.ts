@@ -230,6 +230,7 @@ export const NAV_SECTIONS = [
     {href:'/audit',            label:'Journal d\'audit'},
     {href:'/notifications',    label:'Notifications'},
     {href:'/validation',       label:'✅ Validation E2E'},
+    {href:'/simulation',      label:'🏛️ Simulation Gov.'},
   ]},
 ]
 
@@ -1337,3 +1338,204 @@ export const LEDGER_SUMMARY = {
   note:           'DONNÉES SYNTHÉTIQUES · PILOTE DEMO · AUCUNE VALEUR FISCALE OFFICIELLE',
 }
 
+
+// ══════════════════════════════════════════════════════════════════
+// PHASE 32 — SIMULATION GOUVERNEMENTALE COMPLÈTE
+// DONNÉES SYNTHÉTIQUES · PILOTE · AUCUNE VALEUR OFFICIELLE
+// enterprise_id: ENT-DEMO-001 · Uber Québec UNIQUEMENT
+// ══════════════════════════════════════════════════════════════════
+
+const SIM_TPS_R = 0.05
+const SIM_TVQ_R = 0.09975
+const simR2 = (n:number) => Math.round(n*100)/100
+
+// ── SCÉNARIO COMPLET: 5 départements × 3 activités chacun ──
+export const SIM_ACTIVITIES = [
+  // D1 — Uber Rides/Taxi
+  {id:'SIM-ACT-001',deptId:'D1',deptName:'Uber Rides',      type:'TRIP',     driverId:'DRV-QC-0001',driverName:'Jean Tremblay',  vehicleId:'TXM-001',plate:'ABC-1234',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T08:15:00Z',origin:'Montréal-Nord',dest:'Aéroport YUL',     dist:22.4,dur:28,fare:42.50,tip:5.00,status:'COMPLETED',source:'TAXIMETER'},
+  {id:'SIM-ACT-002',deptId:'D1',deptName:'Uber Rides',      type:'TRIP',     driverId:'DRV-QC-0002',driverName:'Marie Gagnon',   vehicleId:'TXM-002',plate:'DEF-5678',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T09:30:00Z',origin:'Plateau-Mont-Royal',dest:'Westmount',  dist:5.2, dur:14,fare:22.50,tip:3.00,status:'COMPLETED',source:'UBER_API'},
+  {id:'SIM-ACT-003',deptId:'D2',deptName:'Uber Taxi',       type:'TAXI',     driverId:'DRV-QC-0003',driverName:'Karim Hassan',   vehicleId:'TXM-003',plate:'GHI-9012',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T10:05:00Z',origin:'Vieux-Montréal',   dest:'Laval',        dist:18.6,dur:32,fare:38.00,tip:4.00,status:'COMPLETED',source:'TAXIMETER'},
+  // D2 — Uber Taxi
+  {id:'SIM-ACT-004',deptId:'D2',deptName:'Uber Taxi',       type:'TAXI',     driverId:'DRV-QC-0001',driverName:'Jean Tremblay',  vehicleId:'TXM-001',plate:'ABC-1234',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T11:20:00Z',origin:'Longueuil',        dest:'Centre-ville', dist:12.1,dur:22,fare:28.75,tip:3.50,status:'COMPLETED',source:'TAXIMETER'},
+  // D3 — Uber Green
+  {id:'SIM-ACT-005',deptId:'D3',deptName:'Uber Green',      type:'TRIP',     driverId:'DRV-QC-0004',driverName:'Ali Bouchard',   vehicleId:'TXM-004',plate:'JKL-3456',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T07:45:00Z',origin:'Mile-Ex',           dest:'Rosemont',     dist:6.8, dur:16,fare:24.00,tip:2.00,status:'COMPLETED',source:'UBER_API'},
+  {id:'SIM-ACT-006',deptId:'D3',deptName:'Uber Green',      type:'TRIP',     driverId:'DRV-QC-0005',driverName:'Sophie Martin',  vehicleId:'TXM-005',plate:'MNO-7890',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T12:10:00Z',origin:'Verdun',            dest:'Notre-Dame-de-Grâce',dist:7.3,dur:18,fare:26.50,tip:0,  status:'COMPLETED',source:'UBER_API'},
+  // D4 — Uber Eats
+  {id:'SIM-ACT-007',deptId:'D4',deptName:'Uber Eats',       type:'DELIVERY', driverId:'DRV-QC-0002',driverName:'Marie Gagnon',   vehicleId:'TXM-002',plate:'DEF-5678',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T12:35:00Z',origin:'Restaurant Da Emma', dest:'Plateau',      dist:3.2, dur:18,fare:15.00,tip:2.50,status:'COMPLETED',source:'UBER_EATS'},
+  {id:'SIM-ACT-008',deptId:'D4',deptName:'Uber Eats',       type:'DELIVERY', driverId:'DRV-QC-0006',driverName:'Nadia Patel',    vehicleId:'TXM-006',plate:'PQR-1234',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T13:05:00Z',origin:'Sushi Club MTL',    dest:'Outremont',    dist:4.1, dur:22,fare:18.00,tip:3.00,status:'COMPLETED',source:'UBER_EATS'},
+  {id:'SIM-ACT-009',deptId:'D4',deptName:'Uber Eats',       type:'DELIVERY', driverId:'DRV-QC-0002',driverName:'Marie Gagnon',   vehicleId:'TXM-002',plate:'DEF-5678',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T13:45:00Z',origin:'Pizzeria Napoletana',dest:'Ahuntsic',     dist:5.8, dur:25,fare:14.50,tip:1.50,status:'COMPLETED',source:'UBER_EATS'},
+  // D5 — Uber Grocery
+  {id:'SIM-ACT-010',deptId:'D5',deptName:'Uber Grocery',    type:'DELIVERY', driverId:'DRV-QC-0003',driverName:'Karim Hassan',   vehicleId:'TXM-003',plate:'GHI-9012',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T10:50:00Z',origin:'IGA Plateau',       dest:'Rosemont',     dist:2.4, dur:12,fare:9.99, tip:1.00,status:'COMPLETED',source:'UBER_GROCERY'},
+  {id:'SIM-ACT-011',deptId:'D5',deptName:'Uber Grocery',    type:'DELIVERY', driverId:'DRV-QC-0004',driverName:'Ali Bouchard',   vehicleId:'TXM-004',plate:'JKL-3456',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T14:20:00Z',origin:'Metro St-Denis',    dest:'Mile-End',     dist:3.1, dur:14,fare:12.50,tip:2.00,status:'COMPLETED',source:'UBER_GROCERY'},
+  // D6 — Uber Courier
+  {id:'SIM-ACT-012',deptId:'D6',deptName:'Uber Courier',    type:'DELIVERY', driverId:'DRV-QC-0005',driverName:'Sophie Martin',  vehicleId:'TXM-005',plate:'MNO-7890',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T11:00:00Z',origin:'St-Laurent Ind.',   dest:'Anjou',        dist:14.2,dur:35,fare:28.00,tip:0,  status:'COMPLETED',source:'UBER_DIRECT'},
+  // Exception volontaire — pour démo réconciliation
+  {id:'SIM-ACT-013',deptId:'D1',deptName:'Uber Rides',      type:'TRIP',     driverId:'DRV-QC-0001',driverName:'Jean Tremblay',  vehicleId:'TXM-001',plate:'ABC-1234',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T15:00:00Z',origin:'Côte-des-Neiges',   dest:'Brossard',     dist:19.8,dur:38,fare:35.00,tip:0,  status:'EXCEPTION',source:'TAXIMETER'},
+]
+
+// ── TRANSACTIONS — une par activité complétée ──
+export const SIM_TRANSACTIONS = SIM_ACTIVITIES
+  .filter(a=>a.status==='COMPLETED')
+  .map((a,i)=>({
+    id:          `SIM-TX-${String(i+1).padStart(3,'0')}`,
+    actId:       a.id,
+    driverId:    a.driverId,
+    driverName:  a.driverName,
+    vehicleId:   a.vehicleId,
+    deptId:      a.deptId,
+    deptName:    a.deptName,
+    enterpriseId:a.enterpriseId,
+    at:          a.at,
+    type:        a.type,
+    source:      a.source,
+    gross:       a.fare,
+    tip:         a.tip,
+    fees:        simR2(a.fare * 0.275),           // 27.5% commission Uber (DEMO)
+    taxableAmt:  a.fare,
+    tps:         simR2(a.fare * SIM_TPS_R),
+    tvq:         simR2(a.fare * SIM_TVQ_R),
+    netDriver:   simR2(a.fare * 0.725 - simR2(a.fare*SIM_TPS_R) - simR2(a.fare*SIM_TVQ_R)),
+    netUber:     simR2(a.fare * 0.275),
+    status:      'RECONCILED' as const,
+    payMethod:   'CARD' as const,
+  }))
+
+// ── REVENUE LEDGER SIMULATION — entrée par transaction ──
+export const SIM_LEDGER = SIM_TRANSACTIONS.map((tx,i)=>({
+  id:          `SIM-RL-${String(i+1).padStart(3,'0')}`,
+  txId:        tx.id,
+  actId:       tx.actId,
+  driverId:    tx.driverId,
+  vehicleId:   tx.vehicleId,
+  deptId:      tx.deptId,
+  enterpriseId:tx.enterpriseId,
+  at:          tx.at,
+  type:        tx.type==='DELIVERY'?'DELIVERY':'TRIP' as const,
+  gross:       tx.gross,
+  tip:         tx.tip,
+  fees:        tx.fees,
+  taxableAmt:  tx.taxableAmt,
+  tps:         tx.tps,
+  tvq:         tx.tvq,
+  net:         tx.netDriver,
+  source:      tx.source,
+  status:      'POSTED' as const,
+  reconStatus: i===11?'EXCEPTION':'MATCHED' as 'MATCHED'|'EXCEPTION',
+}))
+
+// ── RÉCONCILIATION — cas de démonstration ──
+export const SIM_RECON = [
+  ...SIM_LEDGER.filter(l=>l.reconStatus==='MATCHED').slice(0,5).map((l,i)=>({
+    id:       `SIM-REC-${String(i+1).padStart(3,'0')}`,
+    ledgerId: l.id,
+    txId:     l.txId,
+    actId:    l.actId,
+    deptId:   l.deptId,
+    expected: l.gross,
+    observed: l.gross,
+    variance: 0,
+    status:   'MATCH' as const,
+    reason:   null,
+  })),
+  {id:'SIM-REC-006',ledgerId:'SIM-RL-006',txId:'SIM-TX-006',actId:'SIM-ACT-006',deptId:'D3',expected:26.50,observed:24.50,variance:-2.00,status:'MINOR_VARIANCE' as const,reason:'Ajustement tarifaire zone Verdun — à valider'},
+  {id:'SIM-REC-007',ledgerId:'SIM-RL-007',txId:'SIM-TX-007',actId:'SIM-ACT-007',deptId:'D4',expected:15.00,observed:15.00,variance:0,   status:'MATCH' as const,reason:null},
+  {id:'SIM-REC-008',ledgerId:'SIM-RL-010',txId:'SIM-TX-010',actId:'SIM-ACT-010',deptId:'D5',expected:9.99, observed:9.99, variance:0,   status:'MATCH' as const,reason:null},
+  {id:'SIM-REC-009',ledgerId:'SIM-RL-012',txId:'SIM-TX-012',actId:'SIM-ACT-012',deptId:'D6',expected:28.00,observed:31.50,variance:3.50,status:'REVIEW_REQUIRED' as const,reason:'Frais de livraison supplémentaires non déclarés — révision requise'},
+]
+
+// ── AUDIT SIMULATION — parcours complet ──
+export const SIM_AUDIT = [
+  {id:'SIM-AUD-001',at:'2026-09-20T08:15:00Z',actor:'SYSTÈME',action:'ACTIVITÉ CRÉÉE',     object:'SIM-ACT-001',objectType:'ACTIVITY',   detail:'Course Taxi — Jean Tremblay — YUL — 42.50$',before:null,after:'CREATED'},
+  {id:'SIM-AUD-002',at:'2026-09-20T08:43:00Z',actor:'SYSTÈME',action:'TRANSACTION CRÉÉE',  object:'SIM-TX-001', objectType:'TRANSACTION', detail:'TX-001 — Brut: 42.50$ · TPS: 2.13$ · TVQ: 4.24$',before:null,after:'CREATED'},
+  {id:'SIM-AUD-003',at:'2026-09-20T08:43:01Z',actor:'SYSTÈME',action:'LEDGER ENREGISTRÉ',  object:'SIM-RL-001', objectType:'LEDGER',      detail:'Revenue Ledger — Net chauffeur: 26.78$',before:null,after:'POSTED'},
+  {id:'SIM-AUD-004',at:'2026-09-20T08:44:00Z',actor:'SYSTÈME',action:'RÉCONCILIATION',     object:'SIM-REC-001',objectType:'RECON',       detail:'MATCH — Écart: 0.00$',before:'PENDING',after:'MATCHED'},
+  {id:'SIM-AUD-005',at:'2026-09-20T13:50:00Z',actor:'SYSTÈME',action:'ACTIVITÉ CRÉÉE',     object:'SIM-ACT-009',objectType:'ACTIVITY',   detail:'Livraison Eats — Marie Gagnon — Pizzeria — 14.50$',before:null,after:'CREATED'},
+  {id:'SIM-AUD-006',at:'2026-09-20T13:51:00Z',actor:'SYSTÈME',action:'TRANSACTION CRÉÉE',  object:'SIM-TX-009', objectType:'TRANSACTION', detail:'TX-009 — Brut: 14.50$ · TPS: 0.73$ · TVQ: 1.45$',before:null,after:'CREATED'},
+  {id:'SIM-AUD-007',at:'2026-09-20T14:00:00Z',actor:'SYSTÈME',action:'EXCEPTION DÉTECTÉE', object:'SIM-REC-009',objectType:'RECON',       detail:'REVIEW_REQUIRED — Écart +3.50$ — Uber Courier',before:'PENDING',after:'REVIEW_REQUIRED'},
+  {id:'SIM-AUD-008',at:'2026-09-20T16:00:00Z',actor:'jp.roy@uber-demo.taximetergov.demo',action:'DÉCLARATION CRÉÉE',object:'DECL-Q3-2026',objectType:'DECLARATION',detail:'Q3 2026 — TPS: 3,412$ · TVQ: 6,794$ — DRAFT',before:null,after:'DRAFT'},
+  {id:'SIM-AUD-009',at:'2026-09-20T16:30:00Z',actor:'s.marchand@uber-demo.taximetergov.demo',action:'DÉCLARATION VALIDÉE',object:'DECL-Q3-2026',objectType:'DECLARATION',detail:'Validée par Sophie Marchand — READY',before:'DRAFT',after:'READY'},
+  {id:'SIM-AUD-010',at:'2026-09-20T17:00:00Z',actor:'hedibenns21@gmail.com',action:'PAIEMENT SIMULÉ',object:'PAY-Q3-2026',objectType:'PAYMENT',detail:'Paiement simulé — 10,206$ — PAID-DEMO',before:'PENDING',after:'PAID-DEMO'},
+]
+
+// ── DÉCLARATION Q3 SIMULATION ──
+const simGross = SIM_TRANSACTIONS.reduce((s,t)=>s+t.gross+t.tip,0)
+const simTPS   = SIM_TRANSACTIONS.reduce((s,t)=>s+t.tps,0)
+const simTVQ   = SIM_TRANSACTIONS.reduce((s,t)=>s+t.tvq,0)
+
+export const SIM_DECLARATION = {
+  id:           'DECL-Q3-2026',
+  enterpriseId: 'ENT-DEMO-001',
+  period:       'Q3 2026 (01/07/2026 – 30/09/2026)',
+  periodStart:  '2026-07-01',
+  periodEnd:    '2026-09-30',
+  grossRevenue: simR2(simGross * 280),   // extrapolé Q3 complet (DEMO)
+  tipsTotal:    simR2(SIM_TRANSACTIONS.reduce((s,t)=>s+t.tip,0) * 280),
+  tpsCollected: simR2(simTPS * 280),
+  tvqCollected: simR2(simTVQ * 280),
+  tpsCTI:       simR2(simTPS * 280 * 0.12), // CTI estimé (DEMO)
+  tvqRTI:       simR2(simTVQ * 280 * 0.12), // RTI estimé (DEMO)
+  tpsNet:       simR2(simTPS * 280 * 0.88),
+  tvqNet:       simR2(simTVQ * 280 * 0.88),
+  totalDue:     simR2((simTPS + simTVQ) * 280 * 0.88),
+  status:       'READY',
+  createdAt:    '2026-09-20T16:00:00Z',
+  validatedAt:  '2026-09-20T16:30:00Z',
+  validatedBy:  'Sophie Marchand',
+  note:         'SIMULATION PILOTE — NON TRANSMIS À REVENU QUÉBEC — DONNÉES SYNTHÉTIQUES',
+}
+
+export const SIM_PAYMENT = {
+  id:           'PAY-Q3-2026',
+  declId:       'DECL-Q3-2026',
+  enterpriseId: 'ENT-DEMO-001',
+  period:       'Q3 2026',
+  amount:       SIM_DECLARATION.totalDue,
+  due:          '2026-10-31',
+  status:       'PAID-DEMO',
+  method:       'VIREMENT-DEMO',
+  ref:          'SIM-PAY-' + Math.floor(SIM_DECLARATION.totalDue),
+  paidAt:       '2026-09-20T17:00:00Z',
+  note:         'PAIEMENT SIMULÉ — DÉMO PILOTE — AUCUN VRAI PAIEMENT EFFECTUÉ',
+}
+
+// ── RÉSUMÉ PAR DÉPARTEMENT ──
+export const SIM_DEPT_SUMMARY = ['D1','D2','D3','D4','D5','D6'].map(dId=>{
+  const acts = SIM_ACTIVITIES.filter(a=>a.deptId===dId&&a.status==='COMPLETED')
+  const txs  = SIM_TRANSACTIONS.filter(t=>t.deptId===dId)
+  return {
+    deptId:    dId,
+    acts:      acts.length,
+    drivers:   [...new Set(acts.map(a=>a.driverId))].length,
+    gross:     simR2(txs.reduce((s,t)=>s+t.gross,0)),
+    tips:      simR2(txs.reduce((s,t)=>s+t.tip,0)),
+    tps:       simR2(txs.reduce((s,t)=>s+t.tps,0)),
+    tvq:       simR2(txs.reduce((s,t)=>s+t.tvq,0)),
+    net:       r2(txs.reduce((s,t)=>s+t.netDriver,0)),
+  }
+})
+
+// ── RAPPORT GLOBAL SIMULATION ──
+export const SIM_RAPPORT = {
+  label:          'Simulation Phase 32 · Journée du 2026-09-20',
+  enterpriseId:   'ENT-DEMO-001',
+  entreprise:     'UBER QUÉBEC / UBER CANADA INC.',
+  departments:    6,
+  drivers:        [...new Set(SIM_ACTIVITIES.map(a=>a.driverId))].length,
+  vehicles:       [...new Set(SIM_ACTIVITIES.map(a=>a.vehicleId))].length,
+  activitiesTotal:SIM_ACTIVITIES.length,
+  completed:      SIM_ACTIVITIES.filter(a=>a.status==='COMPLETED').length,
+  exceptions:     SIM_ACTIVITIES.filter(a=>a.status==='EXCEPTION').length,
+  transactions:   SIM_TRANSACTIONS.length,
+  grossTotal:     r2(SIM_TRANSACTIONS.reduce((s,t)=>s+t.gross,0)),
+  tipsTotal:      r2(SIM_TRANSACTIONS.reduce((s,t)=>s+t.tip,0)),
+  tpsTotal:       r2(SIM_TRANSACTIONS.reduce((s,t)=>s+t.tps,0)),
+  tvqTotal:       r2(SIM_TRANSACTIONS.reduce((s,t)=>s+t.tvq,0)),
+  ledgerEntries:  SIM_LEDGER.length,
+  matched:        SIM_RECON.filter(r=>r.status==='MATCH').length,
+  variances:      SIM_RECON.filter(r=>r.status==='MINOR_VARIANCE').length,
+  reviews:        SIM_RECON.filter(r=>r.status==='REVIEW_REQUIRED').length,
+  declarations:   1,
+  payments:       1,
+  auditEvents:    SIM_AUDIT.length,
+  note:           'PILOTE · DONNÉES SYNTHÉTIQUES · AUCUNE TRANSMISSION GOUVERNEMENTALE RÉELLE',
+}
