@@ -232,6 +232,7 @@ export const NAV_SECTIONS = [
     {href:'/validation',       label:'✅ Validation E2E'},
     {href:'/simulation',      label:'🏛️ Simulation Gov.'},
     {href:'/integration-tests', label:'🧪 Tests Intégration'},
+    {href:'/security-report',   label:'🔐 Sécurité Phase 34'},
   ]},
 ]
 
