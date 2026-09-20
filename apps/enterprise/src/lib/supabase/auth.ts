@@ -12,7 +12,26 @@ export type AuthUser = {
 export async function signIn(email: string, password: string) {
   const sb = getSupabaseBrowserClient()
   const { data, error } = await sb.auth.signInWithPassword({ email, password })
-  if (error) throw error
+  if (error) {
+    // Log login failed (import dynamique pour éviter circular)
+    try {
+      const { logSecurityEvent } = await import('../auth/securityLog')
+      logSecurityEvent('LOGIN_FAILED', { email, success: false, detail: error.message })
+    } catch {}
+    throw error
+  }
+  // Log login success
+  try {
+    const { logSecurityEvent } = await import('../auth/securityLog')
+    const meta = data.user?.user_metadata ?? {}
+    logSecurityEvent('LOGIN', {
+      userId: data.user?.id,
+      email:  data.user?.email,
+      role:   meta.role,
+      enterpriseId: meta.enterprise_id,
+      success: true,
+    })
+  } catch {}
   return data
 }
 

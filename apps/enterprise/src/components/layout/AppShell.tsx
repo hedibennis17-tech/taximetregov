@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthProvider'
-import { signOut } from '@/lib/supabase/auth'
+import { ROLE_LABELS, ROLE_COLORS, type Role } from '@/lib/auth/rbac'
 import { Menu, X, Bell, LogOut, Building2, ChevronDown } from 'lucide-react'
 import { NAV_SECTIONS, CURRENT_ENT, NOTIFICATIONS } from '@/lib/data'
 
