@@ -182,6 +182,7 @@ export const OBL_STATUS: Record<string,{label:string;color:string;bg:string}> = 
 export const NAV_SECTIONS = [
   {section:'🏠 Tableau de bord', items:[{href:'/',label:'Dashboard'}]},
   {section:'🏢 Organisation', items:[
+    {href:'/onboarding',       label:'⚙️ Configuration compte'},
     {href:'/departments',      label:'Départements & Services'},
     {href:'/profile',         label:'Profil entreprise'},
     {href:'/representatives',  label:'Représentants'},
@@ -316,7 +317,7 @@ export const ALL_ACTIVITIES = [
   {id:'ACT-ENT-006',extRef:'UBER-ACT-9103', type:'RIDESHARE',provider:'UBER DEMO',    driverId:'DRV-QC-0002',vehicleId:'TXM-002',at:'2026-09-17T18:15:00Z',origin:'NDG',         dest:'Côte-des-Neiges',dist:3.8,dur:10,wait:0,fare:19.00,tip:2.50,tps:r2(19.00*TPS),tvq:r2(19.00*TVQ),fees:r2(19.00*0.25),driverAmt:r2(19.00*0.72),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-006'},
   {id:'ACT-ENT-007',extRef:'LYFT-ACT-5521', type:'RIDESHARE',provider:'LYFT DEMO',    driverId:'DRV-QC-0003',vehicleId:'TXM-003',at:'2026-09-17T16:00:00Z',origin:'Verdun',      dest:'LaSalle',     dist:6.2, dur:16,wait:1,  fare:21.00,tip:0,   tps:r2(21.00*TPS),tvq:r2(21.00*TVQ),fees:r2(21.00*0.22),driverAmt:r2(21.00*0.75),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-007'},
   {id:'ACT-ENT-008',extRef:'TAXGOV-ACT-008',type:'TAXI',     provider:'DIRECT',       driverId:'DRV-QC-0006',vehicleId:'TXM-006',at:'2026-09-17T14:30:00Z',origin:'Ahuntsic',    dest:'Montréal-Nord',dist:7.1,dur:18,wait:0, fare:24.50,tip:3.00,tps:r2(24.50*TPS),tvq:r2(24.50*TVQ),fees:r2(24.50*0.08),driverAmt:r2(24.50*0.80),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-008'},
-  {id:'ACT-ENT-009',extRef:'DOORDASH-7710', type:'DELIVERY', provider:'DOORDASH DEMO',driverId:'DRV-QC-0006',vehicleId:'TXM-006',at:'2026-09-17T12:00:00Z',origin:'Restaurant DEMO',dest:'Client DEMO',dist:3.5,dur:14,wait:5,fare:12.00,tip:2.00,tps:r2(12.00*TPS),tvq:r2(12.00*TVQ),fees:r2(12.00*0.30),driverAmt:r2(12.00*0.65),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-009'},
+  {id:'ACT-ENT-009',extRef:'UBER-EATS-7710', type:'DELIVERY', provider:'UBER EATS DEMO',driverId:'DRV-QC-0006',vehicleId:'TXM-006',at:'2026-09-17T12:00:00Z',origin:'Restaurant DEMO',dest:'Client DEMO',dist:3.5,dur:14,wait:5,fare:12.00,tip:2.00,tps:r2(12.00*TPS),tvq:r2(12.00*TVQ),fees:r2(12.00*0.30),driverAmt:r2(12.00*0.65),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-009'},
   {id:'ACT-ENT-010',extRef:'TAXGOV-ACT-010',type:'TAXI',     provider:'DIRECT',       driverId:'DRV-QC-0001',vehicleId:'TXM-001',at:'2026-09-17T08:00:00Z',origin:'Longueuil',   dest:'Montréal',    dist:15.2,dur:22,wait:0, fare:38.00,tip:4.00,tps:r2(38.00*TPS),tvq:r2(38.00*TVQ),fees:r2(38.00*0.08),driverAmt:r2(38.00*0.80),status:'COMPLETED',syncStatus:'SYNCED',  txId:'TX-ENT-010'},
 ]
 
@@ -330,7 +331,7 @@ export const ALL_TRANSACTIONS = [
   {id:'TX-ENT-006',actId:'ACT-ENT-006',extId:'UBER-TX-9103',  provider:'UBER DEMO',driverId:'DRV-QC-0002',vehicleId:'TXM-002',gross:19.00,tip:2.50,tps:r2(19.00*TPS),tvq:r2(19.00*TVQ),fees:r2(19.00*0.25),driverAmt:r2(19.00*0.72),entAmt:r2(19.00*0.03),adj:0,  refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T18:17:00Z',recon:'MATCHED'},
   {id:'TX-ENT-007',actId:'ACT-ENT-007',extId:'LYFT-TX-5521',  provider:'LYFT DEMO',driverId:'DRV-QC-0003',vehicleId:'TXM-003',gross:21.00,tip:0,   tps:r2(21.00*TPS),tvq:r2(21.00*TVQ),fees:r2(21.00*0.22),driverAmt:r2(21.00*0.75),entAmt:r2(21.00*0.03),adj:0,  refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T16:02:00Z',recon:'MATCHED'},
   {id:'TX-ENT-008',actId:'ACT-ENT-008',extId:'TAXGOV-TX-008',provider:'DIRECT',  driverId:'DRV-QC-0006',vehicleId:'TXM-006',gross:24.50,tip:3.00,tps:r2(24.50*TPS),tvq:r2(24.50*TVQ),fees:r2(24.50*0.08),driverAmt:r2(24.50*0.80),entAmt:r2(24.50*0.20),adj:0,   refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T14:32:00Z',recon:'MATCHED'},
-  {id:'TX-ENT-009',actId:'ACT-ENT-009',extId:'DOORDASH-7710', provider:'DOORDASH DEMO',driverId:'DRV-QC-0006',vehicleId:'TXM-006',gross:12.00,tip:2.00,tps:r2(12.00*TPS),tvq:r2(12.00*TVQ),fees:r2(12.00*0.30),driverAmt:r2(12.00*0.65),entAmt:r2(12.00*0.05),adj:0,refund:0,  status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T12:02:00Z',recon:'MATCHED'},
+  {id:'TX-ENT-009',actId:'ACT-ENT-009',extId:'UBER-EATS-7710', provider:'UBER EATS DEMO',driverId:'DRV-QC-0006',vehicleId:'TXM-006',gross:12.00,tip:2.00,tps:r2(12.00*TPS),tvq:r2(12.00*TVQ),fees:r2(12.00*0.30),driverAmt:r2(12.00*0.65),entAmt:r2(12.00*0.05),adj:0,refund:0,  status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T12:02:00Z',recon:'MATCHED'},
   {id:'TX-ENT-010',actId:'ACT-ENT-010',extId:'TAXGOV-TX-010',provider:'DIRECT',  driverId:'DRV-QC-0001',vehicleId:'TXM-001',gross:38.00,tip:4.00,tps:r2(38.00*TPS),tvq:r2(38.00*TVQ),fees:r2(38.00*0.08),driverAmt:r2(38.00*0.80),entAmt:r2(38.00*0.20),adj:0,   refund:0,   status:'RECONCILED',syncStatus:'SYNCED', at:'2026-09-17T08:02:00Z',recon:'MATCHED'},
   // Extras: ajustement et remboursement
   {id:'TX-ENT-011',actId:'ACT-ENT-001',extId:'ADJ-TX-001',    provider:'DIRECT',  driverId:'DRV-QC-0001',vehicleId:'TXM-001',gross:0,   tip:0,   tps:0,               tvq:0,               fees:0,             driverAmt:0,              entAmt:0,             adj:-5.00,refund:0,   status:'ADJUSTED',  syncStatus:'SYNCED', at:'2026-09-18T11:00:00Z',recon:'MATCHED'},
@@ -399,7 +400,7 @@ export const ENT_CONNECTIONS = [
   {id:'CONN-002',name:'Taximètre numérique', type:'DEVICE',    method:'WebSocket',   status:'CONNECTED',   health:99, latency:18, dataRx:4820, errors:0,  lastSync:'2026-09-18T10:32:00Z',scopes:['trips','telemetry'],note:'Transmission directe courses'},
   {id:'CONN-003',name:'UBER DEMO',            type:'PLATFORM',  method:'Webhook',     status:'CONNECTED',   health:97, latency:85, dataRx:3200, errors:2,  lastSync:'2026-09-18T10:20:00Z',scopes:['trips','payments'],note:'2 webhooks en erreur récupérés'},
   {id:'CONN-004',name:'LYFT DEMO',            type:'PLATFORM',  method:'Webhook',     status:'CONNECTED',   health:95, latency:92, dataRx:1840, errors:0,  lastSync:'2026-09-18T09:45:00Z',scopes:['trips','payments'],note:'Connexion stable'},
-  {id:'CONN-005',name:'DOORDASH DEMO',        type:'PLATFORM',  method:'Webhook',     status:'CONNECTED',   health:92, latency:110,dataRx:980,  errors:3,  lastSync:'2026-09-18T08:30:00Z',scopes:['deliveries','tips'],note:'Latence légèrement élevée'},
+  {id:'CONN-005',name:'UBER EATS DEMO',        type:'PLATFORM',  method:'Webhook',     status:'CONNECTED',   health:97, latency:88, dataRx:3240, errors:1,  lastSync:'2026-09-18T10:20:00Z',scopes:['deliveries','tips','orders'],note:'Connexion Uber Eats DEMO'},
   {id:'CONN-006',name:'Revenu Québec',        type:'GOVERNMENT',method:'—',           status:'PLANNED',     health:0,  latency:0,  dataRx:0,    errors:0,  lastSync:null,scopes:[],note:'Intégration future — accord légal requis'},
   {id:'CONN-007',name:'ARC (CRA)',            type:'GOVERNMENT',method:'—',           status:'PLANNED',     health:0,  latency:0,  dataRx:0,    errors:0,  lastSync:null,scopes:[],note:'Intégration future — accord légal requis'},
 ]
@@ -411,7 +412,7 @@ export const WEBHOOK_LOG = [
   {id:'WH-003',connId:'CONN-003',event:'trip.completed',    extRef:'UBER-TX-8421',  at:'2026-09-18T08:32:00Z',status:'PROCESSED',attempts:1,latency:88, payload:'{"tripId":"8421","amount":22.50}',    error:null},
   {id:'WH-004',connId:'CONN-003',event:'trip.completed',    extRef:'UBER-TX-9103',  at:'2026-09-17T18:17:00Z',status:'PROCESSED',attempts:2,latency:95, payload:'{"tripId":"9103","amount":19.00}',    error:'Timeout initial — retry réussi'},
   {id:'WH-005',connId:'CONN-004',event:'trip.completed',    extRef:'LYFT-TX-5521',  at:'2026-09-17T16:02:00Z',status:'PROCESSED',attempts:1,latency:90, payload:'{"tripId":"5521","amount":21.00}',    error:null},
-  {id:'WH-006',connId:'CONN-005',event:'delivery.completed',extRef:'DOORDASH-7710', at:'2026-09-17T12:02:00Z',status:'PROCESSED',attempts:3,latency:115,payload:'{"deliveryId":"7710","amount":12.00}',error:'2 tentatives échouées avant succès'},
+  {id:'WH-006',connId:'CONN-005',event:'delivery.completed',extRef:'UBER-EATS-7710', at:'2026-09-17T12:02:00Z',status:'PROCESSED',attempts:1,latency:88, payload:'{"deliveryId":"EATS-7710","amount":12.00}',error:null},
   {id:'WH-007',connId:'CONN-003',event:'trip.cancelled',    extRef:'UBER-TX-FAIL1', at:'2026-09-17T10:00:00Z',status:'FAILED',   attempts:3,latency:0,  payload:'{}',                                 error:'Auth token expiré — non récupéré'},
 ]
 
@@ -423,7 +424,7 @@ export const SYNC_HISTORY = [
   {id:'SYN-004',at:'2026-09-18T08:32:00Z',source:'UBER DEMO',     type:'WEBHOOK',    duration:88,  records:1,   new:1,  updated:0, skipped:0, errors:0, status:'SUCCESS',note:'Trip UBER-TX-8421'},
   {id:'SYN-005',at:'2026-09-17T22:02:00Z',source:'TAXIMETER.GOV', type:'INCREMENTAL',duration:420, records:48,  new:5,  updated:2, skipped:1, errors:1, status:'WARNING',note:'1 activité non réconciliée'},
   {id:'SYN-006',at:'2026-09-17T18:17:00Z',source:'UBER DEMO',     type:'WEBHOOK',    duration:95,  records:1,   new:1,  updated:0, skipped:0, errors:0, status:'SUCCESS',note:'Trip UBER-TX-9103 (retry 2)'},
-  {id:'SYN-007',at:'2026-09-17T12:02:00Z',source:'DOORDASH DEMO', type:'WEBHOOK',    duration:115, records:1,   new:1,  updated:0, skipped:0, errors:0, status:'SUCCESS',note:'Delivery DD-7710 (retry 3)'},
+  {id:'SYN-007',at:'2026-09-17T12:02:00Z',source:'UBER EATS DEMO', type:'WEBHOOK',   duration:88,  records:1,   new:1,  updated:0, skipped:0, errors:0, status:'SUCCESS',note:'Delivery Uber Eats EATS-7710'},
   {id:'SYN-008',at:'2026-09-17T00:00:00Z',source:'TAXIMETER.GOV', type:'FULL',       duration:3120,records:9828,new:0,  updated:8, skipped:0, errors:0, status:'SUCCESS',note:'Sync journalière — aucune nouvelle activité'},
 ]
 
@@ -547,14 +548,14 @@ export const COMP_CATEGORY_CONF: Record<string,{label:string;icon:string;color:s
 // ── PROVIDERS & SERVICES ──────────────────────────────────────
 export const PROVIDERS = [
   {id:'PRV-001',name:'Uber',       country:'USA', emoji:'🚗', status:'CONNECTED',services:['SVC-001','SVC-002','SVC-003','SVC-004','SVC-005','SVC-006'],note:'6 services actifs · DEMO'},
-  {id:'PRV-002',name:'Lyft',       country:'USA', emoji:'🚕', status:'CONNECTED',services:['SVC-101'],note:'Mobilité uniquement · DEMO'},
-  {id:'PRV-003',name:'DoorDash',   country:'USA', emoji:'🍔', status:'CONNECTED',services:['SVC-201'],note:'Livraison restauration · DEMO'},
-  {id:'PRV-004',name:'Instacart',  country:'USA', emoji:'🛒', status:'PLANNED',  services:['SVC-301'],note:'Intégration future · DEMO'},
-  {id:'PRV-005',name:'DHL',        country:'DE',  emoji:'📦', status:'PLANNED',  services:['SVC-401'],note:'Logistique · DEMO'},
-  {id:'PRV-006',name:'GLS',        country:'DE',  emoji:'📦', status:'PLANNED',  services:['SVC-501'],note:'Logistique · DEMO'},
-  {id:'PRV-007',name:'Purolator',  country:'CA',  emoji:'📬', status:'PLANNED',  services:['SVC-601'],note:'Courrier national · DEMO'},
-  {id:'PRV-008',name:'UPS',        country:'USA', emoji:'📦', status:'PLANNED',  services:['SVC-701'],note:'Logistique · DEMO'},
-  {id:'PRV-009',name:'Skip',       country:'CA',  emoji:'🍕', status:'PLANNED',  services:['SVC-801'],note:'Livraison restauration · DEMO'},
+  {id:'PRV-002',name:'Uber Rides DEMO',country:'CA', emoji:'🚗', status:'CONNECTED',services:['SVC-101'],note:'UberX / UberXL / Comfort · DEMO'},
+  {id:'PRV-003',name:'Uber Eats DEMO',country:'CA', emoji:'🍔', status:'CONNECTED',services:['SVC-201'],note:'Livraison restauration · DEMO'},
+  {id:'PRV-004',name:'Uber Grocery DEMO',country:'CA',emoji:'🛒',status:'CONNECTED',services:['SVC-301'],note:'Livraison épicerie · DEMO'},
+  {id:'PRV-005',name:'Uber Courier DEMO',country:'CA',emoji:'📦',status:'CONNECTED',services:['SVC-401'],note:'Livraison colis · DEMO'},
+  {id:'PRV-006',name:'Uber Green DEMO', country:'CA', emoji:'🟢', status:'CONNECTED',services:['SVC-501'],note:'Véhicules électriques · DEMO'},
+  {id:'PRV-007',name:'Uber Taxi DEMO',  country:'CA',  emoji:'🚕', status:'ACTIVE',  services:['SVC-601'],note:'Taxi réglementé QC · DEMO'},
+  {id:'PRV-008',name:'Uber Direct DEMO', country:'CA',  emoji:'🚚', status:'PLANNED', services:['SVC-701'],note:'Livraison entreprises B2B · DEMO'},
+  {id:'PRV-009',name:'TAXIMETER.GOV',   country:'QC',  emoji:'🏛️', status:'CONNECTED', services:['SVC-901'],note:'Plateforme gouvernementale QC · PILOTE'},
   {id:'PRV-010',name:'Intelcom',   country:'CA',  emoji:'🚚', status:'PLANNED',  services:['SVC-901'],note:'Dernier kilomètre · DEMO'},
 ]
 
@@ -567,16 +568,16 @@ export const PROVIDER_SERVICES = [
   {id:'SVC-005',providerId:'PRV-001',name:'Uber Eats Grocery',cat:'GROCERY', emoji:'🛒',desc:'Livraison d\'épicerie',                            status:'PLANNED',accountRef:null,          lastSync:null,                 dataRx:0,   txCount:0,gross:0,    tips:0},
   {id:'SVC-006',providerId:'PRV-001',name:'Uber Delivery',   cat:'PARCEL',   emoji:'📦',desc:'Livraison de colis et courrier',                    status:'PLANNED',accountRef:null,          lastSync:null,                 dataRx:0,   txCount:0,gross:0,    tips:0},
   // LYFT
-  {id:'SVC-101',providerId:'PRV-002',name:'Lyft Standard',   cat:'RIDESHARE',emoji:'🚗',desc:'Service rideshare Lyft',                            status:'ACTIVE',accountRef:'LFT-ENT-001', lastSync:'2026-09-17T16:05:00Z',dataRx:620, txCount:1,gross:21.00,tips:0},
-  // DOORDASH
-  {id:'SVC-201',providerId:'PRV-003',name:'DoorDash Livraison',cat:'DELIVERY',emoji:'🍔',desc:'Livraison restauration DoorDash',                 status:'ACTIVE',accountRef:'DDA-ENT-001', lastSync:'2026-09-17T12:05:00Z',dataRx:480, txCount:1,gross:12.00,tips:2.00},
+  {id:'SVC-101',providerId:'PRV-002',name:'Uber Rides Standard',cat:'RIDESHARE',emoji:'🚗',desc:'UberX / UberXL · Service principal',             status:'ACTIVE',accountRef:'UBR-RIDES-001',lastSync:'2026-09-18T10:32:00Z',dataRx:18441,txCount:119200,gross:18420000,tips:1842000},
+  // UBER EATS
+  {id:'SVC-201',providerId:'PRV-003',name:'Uber Eats Restauration',cat:'DELIVERY',emoji:'🍔',desc:'Livraison restauration Uber Eats',        status:'ACTIVE',accountRef:'UBR-EATS-001', lastSync:'2026-09-18T10:20:00Z',dataRx:312000,txCount:298400,gross:24960000,tips:3744000},
   // PLANIFIÉS
-  {id:'SVC-301',providerId:'PRV-004',name:'Instacart Épicerie',cat:'GROCERY',emoji:'🛒',desc:'Épicerie et produits frais',                       status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+  {id:'SVC-301',providerId:'PRV-004',name:'Uber Grocery',       cat:'GROCERY',emoji:'🛒',desc:'Épicerie et produits frais Uber',                 status:'ACTIVE', accountRef:'UBR-GRC-001', lastSync:'2026-09-18T09:30:00Z',dataRx:42000,txCount:40200,gross:5880000,tips:588000},
   {id:'SVC-401',providerId:'PRV-005',name:'DHL Express',     cat:'PARCEL',   emoji:'📦',desc:'Colis express international',                       status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
   {id:'SVC-501',providerId:'PRV-006',name:'GLS Colis',       cat:'PARCEL',   emoji:'📦',desc:'Réseau colis européen',                             status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
-  {id:'SVC-601',providerId:'PRV-007',name:'Purolator National',cat:'PARCEL', emoji:'📬',desc:'Courrier et colis Canada',                          status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+  {id:'SVC-601',providerId:'PRV-007',name:'Uber Taxi QC',cat:'PARCEL', emoji:'📬',desc:'Taxi réglementé avec taximètre · QC',                          status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
   {id:'SVC-701',providerId:'PRV-008',name:'UPS Ground',      cat:'PARCEL',   emoji:'📦',desc:'Livraison terrestre UPS',                           status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
-  {id:'SVC-801',providerId:'PRV-009',name:'Skip Livraison',  cat:'FOOD',     emoji:'🍕',desc:'Livraison restauration Skip',                       status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
+  {id:'SVC-801',providerId:'PRV-009',name:'TAXIMETER.GOV',    cat:'GOV',     emoji:'🏛️',desc:'Connexion plateforme gouvernementale QC · PILOTE', status:'CONNECTED',accountRef:'ENT-DEMO-001',lastSync:'2026-09-18T10:38:00Z',dataRx:9840,txCount:0,gross:0,tips:0},
   {id:'SVC-901',providerId:'PRV-010',name:'Intelcom Express',cat:'PARCEL',   emoji:'🚚',desc:'Dernier kilomètre résidentiel',                     status:'PLANNED',accountRef:null,lastSync:null,dataRx:0,txCount:0,gross:0,tips:0},
 ]
 

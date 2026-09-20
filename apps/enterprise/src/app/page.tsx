@@ -31,6 +31,10 @@ export default function Dashboard() {
     <AppShell>
       <div className="px-4 md:px-6 py-6 space-y-5 max-w-5xl mx-auto">
         <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · Données synthétiques · Aucune transmission officielle</div>
+        <div className="text-[9px] font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 px-3 py-2 rounded-xl flex items-center justify-between">
+          <span>⚙️ Wizard de configuration Enterprise disponible</span>
+          <Link href="/onboarding" className="font-black hover:underline">→ Configurer le compte</Link>
+        </div>
 
         {/* Header Uber */}
         <div className="rounded-2xl p-5 shadow-sm" style={{background:'#000'}}>
