@@ -45,22 +45,22 @@ async function sbIgnore(path: string, body: unknown) {
 async function runSeed() {
   const steps: string[] = []
 
-  // ── 1. Trouver le user existant hedibennis70@gmail.com
-  const existingUsers = await sb(`users?email=eq.hedibennis70@gmail.com&select=id,public_id,email`, undefined) as Array<{id:string;public_id:string;email:string}>
+  // ── 1. Trouver le user existant hedibenns21@gmail.com
+  const existingUsers = await sb(`users?email=eq.hedibenns21@gmail.com&select=id,public_id,email`, undefined) as Array<{id:string;public_id:string;email:string}>
 
   let userId: string
   if (existingUsers.length > 0) {
     userId = existingUsers[0]!.id
     steps.push(`✅ User trouvé: ${userId}`)
     // Mettre à jour pour s'assurer que status=ACTIVE
-    await sb(`users?email=eq.hedibennis70@gmail.com`, { status: 'ACTIVE', email_verified_at: new Date().toISOString(), public_id: existingUsers[0]!.public_id || 'HEDI-USR-001', user_type: 'DRIVER', updated_at: new Date().toISOString() }, 'PATCH')
+    await sb(`users?email=eq.hedibenns21@gmail.com`, { status: 'ACTIVE', email_verified_at: new Date().toISOString(), public_id: existingUsers[0]!.public_id || 'HEDI-USR-001', user_type: 'DRIVER', updated_at: new Date().toISOString() }, 'PATCH')
   } else {
     // Créer le user
     const created = await sb(`users`, {
       public_id: 'HEDI-USR-001',
       user_type: 'DRIVER',
       status: 'ACTIVE',
-      email: 'hedibennis70@gmail.com',
+      email: 'hedibenns21@gmail.com',
       email_verified_at: new Date().toISOString(),
     }) as Array<{id:string}>
     userId = created[0]!.id

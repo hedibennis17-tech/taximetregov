@@ -23,7 +23,7 @@ async function sbPatch(path: string, body: unknown) {
 
 // GET = diagnostic
 export async function GET(req: NextRequest) {
-  const hediUser = await sbGet(`users?email=eq.hedibennis70@gmail.com&select=id,email,status`)
+  const hediUser = await sbGet(`users?email=eq.hedibenns21@gmail.com&select=id,email,status`)
   const taximeters = await sbGet(`taximeters?select=id,driver_id,status,current_mode`)
   const activeTrips = await sbGet(`taxi_trips?trip_status=in.(STARTED,PAUSED)&select=id,trip_reference,trip_status,driver_id,started_at`)
 
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // 1. Trouver le driver_id de Hedi
-    const users = await sbGet(`users?email=eq.hedibennis70@gmail.com&select=id`) as Array<{id:string}>
+    const users = await sbGet(`users?email=eq.hedibenns21@gmail.com&select=id`) as Array<{id:string}>
     if (!users[0]) return apiError('User Hedi introuvable', 404)
 
     const profiles = await sbGet(`driver_profiles?user_id=eq.${users[0].id}&select=id`) as Array<{id:string}>
