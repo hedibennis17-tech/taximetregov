@@ -41,9 +41,9 @@ export default function LoginPage() {
   }
 
   const QUICK = [
-    {email:'hedibenns21@gmail.com',                         name:'Hedi Bennis',       role:'SUPER_ADMIN'},
-    {email:'s.marchand@uber-demo.taximetergov.demo',         name:'Sophie Marchand',   role:'OWNER'},
-    {email:'jp.roy@uber-demo.taximetergov.demo',             name:'Jean-Philippe Roy', role:'FINANCE'},
+    {email:'hedibenns21@gmail.com',                         password:'Taximetregov2026', name:'Hedi Bennis',       role:'SUPER_ADMIN'},
+    {email:'s.marchand@uber-demo.taximetergov.demo',         password:'Uber2026Demo!',    name:'Sophie Marchand',   role:'OWNER'},
+    {email:'jp.roy@uber-demo.taximetergov.demo',             password:'Finance2026!',     name:'Jean-Philippe Roy', role:'FINANCE'},
   ]
 
   if (!mounted) return null
@@ -128,7 +128,7 @@ export default function LoginPage() {
               {QUICK.map(u => (
                 <button
                   key={u.email}
-                  onClick={() => { setEmail(u.email); setError('') }}
+                  onClick={() => { setEmail(u.email); setPassword(u.password??''); setError('') }}
                   className="w-full text-left px-3 py-2.5 rounded-xl border transition-all cursor-pointer hover:border-slate-400"
                   style={{
                     background: email === u.email ? '#f8fafc' : 'white',
@@ -143,6 +143,7 @@ export default function LoginPage() {
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] font-bold text-slate-800">{u.name}</div>
                       <div className="text-[8px] text-slate-400 truncate">{u.email}</div>
+                      <div className="text-[8px] font-mono text-slate-500 mt-0.5">🔑 {u.password}</div>
                     </div>
                     <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full text-white shrink-0"
                       style={{background: u.role==='SUPER_ADMIN'?'#DC2626': u.role==='OWNER'?'#000':'#059669'}}>

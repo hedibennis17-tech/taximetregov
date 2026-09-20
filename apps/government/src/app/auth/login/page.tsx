@@ -169,5 +169,27 @@ export default function GovernmentLoginPage() {
     </form>
   )
 
-  return <><GlobalLanguageLoader /><button onClick={toggleLangLogin} style={{position:"fixed",top:16,right:16,padding:"6px 12px",borderRadius:10,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",cursor:"pointer",display:"flex",alignItems:"center",gap:4}}><span style={{fontSize:11,fontWeight:800,letterSpacing:"0.05em",color:"white"}}>FR</span><span style={{fontSize:9,color:"rgba(255,255,255,0.30)"}}>|</span><span style={{fontSize:11,fontWeight:800,letterSpacing:"0.05em",color:"white"}}>EN</span></button><main className="min-h-screen bg-slate-950 px-6 py-16 text-white"><div className="mx-auto max-w-md"><div className="mb-8 text-center"><img src="/logo.png" alt="TAXIMETER.GOV" width={72} height={72} style={{objectFit:"contain",margin:"0 auto 16px",display:"block",borderRadius:16}} /><h1 className="text-2xl font-bold">TAXIMÈTRE.GOV</h1><p className="mt-1 text-sm text-slate-400">Portail administratif sécurisé</p></div><div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6"><div className="mb-5 flex items-center gap-3"><div className="rounded-xl bg-qc-blue/20 p-2 text-qc-blue-light">{stage === 'mfa' ? <KeyRound size={20} /> : stage === 'activate' ? <ShieldCheck size={20} /> : <LockKeyhole size={20} />}</div><div><h2 className="font-semibold">{stage === 'mfa' ? 'Authentification multifacteur' : stage === 'activate' ? 'Activation du compte' : 'Accès réservé'}</h2><p className="text-xs text-slate-400">Administrateurs autorisés uniquement</p></div></div>{notice && <p className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-200">{notice}</p>}{error && <p role="alert" className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}{form}</div><p className="mt-5 text-center text-xs text-slate-500">Les comptes sont créés par invitation d’un administrateur habilité. Les exigences de sécurité sont évaluées après la connexion.</p></div></main></>
+  return <><GlobalLanguageLoader /><button onClick={toggleLangLogin} style={{position:"fixed",top:16,right:16,padding:"6px 12px",borderRadius:10,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",cursor:"pointer",display:"flex",alignItems:"center",gap:4}}><span style={{fontSize:11,fontWeight:800,letterSpacing:"0.05em",color:"white"}}>FR</span><span style={{fontSize:9,color:"rgba(255,255,255,0.30)"}}>|</span><span style={{fontSize:11,fontWeight:800,letterSpacing:"0.05em",color:"white"}}>EN</span></button><main className="min-h-screen bg-slate-950 px-6 py-16 text-white"><div className="mx-auto max-w-md"><div className="mb-8 text-center"><img src="/logo.png" alt="TAXIMETER.GOV" width={72} height={72} style={{objectFit:"contain",margin:"0 auto 16px",display:"block",borderRadius:16}} /><h1 className="text-2xl font-bold">TAXIMÈTRE.GOV</h1><p className="mt-1 text-sm text-slate-400">Portail administratif sécurisé</p></div><div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6"><div className="mb-5 flex items-center gap-3"><div className="rounded-xl bg-qc-blue/20 p-2 text-qc-blue-light">{stage === 'mfa' ? <KeyRound size={20} /> : stage === 'activate' ? <ShieldCheck size={20} /> : <LockKeyhole size={20} />}</div><div><h2 className="font-semibold">{stage === 'mfa' ? 'Authentification multifacteur' : stage === 'activate' ? 'Activation du compte' : 'Accès réservé'}</h2><p className="text-xs text-slate-400">Administrateurs autorisés uniquement</p></div></div>{notice && <p className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-200">{notice}</p>}{error && <p role="alert" className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}{form}</div>
+<div className="mt-6 rounded-xl border border-slate-700 bg-slate-800/60 p-4">
+  <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-3">Accès rapide · Comptes Admin DÉMO</div>
+  {[
+    { name:'Hedi Bennis',       email:'hedibenns21@gmail.com',                         pwd:'Taximetregov2026', role:'SUPER ADMIN', color:'#DC2626' },
+    { name:'Claire Beaumont',   email:'c.beaumont@admin-demo.taximetergov.demo',        pwd:'GovAdmin2026!',    role:'GOV ADMIN',   color:'#7C3AED' },
+    { name:'Marc Duplessis',    email:'m.duplessis@admin-demo.taximetergov.demo',       pwd:'GovAgent2026!',    role:'GOV AGENT',   color:'#003DA5' },
+  ].map((u,i) => (
+    <button key={i} onClick={() => { setEmail(u.email); setPassword(u.pwd) }}
+      className="w-full flex items-center gap-3 py-2 text-left border-b border-slate-700/50 last:border-0 hover:opacity-80 transition-opacity cursor-pointer bg-transparent">
+      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-black shrink-0" style={{background:u.color}}>
+        {u.name.split(' ').map((n: string)=>n[0]).join('').slice(0,2)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[10px] font-bold text-white truncate">{u.name}</div>
+        <div className="text-[8px] text-slate-400 truncate">{u.email}</div>
+      </div>
+      <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full text-white shrink-0" style={{background:u.color}}>{u.role}</span>
+    </button>
+  ))}
+  <div className="mt-2 text-[8px] text-amber-400 font-bold">⚠️ DONNÉES SYNTHÉTIQUES · Mode DÉMO Pilote</div>
+</div>
+<p className="mt-5 text-center text-xs text-slate-500">Les comptes sont créés par invitation d’un administrateur habilité. Les exigences de sécurité sont évaluées après la connexion.</p></div></main></>
 }

@@ -1,57 +1,88 @@
 'use client'
-import React from 'react'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthProvider'
 import { ROLE_LABELS, ROLE_COLORS, type Role } from '@/lib/auth/rbac'
-import { Menu, X, Bell, LogOut, Building2, ChevronDown } from 'lucide-react'
+import { Menu, Bell, LogOut, Building2 } from 'lucide-react'
 import { NAV_SECTIONS, CURRENT_ENT, NOTIFICATIONS } from '@/lib/data'
+import { signOut } from '@/lib/supabase/auth'
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
-  const pathname = usePathname()
-  const unread = NOTIFICATIONS.filter(n=>!n.read).length
+  const [open, setOpen]     = useState(false)
+  const pathname            = usePathname()
+  const router              = useRouter()
+  const { user }            = useAuth()
+  const unread              = NOTIFICATIONS.filter(n=>!n.read).length
+
+  const handleLogout = async () => {
+    try { await signOut() } catch {}
+    router.replace('/login')
+  }
+
+  const initials = user?.name
+    ? user.name.split(' ').map((n:string)=>n[0]).join('').slice(0,2).toUpperCase()
+    : 'U'
+
+  const roleColor = user ? (ROLE_COLORS[user.role as Role] ?? '#003DA5') : '#003DA5'
+  const roleLabel = user ? (ROLE_LABELS[user.role as Role] ?? user.role) : ''
 
   return (
     <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
-      {/* Sidebar desktop */}
+
+      {/* ── SIDEBAR ── */}
       <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col transition-transform duration-200 ${open?'translate-x-0':'-translate-x-full'} lg:translate-x-0`}>
-        {/* Logo */}
-        <div className="px-4 py-4 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-qc-blue flex items-center justify-center">
+
+        {/* Logo TAXIMETER.GOV */}
+        <div className="px-4 pt-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center shrink-0">
               <Building2 size={16} className="text-white"/>
             </div>
             <div>
               <div className="text-xs font-black text-slate-900 dark:text-white">TAXIMETER.GOV</div>
-              <div className="text-[9px] text-qc-blue font-bold">Enterprise Gov</div>
+              <div className="text-[9px] text-blue-700 font-bold">Enterprise Gov</div>
             </div>
           </div>
-          {/* Entreprise courante — Logo Uber + Uber Eats AGRANDIS */}
-          <div className="rounded-2xl px-4 py-4" style={{background:'#000000'}}>
-            {/* UBER — grand logo typographique */}
-            <div className="text-white font-black tracking-tighter" style={{fontSize:'2.4rem',fontFamily:'system-ui',letterSpacing:'-0.05em',lineHeight:0.9}}>uber</div>
-            {/* Séparateur */}
-            <div className="my-2" style={{height:'1px',background:'rgba(255,255,255,0.12)'}}/>
-            {/* UBER EATS — logo distinct */}
+
+          {/* Bloc entreprise Uber */}
+          <div className="rounded-2xl px-4 py-3" style={{background:'#000'}}>
+            <div className="font-black text-white tracking-tighter" style={{fontSize:'2rem',fontFamily:'system-ui',letterSpacing:'-0.05em',lineHeight:0.9}}>uber</div>
+            <div className="my-1.5" style={{height:'1px',background:'rgba(255,255,255,0.1)'}}/>
             <div className="flex items-center gap-1.5">
-              <span className="font-black" style={{fontFamily:'system-ui',letterSpacing:'-0.04em',color:'#06B029',fontSize:'1.1rem',lineHeight:1}}>Uber</span>
-              <span className="font-black" style={{fontFamily:'system-ui',letterSpacing:'-0.04em',color:'white',fontSize:'1.1rem',lineHeight:1}}>Eats</span>
+              <span className="font-black" style={{fontFamily:'system-ui',color:'#06B029',fontSize:'1rem',lineHeight:1}}>Uber</span>
+              <span className="font-black text-white" style={{fontFamily:'system-ui',fontSize:'1rem',lineHeight:1}}>Eats</span>
             </div>
-            {/* Services badge */}
-            <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-              {['🚕','🚗','🟢','🛒','📦'].map((e,i)=>(
-                <span key={i} className="text-[11px]">{e}</span>
-              ))}
-              <span className="text-[7px] font-bold ml-0.5" style={{color:'rgba(255,255,255,0.35)'}}>6 services</span>
+            <div className="flex items-center gap-1 mt-1.5">
+              {['🚕','🚗','🟢','🛒','📦'].map((e,i)=><span key={i} className="text-[11px]">{e}</span>)}
+              <span className="text-[7px] font-bold ml-1" style={{color:'rgba(255,255,255,0.35)'}}>6 services</span>
             </div>
-            <div className="flex items-center gap-1 mt-2">
+            <div className="flex items-center gap-1 mt-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400"/>
-              <span className="text-[8px] font-bold" style={{color:'rgba(255,255,255,0.6)'}}>Connecté · PILOTE</span>
+              <span className="text-[8px] font-bold" style={{color:'rgba(255,255,255,0.55)'}}>Connecté · PILOTE</span>
             </div>
           </div>
+
+          {/* User connecté */}
+          {user && (
+            <div className="mt-2.5 px-1">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-black shrink-0" style={{background:roleColor}}>
+                  {initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200 truncate">{user.name}</div>
+                  <div className="text-[8px] text-slate-400 truncate">{user.email}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{background:roleColor}}>{roleLabel}</span>
+                <span className="text-[7px] font-bold text-green-600 dark:text-green-400">🔒 Sécurisé</span>
+              </div>
+            </div>
+          )}
         </div>
+
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-2 px-2">
           {NAV_SECTIONS.map(sec=>(
@@ -70,11 +101,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           ))}
         </nav>
+
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800">
-          <div className="text-[8px] text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg mb-2">⚠️ DONNÉES SYNTHÉTIQUES — PILOTE</div>
-          <button className="flex items-center gap-2 text-[10px] text-slate-400 hover:text-red-500 transition-colors w-full">
-            <LogOut size={11}/> Déconnexion (DEMO)
+        <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          <div className="text-[8px] text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg">
+            ⚠️ DONNÉES SYNTHÉTIQUES — PILOTE
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-[10px] text-slate-400 hover:text-red-500 transition-colors w-full cursor-pointer py-1"
+          >
+            <LogOut size={12}/> Déconnexion
           </button>
         </div>
       </aside>
@@ -82,7 +119,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Overlay mobile */}
       {open&&<div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={()=>setOpen(false)}/>}
 
-      {/* Main */}
+      {/* ── MAIN ── */}
       <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
         {/* Topbar */}
         <header className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 h-14 flex items-center px-4 gap-3">
@@ -98,10 +135,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Bell size={16} className="text-slate-500"/>
             {unread>0&&<div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-black text-white">{unread}</div>}
           </Link>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-xl">
-            <div className="w-6 h-6 rounded-lg bg-qc-blue flex items-center justify-center text-[10px] font-black text-white">R</div>
-            <div className="text-[10px] font-bold text-slate-700 dark:text-slate-200 hidden md:block">Sophie Marchand</div>
-          </div>
+          {user && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-xl">
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{background:roleColor}}>
+                {initials}
+              </div>
+              <div className="text-[10px] font-bold text-slate-700 dark:text-slate-200 hidden md:block">{user.name}</div>
+              <button onClick={handleLogout} className="ml-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer hidden md:block">
+                <LogOut size={12}/>
+              </button>
+            </div>
+          )}
         </header>
         <main className="flex-1">{children}</main>
       </div>

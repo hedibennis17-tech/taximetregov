@@ -197,6 +197,39 @@ export default function LoginPage() {
         </div>
       </div>
 
+
+      {/* ── ACCÈS RAPIDE DÉMO ── */}
+      <div style={{ marginTop:16, width:'100%', maxWidth:360 }}>
+        <div style={{ fontSize:8, fontWeight:700, color: dark?'#4A6285':'#7B9ED9', textTransform:'uppercase', letterSpacing:'0.08em', textAlign:'center', marginBottom:8 }}>
+          Accès rapide · Comptes DÉMO
+        </div>
+        <div style={{ background: dark?'rgba(0,61,165,0.12)':'rgba(0,61,165,0.06)', border:'1px solid', borderColor: dark?'rgba(0,61,165,0.3)':'rgba(0,61,165,0.15)', borderRadius:12, padding:12 }}>
+          {[
+            { name:'Alexandre Tremblay', email:'a.tremblay@driver-demo.taximetergov.demo', pwd:'Driver2026!', role:'Chauffeur · Uber Taxi', color:'#003DA5' },
+            { name:'Fatima Zahra Benali', email:'fz.benali@driver-demo.taximetergov.demo', pwd:'Driver2026!', role:'Chauffeuse · Uber Eats', color:'#059669' },
+            { name:'Marco Fernandez',    email:'m.fernandez@driver-demo.taximetergov.demo', pwd:'Driver2026!', role:'Chauffeur · Uber Rides', color:'#7C3AED' },
+          ].map((u,i) => (
+            <button key={i} onClick={() => { setEmail(u.email); setPassword(u.pwd) }}
+              style={{ width:'100%', display:'flex', alignItems:'center', gap:10, background:'transparent', border:'none',
+                borderBottom: i<2 ? '1px solid rgba(0,61,165,0.1)' : 'none',
+                padding:'8px 0', cursor:'pointer', textAlign:'left' }}>
+              <div style={{ width:28, height:28, borderRadius:8, background:u.color, display:'flex', alignItems:'center', justifyContent:'center',
+                color:'white', fontSize:10, fontWeight:900, flexShrink:0 }}>
+                {u.name.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}
+              </div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:10, fontWeight:700, color: dark?'#C5D4EE':'#1e293b', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{u.name}</div>
+                <div style={{ fontSize:8, color: dark?'#4A6285':'#7B9ED9' }}>{u.role}</div>
+              </div>
+              <div style={{ fontSize:7, fontWeight:700, color: u.color, background: u.color+'20', padding:'2px 6px', borderRadius:999, flexShrink:0 }}>AUTO-FILL</div>
+            </button>
+          ))}
+          <div style={{ marginTop:8, padding:'6px 8px', background:'rgba(245,158,11,0.1)', borderRadius:8, fontSize:8, color:'#B45309', fontWeight:700 }}>
+            ⚠️ Mot de passe DÉMO: <span style={{fontFamily:'monospace'}}>Driver2026!</span> · Données synthétiques
+          </div>
+        </div>
+      </div>
+
       {/* Footer */}
       <p style={{ marginTop:20, fontSize:9, color: dark ? '#4A6285' : '#7B9ED9', textAlign:'center', letterSpacing:'0.05em' }}>
         TAXIMÈTRE.GOV · MODE PILOTE · © 2026 Gouvernement du Québec
