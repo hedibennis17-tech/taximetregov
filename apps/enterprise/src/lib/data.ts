@@ -180,42 +180,55 @@ export const OBL_STATUS: Record<string,{label:string;color:string;bg:string}> = 
   OVERDUE: {label:'En retard',color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
 }
 export const NAV_SECTIONS = [
-  {section:'🏠 Tableau de bord', items:[{href:'/',label:'Dashboard'}]},
-  {section:'🏢 Organisation', items:[
-    {href:'/onboarding',       label:'⚙️ Configuration compte'},
-    {href:'/departments',      label:'Départements & Services'},
-    {href:'/profile',         label:'Profil entreprise'},
-    {href:'/representatives',  label:'Représentants'},
-    {href:'/users',           label:'Utilisateurs & Rôles'},
-    {href:'/documents',       label:'Documents'},
+  {section:'🏠 Tableau de bord', items:[
+    {href:'/',                label:'Dashboard'},
+    {href:'/control-center',  label:'🎛️ Control Center'},
   ]},
-  {section:'👨‍✈️ Workforce', items:[
-    {href:'/drivers',         label:'Chauffeurs'},
-    {href:'/vehicles',        label:'Véhicules'},
-    {href:'/taximeter',       label:'Taximètre'},
-    {href:'/activities',      label:'Activités'},
+  {section:'🏢 Organisation', items:[
+    {href:'/onboarding',       label:'⚙️ Configuration'},
+    {href:'/departments',      label:'Départements'},
+    {href:'/profile',          label:'Profil entreprise'},
+    {href:'/users',            label:'Utilisateurs'},
+    {href:'/documents',        label:'Documents'},
+  ]},
+  {section:'🚕 Opérations', items:[
+    {href:'/services',         label:'Services & Depts'},
+    {href:'/operations',       label:'Centre opérations'},
+    {href:'/drivers',          label:'Chauffeurs'},
+    {href:'/vehicles',         label:'Véhicules'},
+    {href:'/activities',       label:'Activités'},
+    {href:'/taximeter',        label:'Taximètre'},
   ]},
   {section:'💰 Finance & Fiscal', items:[
-    {href:'/transactions',    label:'Transactions'},
-    {href:'/revenue',         label:'Revenus'},
-    {href:'/fiscal',          label:'TPS / TVQ'},
-    {href:'/obligations',     label:'Obligations'},
-    {href:'/declarations',    label:'Déclarations'},
-    {href:'/payments',        label:'Paiements'},
+    {href:'/transactions',     label:'Transactions'},
+    {href:'/revenue',          label:'Revenus'},
+    {href:'/fiscal',           label:'TPS / TVQ'},
+    {href:'/obligations',      label:'Obligations'},
+    {href:'/declarations',     label:'Déclarations'},
+    {href:'/payments',         label:'Paiements'},
   ]},
-  {section:'🔌 Connexions', items:[
-    {href:'/connections',     label:'Centre connexions'},
-    {href:'/sync',            label:'Synchronisation'},
+  {section:'🔌 Connexions & Gov.', items:[
+    {href:'/government',       label:'🏛️ Gouvernement'},
+    {href:'/connections',      label:'Connexions'},
+    {href:'/integrations',     label:'API & Webhooks'},
+    {href:'/sync',             label:'Synchronisation'},
+    {href:'/transparency',     label:'Transparence'},
   ]},
-  {section:'🔄 Transparence & Conformité', items:[
-    {href:'/transparency',    label:'Transparence'},
-    {href:'/reconciliation',  label:'Réconciliation'},
-    {href:'/exceptions',      label:'Exceptions'},
+  {section:'🔄 Conformité & Recon.', items:[
+    {href:'/compliance',       label:'Conformité'},
+    {href:'/reconciliation',   label:'Réconciliation'},
+    {href:'/exceptions',       label:'Exceptions'},
   ]},
-  {section:'📊 Rapports & Audit', items:[
-    {href:'/reports',         label:'Rapports'},
-    {href:'/audit',           label:'Historique audit'},
-    {href:'/notifications',   label:'Notifications (30)'},
+  {section:'📊 Intelligence', items:[
+    {href:'/analytics',        label:'Analytics'},
+    {href:'/intelligence',     label:'Intelligence'},
+    {href:'/reports',          label:'Rapports'},
+    {href:'/financial-documents',label:'Docs financiers'},
+  ]},
+  {section:'🛡️ Sécurité & Audit', items:[
+    {href:'/security',         label:'Sécurité & Gov.'},
+    {href:'/audit',            label:'Journal d\'audit'},
+    {href:'/notifications',    label:'Notifications'},
   ]},
 ]
 
