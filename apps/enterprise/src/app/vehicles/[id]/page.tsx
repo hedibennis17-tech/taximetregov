@@ -47,11 +47,11 @@ export default function VehicleProfilePage() {
             <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-3xl shrink-0">🚗</div>
             <div className="flex-1">
               <div className="text-xl font-black text-slate-900 dark:text-white">{veh.year} {veh.make} {veh.model}</div>
-              <div className="text-[10px] font-mono text-slate-400">{veh.id} · {veh.plate}</div>
+              <div className="text-sm font-mono text-slate-400">{veh.id} · {veh.plate}</div>
               <div className="flex gap-2 mt-1 flex-wrap">
-                <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
-                {det?.taximeterId&&<span className="text-[8px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-1.5 py-0.5 rounded">🚕 Taximètre: {det.taximeterId} · DEMO</span>}
-                <div className="flex items-center gap-1"><div className={`w-1.5 h-1.5 rounded-full ${ss.dot}`}/><span className="text-[8px] font-bold" style={{color:ss.color}}>{ss.label}</span></div>
+                <span className="text-sm px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
+                {det?.taximeterId&&<span className="text-sm font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-1.5 py-0.5 rounded">🚕 Taximètre: {det.taximeterId} · DEMO</span>}
+                <div className="flex items-center gap-1"><div className={`w-1.5 h-1.5 rounded-full ${ss.dot}`}/><span className="text-sm font-bold" style={{color:ss.color}}>{ss.label}</span></div>
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function VehicleProfilePage() {
             ].map(s=>(
               <div key={s.l} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2.5 text-center">
                 <div className="text-sm font-black" style={{color:s.c}}>{s.v}</div>
-                <div className="text-[8px] text-slate-400 mt-0.5">{s.l}</div>
+                <div className="text-sm text-slate-400 mt-0.5">{s.l}</div>
               </div>
             ))}
           </div>
@@ -72,7 +72,7 @@ export default function VehicleProfilePage() {
         {/* Tabs */}
         <div className="flex gap-1 overflow-x-auto flex-nowrap pb-1">
           {TABS.map(t=>(
-            <button key={t} onClick={()=>setTab(t)} className="shrink-0 px-3 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer whitespace-nowrap" style={{background:tab===t?'#003DA5':'transparent',color:tab===t?'white':'#64748B',borderColor:tab===t?'#003DA5':'rgba(148,163,184,0.30)'}}>
+            <button key={t} onClick={()=>setTab(t)} className="shrink-0 px-3 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer whitespace-nowrap" style={{background:tab===t?'#003DA5':'transparent',color:tab===t?'white':'#64748B',borderColor:tab===t?'#003DA5':'rgba(148,163,184,0.30)'}}>
               {t}
             </button>
           ))}
@@ -97,8 +97,8 @@ export default function VehicleProfilePage() {
               {l:'Taximètre',        v:det?.taximeterId??'Non installé'},
             ].map(r=>(
               <div key={r.l} className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-                <span className="text-[10px] text-slate-500">{r.l}</span>
-                <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{r.v}</span>
+                <span className="text-sm text-slate-500">{r.l}</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{r.v}</span>
               </div>
             ))}
           </div>
@@ -111,13 +111,13 @@ export default function VehicleProfilePage() {
                 <div className="w-10 h-10 rounded-xl bg-qc-blue flex items-center justify-center text-sm font-black text-white">{drv.name.split(' ').map((n:string)=>n[0]).join('')}</div>
                 <div>
                   <div className="text-sm font-bold text-slate-800 dark:text-white">{drv.name}</div>
-                  <div className="text-[9px] font-mono text-slate-400">{drv.id} · {drv.relation}</div>
+                  <div className="text-sm font-mono text-slate-400">{drv.id} · {drv.relation}</div>
                 </div>
               </div>
-              <Link href={`/drivers/${drv.id}`} className="block text-center text-[10px] font-bold text-qc-blue hover:underline">→ Voir profil chauffeur complet</Link>
+              <Link href={`/drivers/${drv.id}`} className="block text-center text-sm font-bold text-qc-blue hover:underline">→ Voir profil chauffeur complet</Link>
             </div>
           ):(
-            <div className="bg-amber-50 dark:bg-amber-500/8 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-4 text-center text-[10px] text-amber-700 dark:text-amber-400 font-bold">
+            <div className="bg-amber-50 dark:bg-amber-500/8 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-4 text-center text-sm text-amber-700 dark:text-amber-400 font-bold">
               ⚠️ Aucun chauffeur assigné — <button className="text-qc-blue cursor-pointer hover:underline">Assigner un chauffeur</button>
             </div>
           )
@@ -130,14 +130,14 @@ export default function VehicleProfilePage() {
               return (
                 <div key={doc.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">📄 {doc.label}</span>
-                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:dsc.color,background:`${dsc.color}18`}}>{dsc.label}</span>
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">📄 {doc.label}</span>
+                    <span className="text-sm px-1.5 py-0.5 rounded-full font-bold" style={{color:dsc.color,background:`${dsc.color}18`}}>{dsc.label}</span>
                   </div>
-                  <div className="text-[9px] text-slate-400">{doc.number} · {doc.expires?`Expire: ${fmtDate(doc.expires)}`:'Pas d\'expiration'}</div>
-                  {doc.note&&<div className="text-[9px] text-amber-600 dark:text-amber-400 italic mt-0.5">{doc.note}</div>}
+                  <div className="text-sm text-slate-400">{doc.number} · {doc.expires?`Expire: ${fmtDate(doc.expires)}`:'Pas d\'expiration'}</div>
+                  {doc.note&&<div className="text-sm text-amber-600 dark:text-amber-400 italic mt-0.5">{doc.note}</div>}
                 </div>
               )
-            }):<div className="text-center py-6 text-[10px] text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl">Aucun document enregistré</div>}
+            }):<div className="text-center py-6 text-sm text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl">Aucun document enregistré</div>}
           </div>
         )}
 
@@ -147,12 +147,12 @@ export default function VehicleProfilePage() {
               <div key={a.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm flex items-center gap-3">
                 <span className="text-xl">🚕</span>
                 <div className="flex-1">
-                  <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{a.origin} → {a.dest}</div>
-                  <div className="text-[9px] text-slate-400">{fmtDt(a.at)} · {a.dist}km · {a.dur}min</div>
+                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{a.origin} → {a.dest}</div>
+                  <div className="text-sm text-slate-400">{fmtDt(a.at)} · {a.dist}km · {a.dur}min</div>
                 </div>
                 <div className="text-sm font-black text-green-600 dark:text-green-400 shrink-0">{money2(a.fare)}</div>
               </div>
-            )):<div className="text-center py-6 text-[10px] text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl">Aucune activité récente</div>}
+            )):<div className="text-center py-6 text-sm text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl">Aucune activité récente</div>}
           </div>
         )}
 
@@ -167,12 +167,12 @@ export default function VehicleProfilePage() {
                 {l:'Dernière vue',  v:det?.lastSync?fmtDt(det.lastSync):'—'},
               ].map(r=>(
                 <div key={r.l} className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-                  <span className="text-[10px] text-slate-500">{r.l}</span>
-                  <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{r.v}</span>
+                  <span className="text-sm text-slate-500">{r.l}</span>
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{r.v}</span>
                 </div>
               ))}
             </div>
-            <div className="bg-blue-50 dark:bg-blue-500/8 border border-blue-200 dark:border-blue-500/20 rounded-2xl p-3 text-[9px] text-blue-700 dark:text-blue-400 font-bold">
+            <div className="bg-blue-50 dark:bg-blue-500/8 border border-blue-200 dark:border-blue-500/20 rounded-2xl p-3 text-sm text-blue-700 dark:text-blue-400 font-bold">
               🚕 Chaîne: Véhicule → Taximètre → Session → Course → Transaction → Revenue Ledger · PILOTE
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function VehicleProfilePage() {
               </div>
               <div>
                 <div className="text-sm font-bold text-slate-800 dark:text-white">Conformité véhicule · PILOTE</div>
-                <div className="text-[9px] text-slate-400 mt-1">Documents · Inspection · Assurance · Immatriculation</div>
+                <div className="text-sm text-slate-400 mt-1">Documents · Inspection · Assurance · Immatriculation</div>
               </div>
             </div>
           </div>
@@ -200,12 +200,12 @@ export default function VehicleProfilePage() {
           <div className="space-y-2">
             {(det?.history??[]).map((h,i)=>(
               <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 shadow-sm flex items-start gap-3">
-                <div className="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-[10px] shrink-0">🚗</div>
+                <div className="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-sm shrink-0">🚗</div>
                 <div className="flex-1">
-                  <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{h.action}</div>
-                  <div className="text-[9px] text-slate-400">{h.note}</div>
+                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{h.action}</div>
+                  <div className="text-sm text-slate-400">{h.note}</div>
                 </div>
-                <div className="text-[8px] font-mono text-slate-400 shrink-0">{fmtDt(h.at)}</div>
+                <div className="text-sm font-mono text-slate-400 shrink-0">{fmtDt(h.at)}</div>
               </div>
             ))}
           </div>

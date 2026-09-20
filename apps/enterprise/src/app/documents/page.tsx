@@ -43,11 +43,11 @@ export default function DocumentsPage() {
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Documents</h1>
             <p className="text-sm text-slate-500 mt-1">Coffre documentaire · Validation · Expiration · Synchronisation</p>
           </div>
-          <button onClick={()=>setShowUpload(!showUpload)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold bg-qc-blue text-white cursor-pointer hover:bg-blue-700 shrink-0">
+          <button onClick={()=>setShowUpload(!showUpload)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold bg-qc-blue text-white cursor-pointer hover:bg-blue-700 shrink-0">
             <Upload size={12}/> Soumettre
           </button>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT}</div>
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT}</div>
 
         {/* Upload DEMO */}
         {showUpload&&(
@@ -55,8 +55,8 @@ export default function DocumentsPage() {
             <div className="text-sm font-bold text-slate-800 dark:text-white mb-3">Soumettre un document (DEMO)</div>
             <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-8 text-center mb-3 hover:border-blue-300 transition-colors cursor-pointer">
               <Upload size={24} className="mx-auto text-slate-400 mb-2"/>
-              <div className="text-[10px] font-bold text-slate-500">Glisser-déposer ou cliquer pour sélectionner</div>
-              <div className="text-[9px] text-slate-400 mt-1">PDF, JPG, PNG · Max 10 MB · DEMO</div>
+              <div className="text-sm font-bold text-slate-500">Glisser-déposer ou cliquer pour sélectionner</div>
+              <div className="text-sm text-slate-400 mt-1">PDF, JPG, PNG · Max 10 MB · DEMO</div>
             </div>
             <div className="grid grid-cols-2 gap-2 mb-3">
               {['Type de document','Numéro document','Date émission','Date expiration'].map(f=>(
@@ -72,14 +72,14 @@ export default function DocumentsPage() {
               <button className="flex-1 py-2 rounded-xl text-xs font-bold bg-qc-blue text-white cursor-pointer hover:bg-blue-700">Soumettre · DEMO</button>
               <button onClick={()=>setShowUpload(false)} className="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer">Annuler</button>
             </div>
-            <div className="text-[8px] text-amber-600 dark:text-amber-400 text-center mt-2">PILOTE — Aucun document réel soumis</div>
+            <div className="text-sm text-amber-600 dark:text-amber-400 text-center mt-2">PILOTE — Aucun document réel soumis</div>
           </div>
         )}
 
         {/* Workflow */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 shadow-sm">
-          <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Workflow documentaire</div>
-          <div className="flex items-center gap-1 flex-wrap text-[8px] font-bold">
+          <div className="text-sm font-bold text-slate-400 uppercase mb-2">Workflow documentaire</div>
+          <div className="flex items-center gap-1 flex-wrap text-sm font-bold">
             {WORKFLOW.map((s,i)=>(
               <span key={i} className={['→','↕'].includes(s)?'text-slate-300 dark:text-slate-700':'px-2 py-1 rounded-lg'} style={!['→','↕'].includes(s)?{background:'#EEF3FB',color:'#003DA5'}:{}}>{s}</span>
             ))}
@@ -97,7 +97,7 @@ export default function DocumentsPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-xl p-2.5 text-center`}>
               <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -112,12 +112,12 @@ export default function DocumentsPage() {
           </div>
           <div className="flex gap-1.5 flex-wrap">
             {[{v:'ALL',l:'Tous'},{v:'APPROVED',l:'Valides'},{v:'EXPIRING',l:'Expirants'},{v:'EXPIRED',l:'Expirés'},{v:'PENDING',l:'En attente'}].map(f=>(
-              <button key={f.v} onClick={()=>setFilter(f.v)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:filter===f.v?'#003DA5':'transparent',color:filter===f.v?'white':'#64748B',borderColor:filter===f.v?'#003DA5':'rgba(148,163,184,0.30)'}}>
+              <button key={f.v} onClick={()=>setFilter(f.v)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:filter===f.v?'#003DA5':'transparent',color:filter===f.v?'white':'#64748B',borderColor:filter===f.v?'#003DA5':'rgba(148,163,184,0.30)'}}>
                 {f.l}
               </button>
             ))}
             {['ALL','ENTERPRISE','DRIVER','VEHICLE'].map(t=>(
-              <button key={t} onClick={()=>setTypeF(t)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:typeF===t?'#7C3AED':'transparent',color:typeF===t?'white':'#64748B',borderColor:typeF===t?'#7C3AED':'rgba(148,163,184,0.30)'}}>
+              <button key={t} onClick={()=>setTypeF(t)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:typeF===t?'#7C3AED':'transparent',color:typeF===t?'white':'#64748B',borderColor:typeF===t?'#7C3AED':'rgba(148,163,184,0.30)'}}>
                 {t==='ALL'?'Tous types':OWNER_TYPE_LABELS[t]??t}
               </button>
             ))}
@@ -128,7 +128,7 @@ export default function DocumentsPage() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <span className="text-xs font-bold text-slate-800 dark:text-white">{filtered.length} document(s)</span>
-            <span className="text-[9px] text-slate-400">Versioning · Historique préservé</span>
+            <span className="text-sm text-slate-400">Versioning · Historique préservé</span>
           </div>
           {filtered.map(doc=>{
             const dsc = DOC_STATUS[doc.status]!
@@ -142,22 +142,22 @@ export default function DocumentsPage() {
                 <span className="text-xl shrink-0">{DOC_TYPE_ICONS[doc.type]??'📄'}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{doc.label}</span>
-                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:dsc.color,background:`${dsc.color}18`}}>{dsc.label}</span>
-                    <span className="text-[7px] text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-1.5 py-0.5 rounded">{OWNER_TYPE_LABELS[doc.ownerType]}</span>
-                    {doc.version>1&&<span className="text-[7px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">V{doc.version}</span>}
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{doc.label}</span>
+                    <span className="text-sm px-1.5 py-0.5 rounded-full font-bold" style={{color:dsc.color,background:`${dsc.color}18`}}>{dsc.label}</span>
+                    <span className="text-xs text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-1.5 py-0.5 rounded">{OWNER_TYPE_LABELS[doc.ownerType]}</span>
+                    {doc.version>1&&<span className="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">V{doc.version}</span>}
                   </div>
-                  <div className="text-[9px] font-mono text-slate-400 mb-0.5">{doc.id} · {doc.number} · {owner}</div>
-                  <div className="text-[9px] text-slate-400">
+                  <div className="text-sm font-mono text-slate-400 mb-0.5">{doc.id} · {doc.number} · {owner}</div>
+                  <div className="text-sm text-slate-400">
                     Émis: {fmtDate(doc.issued)}{doc.expires?` · Expire: ${fmtDate(doc.expires)}`:' · Pas d\'expiration'}
                   </div>
-                  {doc.note&&<div className="text-[9px] text-amber-600 dark:text-amber-400 italic mt-0.5">{doc.note}</div>}
-                  {doc.rejectionReason&&<div className="text-[9px] text-red-500 mt-0.5">Motif refus: {doc.rejectionReason}</div>}
-                  {doc.verifiedAt&&<div className="text-[9px] text-slate-400 mt-0.5">Vérifié: {fmtDt(doc.verifiedAt)} par {doc.verifiedBy}</div>}
+                  {doc.note&&<div className="text-sm text-amber-600 dark:text-amber-400 italic mt-0.5">{doc.note}</div>}
+                  {doc.rejectionReason&&<div className="text-sm text-red-500 mt-0.5">Motif refus: {doc.rejectionReason}</div>}
+                  {doc.verifiedAt&&<div className="text-sm text-slate-400 mt-0.5">Vérifié: {fmtDt(doc.verifiedAt)} par {doc.verifiedBy}</div>}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <div className={`w-1.5 h-1.5 rounded-full ${ss.dot}`}/>
-                  <span className="text-[8px]" style={{color:ss.color}}>{ss.label}</span>
+                  <span className="text-sm" style={{color:ss.color}}>{ss.label}</span>
                 </div>
               </div>
             )
@@ -174,7 +174,7 @@ export default function DocumentsPage() {
                             d.ownerType==='VEHICLE'?ENT_VEHICLES.find(v=>v.id===d.ownerId)?.id:
                             'Entreprise'
               return (
-                <div key={d.id} className="py-1.5 border-b border-red-100 dark:border-red-500/10 last:border-0 text-[10px]">
+                <div key={d.id} className="py-1.5 border-b border-red-100 dark:border-red-500/10 last:border-0 text-sm">
                   <span className="font-bold" style={{color:dsc.color}}>{dsc.label}</span> · <span className="text-slate-700 dark:text-slate-200">{d.label}</span> · <span className="text-slate-400">{owner}</span>
                   {d.expires&&<span className="text-red-500 ml-2">Expire: {fmtDate(d.expires)}</span>}
                 </div>

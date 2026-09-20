@@ -43,20 +43,20 @@ export default function ControlCenterPage() {
                 </div>
               </div>
               <div className="text-white font-black text-sm">Enterprise Control Center</div>
-              <div className="text-[9px] mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>QUÉBEC · {CURRENT_ENT.id} · {PILOT}</div>
+              <div className="text-sm mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>QUÉBEC · {CURRENT_ENT.id} · {PILOT}</div>
             </div>
             <div className="flex gap-2 shrink-0 flex-wrap justify-end">
               {unreadN>0&&<div className="bg-red-500/20 border border-red-500/30 rounded-xl px-2.5 py-2 text-center">
                 <div className="text-lg font-black text-red-400">{unreadN}</div>
-                <div className="text-[7px] text-red-400">alertes</div>
+                <div className="text-xs text-red-400">alertes</div>
               </div>}
               {newGovMsg>0&&<div className="bg-blue-500/20 border border-blue-500/30 rounded-xl px-2.5 py-2 text-center">
                 <div className="text-lg font-black text-blue-400">{newGovMsg}</div>
-                <div className="text-[7px] text-blue-400">msg gov</div>
+                <div className="text-xs text-blue-400">msg gov</div>
               </div>}
               {critAnom>0&&<div className="bg-amber-500/20 border border-amber-500/30 rounded-xl px-2.5 py-2 text-center">
                 <div className="text-lg font-black text-amber-400">{critAnom}</div>
-                <div className="text-[7px] text-amber-400">critiques</div>
+                <div className="text-xs text-amber-400">critiques</div>
               </div>}
             </div>
           </div>
@@ -64,12 +64,12 @@ export default function ControlCenterPage() {
           {/* Pipeline */}
           <div className="mt-3 pt-3 flex items-center gap-1 flex-wrap" style={{borderTop:'1px solid rgba(255,255,255,0.1)'}}>
             {PIPELINE.map((s,i)=>(
-              <span key={i} className={s==='→'?'text-[10px] font-bold':'text-[8px] font-bold px-2 py-0.5 rounded-lg'} style={s==='→'?{color:'rgba(255,255,255,0.25)'}:{background:'rgba(255,255,255,0.12)',color:'white'}}>{s}</span>
+              <span key={i} className={s==='→'?'text-sm font-bold':'text-sm font-bold px-2 py-0.5 rounded-lg'} style={s==='→'?{color:'rgba(255,255,255,0.25)'}:{background:'rgba(255,255,255,0.12)',color:'white'}}>{s}</span>
             ))}
           </div>
         </div>
 
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           ⚠️ {PILOT} · enterprise_id: {CURRENT_ENT.id} · DONNÉES SYNTHÉTIQUES · AUCUNE TRANSMISSION GOUVERNEMENTALE RÉELLE
         </div>
 
@@ -86,7 +86,7 @@ export default function ControlCenterPage() {
             <Link key={s.l} href={s.href} className={`${s.bg} rounded-xl p-3 text-center hover:opacity-80 transition-opacity border border-white dark:border-transparent`}>
               <div className="text-xl mb-0.5">{s.icon}</div>
               <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[8px] text-slate-500 mt-0.5 leading-tight">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5 leading-tight">{s.l}</div>
             </Link>
           ))}
         </div>
@@ -101,7 +101,7 @@ export default function ControlCenterPage() {
           ].map(s=>(
             <Link key={s.l} href={s.href} className={`${s.bg} rounded-2xl p-4 hover:opacity-90 transition-opacity`}>
               <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[9px] text-slate-400 mt-1">{s.l}</div>
+              <div className="text-sm text-slate-400 mt-1">{s.l}</div>
             </Link>
           ))}
         </div>
@@ -118,7 +118,7 @@ export default function ControlCenterPage() {
                   <div key={m.m} className="flex-1 rounded-t-sm" style={{height:`${(m.gross/maxMonth)*100}%`,background:'#000'}}/>
                 ))}
               </div>
-              <Link href="/analytics" className="mt-2 block text-center text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Analytics complet</Link>
+              <Link href="/analytics" className="mt-2 block text-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Analytics complet</Link>
             </div>
 
             {/* Départements snapshot */}
@@ -128,7 +128,7 @@ export default function ControlCenterPage() {
                 const pct = Math.round(d.gross/totalGross*100)
                 return (
                   <div key={d.id} className="mb-2">
-                    <div className="flex justify-between text-[9px] mb-0.5">
+                    <div className="flex justify-between text-sm mb-0.5">
                       <span className="font-bold text-slate-700 dark:text-slate-300">{d.emoji} {d.name}</span>
                       <span className="font-black" style={{color:d.color}}>{pct}%</span>
                     </div>
@@ -138,7 +138,7 @@ export default function ControlCenterPage() {
                   </div>
                 )
               })}
-              <Link href="/departments" className="mt-1 block text-center text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Tous les départements</Link>
+              <Link href="/departments" className="mt-1 block text-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Tous les départements</Link>
             </div>
           </div>
 
@@ -150,17 +150,17 @@ export default function ControlCenterPage() {
                 <div key={d.id} className="flex items-center gap-2 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${d.status==='ACCEPTED'?'bg-green-500':d.status==='DRAFT'?'bg-amber-400':'bg-blue-400'}`}/>
                   <div className="flex-1">
-                    <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{d.period}</div>
-                    <div className="text-[9px] text-slate-400">{money2(d.tps+d.tvq)} TPS+TVQ · DEMO</div>
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{d.period}</div>
+                    <div className="text-sm text-slate-400">{money2(d.tps+d.tvq)} TPS+TVQ · DEMO</div>
                   </div>
-                  <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${d.status==='ACCEPTED'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':d.status==='DRAFT'?'text-amber-600 bg-amber-50':'text-blue-600 bg-blue-50'}`}>
+                  <span className={`text-sm font-bold px-1.5 py-0.5 rounded-full shrink-0 ${d.status==='ACCEPTED'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':d.status==='DRAFT'?'text-amber-600 bg-amber-50':'text-blue-600 bg-blue-50'}`}>
                     {d.status==='ACCEPTED'?'Acceptée':d.status==='DRAFT'?'Brouillon':'Soumise'}
                   </span>
                 </div>
               ))}
               <div className="flex gap-2 mt-2">
-                <Link href="/declarations" className="flex-1 text-center text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Déclarations</Link>
-                <Link href="/fiscal" className="flex-1 text-center text-[9px] font-bold text-purple-600 dark:text-purple-400 hover:underline">→ TPS/TVQ</Link>
+                <Link href="/declarations" className="flex-1 text-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Déclarations</Link>
+                <Link href="/fiscal" className="flex-1 text-center text-sm font-bold text-purple-600 dark:text-purple-400 hover:underline">→ TPS/TVQ</Link>
               </div>
             </div>
 
@@ -171,13 +171,13 @@ export default function ControlCenterPage() {
                 <div key={p.id} className="flex items-center gap-2 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-base shrink-0">{p.status==='PAID'?'✅':'⏳'}</span>
                   <div className="flex-1">
-                    <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{p.period}</div>
-                    <div className="text-[9px] text-slate-400">{money2((p as any).amount??(p as any).due??0)} · DEMO</div>
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{p.period}</div>
+                    <div className="text-sm text-slate-400">{money2((p as any).amount??(p as any).due??0)} · DEMO</div>
                   </div>
-                  <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${p.status==='PAID'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-amber-600 bg-amber-50'}`}>{p.status==='PAID'?'Payé':'À venir'}</span>
+                  <span className={`text-sm font-bold px-1.5 py-0.5 rounded-full ${p.status==='PAID'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-amber-600 bg-amber-50'}`}>{p.status==='PAID'?'Payé':'À venir'}</span>
                 </div>
               ))}
-              <Link href="/payments" className="mt-2 block text-center text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Paiements</Link>
+              <Link href="/payments" className="mt-2 block text-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Paiements</Link>
             </div>
           </div>
 
@@ -196,21 +196,21 @@ export default function ControlCenterPage() {
                 return (
                   <div key={c.l} className="flex items-center gap-2 py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <span className="text-base shrink-0">{c.icon}</span>
-                    <span className="text-[9px] flex-1 font-bold text-slate-700 dark:text-slate-300">{c.l}</span>
+                    <span className="text-sm flex-1 font-bold text-slate-700 dark:text-slate-300">{c.l}</span>
                     <div className="flex items-center gap-1 shrink-0">
                       <div className={`w-1.5 h-1.5 rounded-full ${ok?'bg-green-500':'bg-purple-400'}`}/>
-                      <span className="text-[8px] font-bold" style={{color:ok?'#059669':'#7C3AED'}}>{ok?'OK':c.status==='PLANNED'?'Planifié':'Erreur'}</span>
+                      <span className="text-sm font-bold" style={{color:ok?'#059669':'#7C3AED'}}>{ok?'OK':c.status==='PLANNED'?'Planifié':'Erreur'}</span>
                     </div>
                   </div>
                 )
               })}
-              {whFailed>0&&<div className="mt-2 text-[9px] text-red-500 font-bold">⚠️ {whFailed} webhook(s) échoué(s)</div>}
-              <Link href="/integrations" className="mt-2 block text-center text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:underline">→ API & Intégrations</Link>
+              {whFailed>0&&<div className="mt-2 text-sm text-red-500 font-bold">⚠️ {whFailed} webhook(s) échoué(s)</div>}
+              <Link href="/integrations" className="mt-2 block text-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">→ API & Intégrations</Link>
             </div>
 
             {/* Gouvernement */}
             <div className="rounded-2xl p-4 shadow-sm" style={{background:'#000'}}>
-              <div className="text-[9px] font-bold mb-2" style={{color:'rgba(255,255,255,0.5)'}}>🏛️ TAXIMETER.GOV · PILOTE</div>
+              <div className="text-sm font-bold mb-2" style={{color:'rgba(255,255,255,0.5)'}}>🏛️ TAXIMETER.GOV · PILOTE</div>
               {[
                 {l:'Messages gouvernementaux', v:GOV_MESSAGES.length,   c:'rgba(255,255,255,0.9)'},
                 {l:'Nouveaux',                  v:newGovMsg,             c:'#DC2626'},
@@ -218,11 +218,11 @@ export default function ControlCenterPage() {
                 {l:'Statut connexion',          v:'SIMULATION',          c:'#B45309'},
               ].map(r=>(
                 <div key={r.l} className="flex justify-between py-1" style={{borderBottom:'1px solid rgba(255,255,255,0.08)'}}>
-                  <span className="text-[9px]" style={{color:'rgba(255,255,255,0.5)'}}>{r.l}</span>
-                  <span className="text-[9px] font-black" style={{color:r.c}}>{r.v}</span>
+                  <span className="text-sm" style={{color:'rgba(255,255,255,0.5)'}}>{r.l}</span>
+                  <span className="text-sm font-black" style={{color:r.c}}>{r.v}</span>
                 </div>
               ))}
-              <Link href="/government" className="mt-3 block text-center py-1.5 rounded-xl text-[9px] font-bold bg-white/10 hover:bg-white/20 text-white transition-colors">→ Centre gouvernemental</Link>
+              <Link href="/government" className="mt-3 block text-center py-1.5 rounded-xl text-sm font-bold bg-white/10 hover:bg-white/20 text-white transition-colors">→ Centre gouvernemental</Link>
             </div>
 
             {/* Sécurité & Sessions */}
@@ -235,13 +235,13 @@ export default function ControlCenterPage() {
                 {l:'Audit — aujourd\'hui',v:AUDIT_EVENTS.filter(e=>e.at.startsWith('2026-09-18')).length,c:'#003DA5'},
               ].map(r=>(
                 <div key={r.l} className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-                  <span className="text-[9px] text-slate-500">{r.l}</span>
-                  <span className="text-[9px] font-black" style={{color:r.c}}>{r.v}</span>
+                  <span className="text-sm text-slate-500">{r.l}</span>
+                  <span className="text-sm font-black" style={{color:r.c}}>{r.v}</span>
                 </div>
               ))}
               <div className="flex gap-2 mt-2">
-                <Link href="/security" className="flex-1 text-center text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Sécurité</Link>
-                <Link href="/audit" className="flex-1 text-center text-[9px] font-bold text-slate-600 dark:text-slate-400 hover:underline">→ Audit</Link>
+                <Link href="/security" className="flex-1 text-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Sécurité</Link>
+                <Link href="/audit" className="flex-1 text-center text-sm font-bold text-slate-600 dark:text-slate-400 hover:underline">→ Audit</Link>
               </div>
             </div>
           </div>
@@ -253,38 +253,38 @@ export default function ControlCenterPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <div className="text-xs font-bold text-slate-800 dark:text-white">Intelligence & Anomalies</div>
-              <span className="text-[9px] font-bold text-red-500">{openAnom} ouvertes</span>
+              <span className="text-sm font-bold text-red-500">{openAnom} ouvertes</span>
             </div>
             {ANOMALIES.slice(0,4).map(a=>(
               <div key={a.id} className="flex items-start gap-2 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                 <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${a.level==='CRITIQUE'?'bg-red-500':a.level==='IMPORTANT'?'bg-amber-400':a.level==='ATTENTION'?'bg-purple-400':'bg-blue-400'}`}/>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[9px] font-bold text-slate-800 dark:text-slate-200 truncate">{a.id}</div>
-                  <div className="text-[8px] text-slate-400 leading-tight">{a.desc.slice(0,80)}…</div>
+                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{a.id}</div>
+                  <div className="text-sm text-slate-400 leading-tight">{a.desc.slice(0,80)}…</div>
                 </div>
-                <span className={`text-[7px] font-bold shrink-0 px-1 py-0.5 rounded ${a.status!=='RÉSOLUE'?'text-red-500 bg-red-50':'text-green-600 bg-green-50'}`}>{a.status!=='RÉSOLUE'?'⚠️':'✅'}</span>
+                <span className={`text-xs font-bold shrink-0 px-1 py-0.5 rounded ${a.status!=='RÉSOLUE'?'text-red-500 bg-red-50':'text-green-600 bg-green-50'}`}>{a.status!=='RÉSOLUE'?'⚠️':'✅'}</span>
               </div>
             ))}
-            <Link href="/intelligence" className="mt-2 block text-center text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Intelligence complète</Link>
+            <Link href="/intelligence" className="mt-2 block text-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Intelligence complète</Link>
           </div>
 
           {/* Notifications récentes */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <div className="text-xs font-bold text-slate-800 dark:text-white">Notifications récentes</div>
-              {unreadN>0&&<span className="text-[9px] font-bold text-red-500">{unreadN} non lues</span>}
+              {unreadN>0&&<span className="text-sm font-bold text-red-500">{unreadN} non lues</span>}
             </div>
             {ALL_NOTIFICATIONS.filter(n=>!n.read).slice(0,5).map(n=>(
               <div key={n.id} className="flex items-start gap-2 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                 <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${n.priority==='CRITICAL'||n.priority==='HIGH'?'bg-red-500':n.priority==='MEDIUM'?'bg-amber-400':'bg-blue-400'}`}/>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[9px] font-bold text-slate-800 dark:text-slate-200 truncate">{n.title}</div>
-                  <div className="text-[8px] text-slate-400 truncate">{n.source} · {n.to}</div>
+                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{n.title}</div>
+                  <div className="text-sm text-slate-400 truncate">{n.source} · {n.to}</div>
                 </div>
-                <span className="text-[7px] text-slate-400 shrink-0">{n.at.split('T')[0]}</span>
+                <span className="text-xs text-slate-400 shrink-0">{n.at.split('T')[0]}</span>
               </div>
             ))}
-            <Link href="/notifications" className="mt-2 block text-center text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Toutes les notifications</Link>
+            <Link href="/notifications" className="mt-2 block text-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Toutes les notifications</Link>
           </div>
         </div>
 
@@ -324,13 +324,13 @@ export default function ControlCenterPage() {
             ].map(a=>(
               <Link key={a.l} href={a.href} className="bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl p-2.5 text-center transition-colors group">
                 <div className="text-lg mb-0.5 group-hover:scale-110 transition-transform">{a.icon}</div>
-                <div className="text-[7px] font-bold text-slate-600 dark:text-slate-400 leading-tight">{a.l}</div>
+                <div className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-tight">{a.l}</div>
               </Link>
             ))}
           </div>
         </div>
 
-        <div className="text-[8px] text-slate-400 text-center">
+        <div className="text-sm text-slate-400 text-center">
           ⚠️ Enterprise ID: {CURRENT_ENT.id} · Toutes les données appartiennent exclusivement au compte Uber Québec DEMO · {CURRENT_ENT.revenusNote}
         </div>
       </div>

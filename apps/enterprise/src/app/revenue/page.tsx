@@ -32,12 +32,12 @@ export default function RevenuePage() {
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">Revenus</h1>
           <p className="text-sm text-slate-500 mt-1">Revenue Ledger · Décomposition · Chauffeurs · Fournisseurs · PILOTE</p>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · ESTIMATION · Aucune transmission officielle</div>
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · ESTIMATION · Aucune transmission officielle</div>
 
         {/* Filtres période */}
         <div className="flex gap-1.5">
           {['Aujourd\'hui','Q3','YTD'].map(p=>(
-            <button key={p} onClick={()=>setPeriod(p==='Aujourd\'hui'?'TODAY':p)} className="px-3 py-2 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:period===(p==='Aujourd\'hui'?'TODAY':p)?'#003DA5':'transparent',color:period===(p==='Aujourd\'hui'?'TODAY':p)?'white':'#64748B',borderColor:period===(p==='Aujourd\'hui'?'TODAY':p)?'#003DA5':'rgba(148,163,184,0.30)'}}>
+            <button key={p} onClick={()=>setPeriod(p==='Aujourd\'hui'?'TODAY':p)} className="px-3 py-2 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:period===(p==='Aujourd\'hui'?'TODAY':p)?'#003DA5':'transparent',color:period===(p==='Aujourd\'hui'?'TODAY':p)?'white':'#64748B',borderColor:period===(p==='Aujourd\'hui'?'TODAY':p)?'#003DA5':'rgba(148,163,184,0.30)'}}>
               {p}
             </button>
           ))}
@@ -53,7 +53,7 @@ export default function RevenuePage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-2xl p-4 border border-white dark:border-transparent shadow-sm`}>
               <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[9px] text-slate-400 mt-1">{s.l}</div>
+              <div className="text-sm text-slate-400 mt-1">{s.l}</div>
             </div>
           ))}
         </div>
@@ -75,8 +75,8 @@ export default function RevenuePage() {
             ].map(r=>(
               <div key={r.l} className={`flex justify-between items-start py-2.5 border-b ${r.border} ${r.bold?'bg-slate-50 dark:bg-slate-800 px-3 rounded-xl -mx-3':''}`}>
                 <div>
-                  <div className={`text-[10px] ${r.bold?'font-black':'font-semibold'} text-slate-800 dark:text-slate-200`}>{r.l}</div>
-                  <div className="text-[8px] text-slate-400 italic">{r.note}</div>
+                  <div className={`text-sm ${r.bold?'font-black':'font-semibold'} text-slate-800 dark:text-slate-200`}>{r.l}</div>
+                  <div className="text-sm text-slate-400 italic">{r.note}</div>
                 </div>
                 <div className={`text-sm font-black ${r.c} shrink-0 ml-2`}>{r.v}</div>
               </div>
@@ -88,13 +88,13 @@ export default function RevenuePage() {
           {/* Graphique mensuel */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
             <div className="text-sm font-bold text-slate-800 dark:text-white mb-1">Évolution mensuelle</div>
-            <div className="text-[9px] text-slate-400 mb-4">Avr–Sep 2026 · PILOTE</div>
+            <div className="text-sm text-slate-400 mb-4">Avr–Sep 2026 · PILOTE</div>
             <div className="flex items-end gap-2 h-24">
               {MONTHLY.map(m=>(
                 <div key={m.m} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="text-[8px] font-bold text-green-600 dark:text-green-400">{(m.gross/1000).toFixed(0)}k</div>
+                  <div className="text-sm font-bold text-green-600 dark:text-green-400">{(m.gross/1000).toFixed(0)}k</div>
                   <div className="w-full rounded-t-lg" style={{height:`${(m.gross/maxMonth)*100}%`,background:'#003DA5',opacity:0.8}}/>
-                  <div className="text-[8px] text-slate-400">{m.m}</div>
+                  <div className="text-sm text-slate-400">{m.m}</div>
                 </div>
               ))}
             </div>
@@ -106,13 +106,13 @@ export default function RevenuePage() {
             {byProvider.map(p=>(
               <div key={p.provider} className="mb-3">
                 <div className="flex justify-between mb-1">
-                  <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">{p.provider}</span>
-                  <span className="text-[9px] font-black text-green-600 dark:text-green-400">{money(p.gross)}</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{p.provider}</span>
+                  <span className="text-sm font-black text-green-600 dark:text-green-400">{money(p.gross)}</span>
                 </div>
                 <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full rounded-full bg-qc-blue" style={{width:`${(p.gross/maxPrv)*100}%`}}/>
                 </div>
-                <div className="text-[8px] text-slate-400 mt-0.5">{p.count} transaction(s)</div>
+                <div className="text-sm text-slate-400 mt-0.5">{p.count} transaction(s)</div>
               </div>
             ))}
           </div>
@@ -124,8 +124,8 @@ export default function RevenuePage() {
           {byDriver.map(d=>(
             <div key={d.id} className="mb-3 last:mb-0">
               <div className="flex justify-between mb-1">
-                <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">{d.name}</span>
-                <div className="flex gap-3 text-[9px]">
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{d.name}</span>
+                <div className="flex gap-3 text-sm">
                   <span className="text-blue-600 dark:text-blue-400">Chauffeur: {money(d.driverAmt)}</span>
                   <span className="font-black text-green-600 dark:text-green-400">Brut: {money(d.gross)}</span>
                 </div>
@@ -133,7 +133,7 @@ export default function RevenuePage() {
               <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div className="h-full rounded-full bg-qc-blue" style={{width:`${(d.gross/maxDrv)*100}%`}}/>
               </div>
-              <div className="text-[8px] text-slate-400 mt-0.5">{d.count} transaction(s)</div>
+              <div className="text-sm text-slate-400 mt-0.5">{d.count} transaction(s)</div>
             </div>
           ))}
         </div>

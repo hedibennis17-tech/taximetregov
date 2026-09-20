@@ -244,21 +244,21 @@ export default function SyncMonitorPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-white font-black text-base">🔄 Monitor de synchronisation — Phase 35</div>
-              <div className="text-[9px] mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>
+              <div className="text-sm mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>
                 Driver Gov ↔ Enterprise Gov ↔ Admin Gov · {CURRENT_ENT.id} · {PILOT}
               </div>
-              <div className="text-[8px] mt-1.5" style={{color:'rgba(255,255,255,0.3)'}}>
+              <div className="text-sm mt-1.5" style={{color:'rgba(255,255,255,0.3)'}}>
                 system_events + sync_queue + dead_letter_queue + provider_events + reconciliation_cases
               </div>
             </div>
             <div className="flex flex-col items-end gap-1.5 shrink-0">
               <div className="text-2xl font-black text-green-400">{rScore}%</div>
               <button onClick={()=>setLiveMode(p=>!p)}
-                className={`text-[8px] font-bold px-2.5 py-1 rounded-full cursor-pointer transition-all ${liveMode?'bg-green-500 text-white':'bg-white/10 text-white/60'}`}>
+                className={`text-sm font-bold px-2.5 py-1 rounded-full cursor-pointer transition-all ${liveMode?'bg-green-500 text-white':'bg-white/10 text-white/60'}`}>
                 {liveMode?'🔴 LIVE 10s':'▶ Mode Live'}
               </button>
               <button onClick={loadRealData} disabled={loading}
-                className="text-[8px] font-bold px-2.5 py-1 rounded-full bg-white/10 text-white/60 cursor-pointer hover:bg-white/20 disabled:opacity-40">
+                className="text-sm font-bold px-2.5 py-1 rounded-full bg-white/10 text-white/60 cursor-pointer hover:bg-white/20 disabled:opacity-40">
                 {loading?'…':'↻ Refresh'}
               </button>
             </div>
@@ -275,13 +275,13 @@ export default function SyncMonitorPage() {
             ].map(k=>(
               <div key={k.l} className="text-center">
                 <div className="text-lg font-black" style={{color:k.c}}>{k.v}</div>
-                <div className="text-[7px]" style={{color:'rgba(255,255,255,0.35)'}}>{k.l}</div>
+                <div className="text-xs" style={{color:'rgba(255,255,255,0.35)'}}>{k.l}</div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           ⚠️ {PILOT} · Données de démonstration · Dernière actualisation: {lastRefresh.toLocaleTimeString('fr-CA')}
         </div>
 
@@ -289,7 +289,7 @@ export default function SyncMonitorPage() {
         <div className="flex gap-1 flex-wrap">
           {([['overview','📊 Vue globale'],['events','⚡ Événements'],['scenario','🔗 Scénario E2E'],['idempotency','🔂 Idempotency'],['report','📋 Rapport']] as const).map(([id,label])=>(
             <button key={id} onClick={()=>setTab(id as TabId)}
-              className="px-3 py-1.5 rounded-xl text-[9px] font-bold cursor-pointer border transition-all"
+              className="px-3 py-1.5 rounded-xl text-sm font-bold cursor-pointer border transition-all"
               style={{background:tab===id?'#000':'white',color:tab===id?'white':'#64748B',borderColor:tab===id?'#000':'#e2e8f0'}}>
               {label}
             </button>
@@ -312,10 +312,10 @@ export default function SyncMonitorPage() {
                 <div key={r.flow} className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-base shrink-0">{r.status}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[9px] font-bold text-slate-700 dark:text-slate-300">{r.flow}</div>
-                    <div className="text-[8px] text-slate-400 font-mono truncate">{r.tables}</div>
+                    <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{r.flow}</div>
+                    <div className="text-sm text-slate-400 font-mono truncate">{r.tables}</div>
                   </div>
-                  <span className="text-[8px] font-bold text-blue-600 dark:text-blue-400 shrink-0">{r.latency}</span>
+                  <span className="text-sm font-bold text-blue-600 dark:text-blue-400 shrink-0">{r.latency}</span>
                 </div>
               ))}
             </div>
@@ -327,11 +327,11 @@ export default function SyncMonitorPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-base">{STATUS_ICON[q.sync_queue_status]??'❓'}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[9px] font-bold text-slate-700 dark:text-slate-300 truncate">{q.operation_type}</div>
-                      <div className="text-[8px] text-slate-400">{q.resource_type} · {q.resource_id} · tentatives: {q.attempt_count}/{q.max_attempts}</div>
-                      {q.error_code&&<div className="text-[8px] text-red-500">{q.error_code}: {q.error_detail?.slice(0,50)}</div>}
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{q.operation_type}</div>
+                      <div className="text-sm text-slate-400">{q.resource_type} · {q.resource_id} · tentatives: {q.attempt_count}/{q.max_attempts}</div>
+                      {q.error_code&&<div className="text-sm text-red-500">{q.error_code}: {q.error_detail?.slice(0,50)}</div>}
                     </div>
-                    <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full text-white shrink-0"
+                    <span className="text-sm font-bold px-1.5 py-0.5 rounded-full text-white shrink-0"
                       style={{background:STATUS_COLOR[q.sync_queue_status]??'#64748B'}}>
                       {q.sync_queue_status}
                     </span>
@@ -347,10 +347,10 @@ export default function SyncMonitorPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between" style={{borderTop:'3px solid #000'}}>
               <div className="text-xs font-black text-slate-800 dark:text-white">system_events — {events.length} événements</div>
-              <div className="text-[8px] text-slate-400">Source: Supabase · DEMO si non disponible</div>
+              <div className="text-sm text-slate-400">Source: Supabase · DEMO si non disponible</div>
             </div>
             <div className="divide-y divide-slate-100 dark:divide-slate-800 overflow-x-auto">
-              <table className="w-full text-[8px]">
+              <table className="w-full text-sm">
                 <thead className="bg-slate-50 dark:bg-slate-800">
                   <tr>
                     {['ID','Type','Source','Ressource','Latence','Statut'].map(h=>(
@@ -384,13 +384,13 @@ export default function SyncMonitorPage() {
         {/* ── SCÉNARIO E2E ── */}
         {tab==='scenario'&&(
           <div className="space-y-3">
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-2 text-[9px] text-slate-600 dark:text-slate-400">
+            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-2 text-sm text-slate-600 dark:text-slate-400">
               Scénario: <strong>Robert Simard</strong> · Uber Green · Course 26.50$ · 2026-09-20T08:15
             </div>
             {SCENARIO.map((s,i)=>(
               <div key={s.step} className="flex items-start gap-3">
                 <div className="flex flex-col items-center shrink-0">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[9px] font-black"
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-black"
                     style={{background:s.status==='SKIPPED'?'#64748B':s.status==='PROCESSED'?'#059669':'#B45309'}}>
                     {s.step}
                   </div>
@@ -398,12 +398,12 @@ export default function SyncMonitorPage() {
                 </div>
                 <div className={`flex-1 p-3 rounded-xl border ${s.status==='PROCESSED'?'bg-green-50 dark:bg-green-500/8 border-green-200 dark:border-green-500/20':s.status==='SKIPPED'?'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700':'bg-amber-50 dark:bg-amber-500/8 border-amber-200'}`}>
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[8px] font-bold px-1.5 py-0.5 rounded text-white" style={{background:s.status==='PROCESSED'?'#059669':s.status==='SKIPPED'?'#64748B':'#B45309'}}>{s.app}</span>
-                    <span className="text-[9px] font-black text-slate-800 dark:text-slate-200">{s.event}</span>
-                    <span className="text-[8px] font-mono text-slate-400 ml-auto">{s.t}</span>
+                    <span className="text-sm font-bold px-1.5 py-0.5 rounded text-white" style={{background:s.status==='PROCESSED'?'#059669':s.status==='SKIPPED'?'#64748B':'#B45309'}}>{s.app}</span>
+                    <span className="text-sm font-black text-slate-800 dark:text-slate-200">{s.event}</span>
+                    <span className="text-sm font-mono text-slate-400 ml-auto">{s.t}</span>
                   </div>
-                  <div className="text-[8px] font-mono text-slate-500 dark:text-slate-400 mb-0.5">{s.resource}</div>
-                  <div className="text-[9px] text-slate-600 dark:text-slate-400">{s.note}</div>
+                  <div className="text-sm font-mono text-slate-500 dark:text-slate-400 mb-0.5">{s.resource}</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">{s.note}</div>
                 </div>
               </div>
             ))}
@@ -425,9 +425,9 @@ export default function SyncMonitorPage() {
                 <div key={i} className="flex items-start gap-3 py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-base shrink-0 mt-0.5">✅</span>
                   <div className="flex-1">
-                    <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{t.test}</div>
-                    <div className="text-[9px] text-green-600 dark:text-green-400 font-bold">{t.result}</div>
-                    <div className="text-[8px] font-mono text-slate-400 mt-0.5">{t.how}</div>
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{t.test}</div>
+                    <div className="text-sm text-green-600 dark:text-green-400 font-bold">{t.result}</div>
+                    <div className="text-sm font-mono text-slate-400 mt-0.5">{t.how}</div>
                   </div>
                 </div>
               ))}
@@ -445,10 +445,10 @@ export default function SyncMonitorPage() {
                 <div key={i} className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-base">{t.status==='PASS'?'✅':'⚠️'}</span>
                   <div className="flex-1">
-                    <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{t.scenario}</div>
-                    <div className="text-[8px] text-slate-400 font-mono">{t.detail}</div>
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{t.scenario}</div>
+                    <div className="text-sm text-slate-400 font-mono">{t.detail}</div>
                   </div>
-                  <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full text-white shrink-0 ${t.status==='PASS'?'bg-green-600':'bg-amber-500'}`}>{t.status}</span>
+                  <span className={`text-sm font-bold px-1.5 py-0.5 rounded-full text-white shrink-0 ${t.status==='PASS'?'bg-green-600':'bg-amber-500'}`}>{t.status}</span>
                 </div>
               ))}
             </div>
@@ -464,22 +464,22 @@ export default function SyncMonitorPage() {
                 <div className="text-3xl font-black" style={{color:rScore>=80?'#059669':rScore>=60?'#B45309':'#DC2626'}}>{rScore}%</div>
                 <div>
                   <div className="text-xs font-black text-slate-800 dark:text-white">Rapport Phase 35 — Synchronisation</div>
-                  <div className="flex gap-3 text-[9px] mt-0.5">
+                  <div className="flex gap-3 text-sm mt-0.5">
                     <span className="text-green-600 font-bold">✅ {rPass} PASS</span>
                     <span className="text-amber-600 font-bold">⚠️ {rPartial} PARTIAL</span>
                     <span className="text-red-500 font-bold">❌ {rFail} FAIL</span>
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[9px]">
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 {REPORT.map(r=>(
                   <div key={r.label} className={`p-2.5 rounded-xl border ${r.status==='PASS'?'bg-green-50 dark:bg-green-500/8 border-green-200 dark:border-green-500/20':r.status==='FAIL'?'bg-red-50 border-red-200':'bg-amber-50 dark:bg-amber-500/8 border-amber-200 dark:border-amber-500/20'}`}>
                     <div className="flex items-start gap-1.5 mb-1">
                       <span className="shrink-0">{r.status==='PASS'?'✅':r.status==='FAIL'?'❌':'⚠️'}</span>
-                      <span className="font-bold text-slate-800 dark:text-slate-200 text-[8px] leading-tight">{r.label}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 text-sm leading-tight">{r.label}</span>
                     </div>
-                    <div className="font-mono text-[7px] text-slate-400 leading-tight">{r.detail.slice(0,80)}</div>
-                    {r.fix&&<div className="mt-1 text-[7px] text-blue-600 dark:text-blue-400 font-bold">🔧 {r.fix.slice(0,60)}</div>}
+                    <div className="font-mono text-xs text-slate-400 leading-tight">{r.detail.slice(0,80)}</div>
+                    {r.fix&&<div className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-bold">🔧 {r.fix.slice(0,60)}</div>}
                   </div>
                 ))}
               </div>
@@ -492,14 +492,14 @@ export default function SyncMonitorPage() {
                 <div key={i} className="flex items-start gap-2 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-base shrink-0">🔧</span>
                   <div className="flex-1">
-                    <div className="text-[9px] font-bold text-slate-700 dark:text-slate-300">{r.label}</div>
-                    <div className="text-[8px] text-blue-600 dark:text-blue-400">{r.fix}</div>
+                    <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{r.label}</div>
+                    <div className="text-sm text-blue-600 dark:text-blue-400">{r.fix}</div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="text-[8px] text-slate-400 text-center">{PILOT} · Rapport Phase 35 · {CURRENT_ENT.id}</div>
+            <div className="text-sm text-slate-400 text-center">{PILOT} · Rapport Phase 35 · {CURRENT_ENT.id}</div>
           </div>
         )}
       </div>

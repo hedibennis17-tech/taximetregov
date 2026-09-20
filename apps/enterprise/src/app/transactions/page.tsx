@@ -42,12 +42,12 @@ export default function TransactionsPage() {
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">Transactions</h1>
           <p className="text-sm text-slate-500 mt-1">Revenue Ledger · TPS/TVQ · Ajustements · Remboursements · Réconciliation</p>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · ESTIMATION · Aucune transmission officielle</div>
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · ESTIMATION · Aucune transmission officielle</div>
 
         {/* Chaîne financière */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
-          <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Décomposition d'une transaction</div>
-          <div className="flex items-center gap-1 flex-wrap text-[8px] font-bold">
+          <div className="text-sm font-bold text-slate-400 uppercase mb-2">Décomposition d'une transaction</div>
+          <div className="flex items-center gap-1 flex-wrap text-sm font-bold">
             {['BRUT','→','- FRAIS','→','+ POURBOIRE','→','- TPS','→','- TVQ','→','± AJUST.','→','- REMBOURS.','→','= CHAUFFEUR + ENTREPRISE'].map((s,i)=>(
               <span key={i} className={s==='→'?'text-slate-300 dark:text-slate-700':'px-1.5 py-0.5 rounded-lg'} style={s!=='→'?{background:'#EEF3FB',color:'#003DA5'}:{}}>{s}</span>
             ))}
@@ -64,7 +64,7 @@ export default function TransactionsPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center`}>
               <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[9px] text-slate-500 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -85,7 +85,7 @@ export default function TransactionsPage() {
             ].map(s=>(
               <div key={s.l} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2.5">
                 <div className={`text-sm font-black ${s.c}`}>{s.v}</div>
-                <div className="text-[8px] text-slate-400 mt-0.5">{s.l}</div>
+                <div className="text-sm text-slate-400 mt-0.5">{s.l}</div>
               </div>
             ))}
           </div>
@@ -101,14 +101,14 @@ export default function TransactionsPage() {
           </div>
           <div className="flex gap-1.5 flex-wrap">
             {['ALL','RECONCILED','VALIDATED','PENDING','EXCEPTION','DISPUTED','ADJUSTED','REFUNDED'].map(s=>(
-              <button key={s} onClick={()=>setStatusF(s)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer whitespace-nowrap" style={{background:statusF===s?'#003DA5':'transparent',color:statusF===s?'white':'#64748B',borderColor:statusF===s?'#003DA5':'rgba(148,163,184,0.30)'}}>
+              <button key={s} onClick={()=>setStatusF(s)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer whitespace-nowrap" style={{background:statusF===s?'#003DA5':'transparent',color:statusF===s?'white':'#64748B',borderColor:statusF===s?'#003DA5':'rgba(148,163,184,0.30)'}}>
                 {s==='ALL'?`Toutes (${ALL_TRANSACTIONS.length})`:(TX_STATUS_FULL[s]?.label??s)}
               </button>
             ))}
           </div>
           <div className="flex gap-1.5 flex-wrap">
             {['ALL','MATCHED','VARIANCE','MISSING'].map(r=>(
-              <button key={r} onClick={()=>setReconF(r)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:reconF===r?'#7C3AED':'transparent',color:reconF===r?'white':'#64748B',borderColor:reconF===r?'#7C3AED':'rgba(148,163,184,0.30)'}}>
+              <button key={r} onClick={()=>setReconF(r)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:reconF===r?'#7C3AED':'transparent',color:reconF===r?'white':'#64748B',borderColor:reconF===r?'#7C3AED':'rgba(148,163,184,0.30)'}}>
                 {r==='ALL'?'Réconciliation':((RECON_CONF[r]?.icon??'')+' '+(RECON_CONF[r]?.label??r))}
               </button>
             ))}
@@ -119,13 +119,13 @@ export default function TransactionsPage() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <span className="text-xs font-bold text-slate-800 dark:text-white">{filtered.length} transaction(s)</span>
-            <Link href="/reconciliation" className="text-[9px] font-bold text-qc-blue hover:underline">→ Centre réconciliation</Link>
+            <Link href="/reconciliation" className="text-sm font-bold text-qc-blue hover:underline">→ Centre réconciliation</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead><tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                 {['TX ID','Date','Chauffeur','Fournisseur','Brut','Tip','TPS','TVQ','Adj.','Rembrs.','Chauffeur','Ent.','Statut','Recon.','Sync'].map(h=>(
-                  <th key={h} className="px-3 py-2.5 text-left text-[8px] font-bold text-slate-400 uppercase whitespace-nowrap">{h}</th>
+                  <th key={h} className="px-3 py-2.5 text-left text-sm font-bold text-slate-400 uppercase whitespace-nowrap">{h}</th>
                 ))}
               </tr></thead>
               <tbody>
@@ -137,23 +137,23 @@ export default function TransactionsPage() {
                   return (
                     <tr key={t.id} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="px-3 py-2.5">
-                        <div className="text-[9px] font-mono text-blue-600 dark:text-blue-400">{t.id}</div>
-                        <div className="text-[7px] font-mono text-slate-400">{t.extId}</div>
+                        <div className="text-sm font-mono text-blue-600 dark:text-blue-400">{t.id}</div>
+                        <div className="text-xs font-mono text-slate-400">{t.extId}</div>
                       </td>
-                      <td className="px-3 py-2.5 text-[9px] font-mono text-slate-400 whitespace-nowrap">{fmtDt(t.at)}</td>
-                      <td className="px-3 py-2.5 text-[9px] text-slate-700 dark:text-slate-300 whitespace-nowrap">{drv?.name??t.driverId}</td>
-                      <td className="px-3 py-2.5 text-[9px] text-slate-500 whitespace-nowrap">{t.provider}</td>
+                      <td className="px-3 py-2.5 text-sm font-mono text-slate-400 whitespace-nowrap">{fmtDt(t.at)}</td>
+                      <td className="px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">{drv?.name??t.driverId}</td>
+                      <td className="px-3 py-2.5 text-sm text-slate-500 whitespace-nowrap">{t.provider}</td>
                       <td className="px-3 py-2.5 font-bold text-green-600 dark:text-green-400 whitespace-nowrap">{money2(t.gross)}</td>
-                      <td className="px-3 py-2.5 text-[9px] text-slate-500">{t.tip>0?money2(t.tip):'—'}</td>
-                      <td className="px-3 py-2.5 text-[9px] text-purple-600 dark:text-purple-400 whitespace-nowrap">{t.tps>0?money2(t.tps):'—'}</td>
-                      <td className="px-3 py-2.5 text-[9px] text-purple-600 dark:text-purple-400 whitespace-nowrap">{t.tvq>0?money2(t.tvq):'—'}</td>
-                      <td className="px-3 py-2.5 text-[9px] text-amber-600 dark:text-amber-400">{t.adj!==0?money2(t.adj):'—'}</td>
-                      <td className="px-3 py-2.5 text-[9px] text-red-500">{t.refund!==0?money2(t.refund):'—'}</td>
-                      <td className="px-3 py-2.5 text-[9px] text-blue-600 dark:text-blue-400 whitespace-nowrap">{money2(t.driverAmt)}</td>
-                      <td className="px-3 py-2.5 text-[9px] text-green-600 dark:text-green-400 whitespace-nowrap">{money2(t.entAmt)}</td>
-                      <td className="px-3 py-2.5"><span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap" style={{color:sc.color,background:sc.bg}}>{sc.label}</span></td>
-                      <td className="px-3 py-2.5"><span className="text-[10px]">{rc.icon}</span></td>
-                      <td className="px-3 py-2.5"><div className="flex items-center gap-1"><div className={`w-1.5 h-1.5 rounded-full ${ss.dot}`}/><span className="text-[8px]" style={{color:ss.color}}>{ss.label}</span></div></td>
+                      <td className="px-3 py-2.5 text-sm text-slate-500">{t.tip>0?money2(t.tip):'—'}</td>
+                      <td className="px-3 py-2.5 text-sm text-purple-600 dark:text-purple-400 whitespace-nowrap">{t.tps>0?money2(t.tps):'—'}</td>
+                      <td className="px-3 py-2.5 text-sm text-purple-600 dark:text-purple-400 whitespace-nowrap">{t.tvq>0?money2(t.tvq):'—'}</td>
+                      <td className="px-3 py-2.5 text-sm text-amber-600 dark:text-amber-400">{t.adj!==0?money2(t.adj):'—'}</td>
+                      <td className="px-3 py-2.5 text-sm text-red-500">{t.refund!==0?money2(t.refund):'—'}</td>
+                      <td className="px-3 py-2.5 text-sm text-blue-600 dark:text-blue-400 whitespace-nowrap">{money2(t.driverAmt)}</td>
+                      <td className="px-3 py-2.5 text-sm text-green-600 dark:text-green-400 whitespace-nowrap">{money2(t.entAmt)}</td>
+                      <td className="px-3 py-2.5"><span className="text-sm px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap" style={{color:sc.color,background:sc.bg}}>{sc.label}</span></td>
+                      <td className="px-3 py-2.5"><span className="text-sm">{rc.icon}</span></td>
+                      <td className="px-3 py-2.5"><div className="flex items-center gap-1"><div className={`w-1.5 h-1.5 rounded-full ${ss.dot}`}/><span className="text-sm" style={{color:ss.color}}>{ss.label}</span></div></td>
                     </tr>
                   )
                 })}

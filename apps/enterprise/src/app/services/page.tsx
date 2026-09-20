@@ -30,13 +30,13 @@ export default function ServicesPage() {
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">Services & Départements</h1>
           <p className="text-sm text-slate-500 mt-1">Vue consolidée · Filtrage par service · Chaîne activité→déclaration</p>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           ⚠️ {PILOT} · DONNÉES SYNTHÉTIQUES · Nb chauffeurs/livreurs par département = non publié officiellement · 12 351 = véhicules réf. publique 2024
         </div>
 
         {/* Workflow */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 shadow-sm">
-          <div className="flex items-center gap-1 flex-wrap text-[8px] font-bold">
+          <div className="flex items-center gap-1 flex-wrap text-sm font-bold">
             {WORKFLOW.map((s,i)=>(
               <span key={i} className={s==='→'?'text-slate-300 dark:text-slate-700':'px-2 py-1 rounded-lg'} style={s!=='→'?{background:'#000',color:'white'}:{}}>{s}</span>
             ))}
@@ -45,11 +45,11 @@ export default function ServicesPage() {
 
         {/* Sélecteur */}
         <div className="flex gap-1.5 flex-wrap">
-          <button onClick={()=>setSel('ALL')} className="text-[9px] font-bold px-3 py-2 rounded-xl border transition-all cursor-pointer" style={{background:sel==='ALL'?'#000':'transparent',color:sel==='ALL'?'white':'#64748B',borderColor:sel==='ALL'?'#000':'rgba(148,163,184,0.30)'}}>
+          <button onClick={()=>setSel('ALL')} className="text-sm font-bold px-3 py-2 rounded-xl border transition-all cursor-pointer" style={{background:sel==='ALL'?'#000':'transparent',color:sel==='ALL'?'white':'#64748B',borderColor:sel==='ALL'?'#000':'rgba(148,163,184,0.30)'}}>
             Tous les services
           </button>
           {active.map(dept=>(
-            <button key={dept.slug} onClick={()=>setSel(dept.slug)} className="text-[9px] font-bold px-3 py-2 rounded-xl border transition-all cursor-pointer" style={{background:sel===dept.slug?dept.color:'transparent',color:sel===dept.slug?'white':'#64748B',borderColor:sel===dept.slug?dept.color:'rgba(148,163,184,0.30)'}}>
+            <button key={dept.slug} onClick={()=>setSel(dept.slug)} className="text-sm font-bold px-3 py-2 rounded-xl border transition-all cursor-pointer" style={{background:sel===dept.slug?dept.color:'transparent',color:sel===dept.slug?'white':'#64748B',borderColor:sel===dept.slug?dept.color:'rgba(148,163,184,0.30)'}}>
               {dept.emoji} {dept.name}
             </button>
           ))}
@@ -65,7 +65,7 @@ export default function ServicesPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-xl p-3`}>
               <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -78,7 +78,7 @@ export default function ServicesPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-2xl p-4 border border-white dark:border-transparent`}>
               <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[9px] text-slate-400 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-400 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -94,12 +94,12 @@ export default function ServicesPage() {
                     <span className="text-3xl">{dept.emoji}</span>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{dept.name}</span>
-                        <span className="text-[7px] font-bold text-white px-1.5 py-0.5 rounded-full" style={{background:dept.color}}>ACTIF</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{dept.name}</span>
+                        <span className="text-xs font-bold text-white px-1.5 py-0.5 rounded-full" style={{background:dept.color}}>ACTIF</span>
                       </div>
-                      <div className="text-[8px] text-slate-400 leading-tight">{dept.desc}</div>
+                      <div className="text-sm text-slate-400 leading-tight">{dept.desc}</div>
                     </div>
-                    {dept.alerts>0&&<span className="text-[8px] font-bold text-red-500 bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded-full shrink-0">⚠️ {dept.alerts}</span>}
+                    {dept.alerts>0&&<span className="text-sm font-bold text-red-500 bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded-full shrink-0">⚠️ {dept.alerts}</span>}
                   </div>
                   <div className="grid grid-cols-3 gap-1.5 mb-2">
                     {[
@@ -108,19 +108,19 @@ export default function ServicesPage() {
                       {l:'Revenus (M$)',   v:(dept.gross/1_000_000).toFixed(1)},
                     ].map(s=>(
                       <div key={s.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-1.5 text-center">
-                        <div className="text-[10px] font-black text-slate-800 dark:text-slate-200">{s.v}</div>
-                        <div className="text-[7px] text-slate-400">{s.l}</div>
+                        <div className="text-sm font-black text-slate-800 dark:text-slate-200">{s.v}</div>
+                        <div className="text-xs text-slate-400">{s.l}</div>
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-between text-[9px]">
+                  <div className="flex justify-between text-sm">
                     <span className="text-purple-600 dark:text-purple-400">TPS: {money2(dept.tps)}</span>
                     <span className="text-indigo-600 dark:text-indigo-400">TVQ: {money2(dept.tvq)}</span>
                     <span className="text-blue-600 dark:text-blue-400">{money2(dept.tips)} tips</span>
                   </div>
-                  <div className="text-[8px] text-amber-600 dark:text-amber-400 italic mt-1.5">{dept.fiscalNote}</div>
-                  {dActs>0&&<div className="text-[8px] text-slate-400 mt-1">{dActs} activités récentes dans les données pilote</div>}
-                  <button onClick={()=>setSel(dept.slug)} className="mt-2 w-full py-1.5 rounded-xl text-[9px] font-bold text-white cursor-pointer hover:opacity-90" style={{background:dept.color}}>
+                  <div className="text-sm text-amber-600 dark:text-amber-400 italic mt-1.5">{dept.fiscalNote}</div>
+                  {dActs>0&&<div className="text-sm text-slate-400 mt-1">{dActs} activités récentes dans les données pilote</div>}
+                  <button onClick={()=>setSel(dept.slug)} className="mt-2 w-full py-1.5 rounded-xl text-sm font-bold text-white cursor-pointer hover:opacity-90" style={{background:dept.color}}>
                     → Voir {dept.name}
                   </button>
                 </div>
@@ -136,7 +136,7 @@ export default function ServicesPage() {
                   <span className="text-3xl">{d.emoji}</span>
                   <div>
                     <div className="text-xl font-black text-slate-900 dark:text-white">{d.name}</div>
-                    <div className="text-[9px] text-amber-600 dark:text-amber-400">⚠️ DONNÉES SYNTHÉTIQUES — PILOTE</div>
+                    <div className="text-sm text-amber-600 dark:text-amber-400">⚠️ DONNÉES SYNTHÉTIQUES — PILOTE</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -152,11 +152,11 @@ export default function ServicesPage() {
                   ].map(r=>(
                     <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2.5">
                       <div className="text-sm font-black" style={{color:r.c}}>{r.v}</div>
-                      <div className="text-[8px] text-slate-400 mt-0.5">{r.l}</div>
+                      <div className="text-sm text-slate-400 mt-0.5">{r.l}</div>
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-500/8 border border-amber-200 dark:border-amber-500/20 rounded-xl text-[9px] text-amber-700 dark:text-amber-400">
+                <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-500/8 border border-amber-200 dark:border-amber-500/20 rounded-xl text-sm text-amber-700 dark:text-amber-400">
                   📋 {d.fiscalNote}
                 </div>
               </div>
@@ -170,18 +170,18 @@ export default function ServicesPage() {
                   <div key={a.id} className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                     <span className="text-base">{d.emoji}</span>
                     <div className="flex-1">
-                      <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{a.svc} · {a.origin} → {a.dest}</div>
-                      <div className="text-[9px] text-slate-400">{a.driverId} · {fmtDt(a.at)}</div>
+                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{a.svc} · {a.origin} → {a.dest}</div>
+                      <div className="text-sm text-slate-400">{a.driverId} · {fmtDt(a.at)}</div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-black text-green-600 dark:text-green-400">{money2(a.fare)}</div>
-                      {a.tip>0&&<div className="text-[8px] text-slate-400">+{money2(a.tip)} tip</div>}
+                      {a.tip>0&&<div className="text-sm text-slate-400">+{money2(a.tip)} tip</div>}
                     </div>
-                    <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${a.status==='TERMINÉE'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-amber-600 bg-amber-50'}`}>{a.status}</span>
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 ${a.status==='TERMINÉE'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-amber-600 bg-amber-50'}`}>{a.status}</span>
                   </div>
                 ))}
                 {OPS_ACTIVITIES.filter(a=>a.dept===d.slug).length===0&&(
-                  <div className="px-5 py-4 text-[10px] text-slate-400 italic">Aucune activité récente dans les données pilote pour ce département</div>
+                  <div className="px-5 py-4 text-sm text-slate-400 italic">Aucune activité récente dans les données pilote pour ce département</div>
                 )}
               </div>
 
@@ -197,7 +197,7 @@ export default function ServicesPage() {
                 ].map(a=>(
                   <Link key={a.l} href={a.href} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-center hover:shadow-md transition-shadow">
                     <div className="text-xl mb-1">{a.icon}</div>
-                    <div className="text-[9px] font-bold text-slate-700 dark:text-slate-300">{a.l}</div>
+                    <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{a.l}</div>
                   </Link>
                 ))}
               </div>
@@ -205,7 +205,7 @@ export default function ServicesPage() {
           )
         )}
 
-        <div className="text-[8px] text-slate-400">* {UBER_QC_PUBLIC.chauffeurs_note}</div>
+        <div className="text-sm text-slate-400">* {UBER_QC_PUBLIC.chauffeurs_note}</div>
       </div>
     </AppShell>
   )

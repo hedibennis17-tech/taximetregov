@@ -33,9 +33,9 @@ export default function VehiclesPage() {
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Véhicules</h1>
             <p className="text-sm text-slate-500 mt-1">Gestion de la flotte · Conformité · Taximètre · Synchronisation</p>
           </div>
-          <button className="px-3 py-2 rounded-xl text-[10px] font-bold bg-qc-blue text-white cursor-pointer hover:bg-blue-700 shrink-0">+ Ajouter</button>
+          <button className="px-3 py-2 rounded-xl text-sm font-bold bg-qc-blue text-white cursor-pointer hover:bg-blue-700 shrink-0">+ Ajouter</button>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT}</div>
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT}</div>
 
         {/* KPI */}
         <div className="grid grid-cols-4 gap-2">
@@ -47,7 +47,7 @@ export default function VehiclesPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center`}>
               <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[9px] text-slate-500 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -62,7 +62,7 @@ export default function VehiclesPage() {
           </div>
           <div className="flex gap-1.5 flex-wrap">
             {[{v:'ALL',l:`Tous (${ENT_VEHICLES.length})`},{v:'ACTIVE',l:'Actifs'},{v:'MAINTENANCE',l:'Maintenance'},{v:'AVAILABLE',l:'Disponibles'}].map(f=>(
-              <button key={f.v} onClick={()=>setFilter(f.v)} className="px-3 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:filter===f.v?'#003DA5':'transparent',color:filter===f.v?'white':'#64748B',borderColor:filter===f.v?'#003DA5':'rgba(148,163,184,0.30)'}}>
+              <button key={f.v} onClick={()=>setFilter(f.v)} className="px-3 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:filter===f.v?'#003DA5':'transparent',color:filter===f.v?'white':'#64748B',borderColor:filter===f.v?'#003DA5':'rgba(148,163,184,0.30)'}}>
                 {f.l}
               </button>
             ))}
@@ -85,12 +85,12 @@ export default function VehiclesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span className="text-sm font-bold text-slate-800 dark:text-white">{v.year} {v.make} {v.model}</span>
-                      <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
-                      {det?.taximeterId&&<span className="text-[7px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-1.5 py-0.5 rounded">🚕 TAXIMÈTRE</span>}
-                      {expInsp&&<span className="text-[7px] font-bold text-red-500 bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded">⚠️ Inspection</span>}
+                      <span className="text-sm px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
+                      {det?.taximeterId&&<span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10 px-1.5 py-0.5 rounded">🚕 TAXIMÈTRE</span>}
+                      {expInsp&&<span className="text-xs font-bold text-red-500 bg-red-50 dark:bg-red-500/10 px-1.5 py-0.5 rounded">⚠️ Inspection</span>}
                     </div>
-                    <div className="text-[9px] font-mono text-slate-400 mb-1">{v.id} · {v.plate} · {v.vin}</div>
-                    <div className="flex gap-3 text-[9px] text-slate-400 flex-wrap">
+                    <div className="text-sm font-mono text-slate-400 mb-1">{v.id} · {v.plate} · {v.vin}</div>
+                    <div className="flex gap-3 text-sm text-slate-400 flex-wrap">
                       {drv?<span>👤 {drv.name}</span>:<span className="text-amber-500">Sans chauffeur</span>}
                       <span>📍 {acts} activités</span>
                       <div className="flex items-center gap-1">
@@ -99,7 +99,7 @@ export default function VehiclesPage() {
                       </div>
                     </div>
                   </div>
-                  <Link href={`/vehicles/${v.id}`} className="px-2.5 py-1.5 rounded-lg text-[9px] font-bold bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 shrink-0">→ Dossier</Link>
+                  <Link href={`/vehicles/${v.id}`} className="px-2.5 py-1.5 rounded-lg text-sm font-bold bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 shrink-0">→ Dossier</Link>
                 </div>
               </div>
             )

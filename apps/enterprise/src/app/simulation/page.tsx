@@ -39,28 +39,28 @@ export default function SimulationPage() {
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <div className="font-black text-white tracking-tighter" style={{fontSize:'1.8rem',fontFamily:'system-ui',letterSpacing:'-0.05em',lineHeight:0.9}}>uber</div>
-                <div className="text-[10px] font-black text-white/50">QUÉBEC</div>
+                <div className="text-sm font-black text-white/50">QUÉBEC</div>
               </div>
               <div className="text-white font-black text-sm">Simulation Gouvernementale Complète · Phase 32</div>
-              <div className="text-[9px] mt-0.5" style={{color:'rgba(255,255,255,0.4)'}}>
+              <div className="text-sm mt-0.5" style={{color:'rgba(255,255,255,0.4)'}}>
                 {CURRENT_ENT.id} · 6 départements · {SIM_RAPPORT.drivers} chauffeurs · {SIM_RAPPORT.activitiesTotal} activités · 2026-09-20
               </div>
             </div>
             <div className="shrink-0 text-right">
-              <div className="text-[8px] font-bold text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-full">⚠️ {PILOT}</div>
-              <div className="text-[7px] text-white/30 mt-1">SIMULATION · NON TRANSMIS</div>
+              <div className="text-sm font-bold text-amber-400 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-full">⚠️ {PILOT}</div>
+              <div className="text-xs text-white/30 mt-1">SIMULATION · NON TRANSMIS</div>
             </div>
           </div>
 
           {/* Pipeline */}
           <div className="mt-3 pt-3 flex items-center gap-1 flex-wrap" style={{borderTop:'1px solid rgba(255,255,255,0.08)'}}>
             {['Entreprise','→','Département','→','Chauffeur','→','Véhicule','→','Activité','→','Transaction','→','Ledger','→','TPS/TVQ','→','Déclaration','→','Paiement','→','Audit','→','Admin Gov'].map((s,i)=>(
-              <span key={i} className="text-[8px] font-bold" style={s==='→'?{color:'rgba(255,255,255,0.2)'}:{color:'rgba(255,255,255,0.7)'}}>{s}</span>
+              <span key={i} className="text-sm font-bold" style={s==='→'?{color:'rgba(255,255,255,0.2)'}:{color:'rgba(255,255,255,0.7)'}}>{s}</span>
             ))}
           </div>
         </div>
 
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           ⚠️ SIMULATION PILOTE · Données synthétiques · Aucune déclaration réelle · Aucun paiement réel · enterprise_id: {CURRENT_ENT.id}
         </div>
 
@@ -78,7 +78,7 @@ export default function SimulationPage() {
           ].map(k=>(
             <div key={k.l} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-center shadow-sm">
               <div className="text-sm font-black" style={{color:k.c}}>{k.v}</div>
-              <div className="text-[7px] text-slate-400 mt-0.5">{k.l}</div>
+              <div className="text-xs text-slate-400 mt-0.5">{k.l}</div>
             </div>
           ))}
         </div>
@@ -87,7 +87,7 @@ export default function SimulationPage() {
         <div className="flex gap-1 flex-wrap">
           {TABS.map(t=>(
             <button key={t.id} onClick={()=>{setTab(t.id);setSelected(null)}}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-bold transition-all cursor-pointer border"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold transition-all cursor-pointer border"
               style={{background:tab===t.id?'#000':'white',color:tab===t.id?'white':'#64748B',borderColor:tab===t.id?'#000':'#e2e8f0'}}>
               {t.icon} {t.label}
             </button>
@@ -107,10 +107,10 @@ export default function SimulationPage() {
                     <div key={d.deptId} className="py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-base">{dept?.emoji??'📍'}</span>
-                        <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 flex-1">{dept?.name??d.deptId}</span>
-                        <span className="text-[9px] font-black text-green-600">{money2(d.gross)}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200 flex-1">{dept?.name??d.deptId}</span>
+                        <span className="text-sm font-black text-green-600">{money2(d.gross)}</span>
                       </div>
-                      <div className="flex gap-3 ml-7 text-[8px] text-slate-400">
+                      <div className="flex gap-3 ml-7 text-sm text-slate-400">
                         <span>{d.acts} activités</span>
                         <span>{d.drivers} chauffeur{d.drivers>1?'s':''}</span>
                         <span>TPS: {money2(d.tps)}</span>
@@ -128,16 +128,16 @@ export default function SimulationPage() {
                   const txs = SIM_TRANSACTIONS.filter(t=>t.driverId===a.driverId)
                   return (
                     <div key={a.driverId} className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
-                      <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center text-white text-[10px] font-black shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center text-white text-sm font-black shrink-0">
                         {a.driverName.split(' ').map((n:string)=>n[0]).join('')}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{a.driverName}</div>
-                        <div className="text-[8px] text-slate-400">{a.driverId} · {a.vehicleId} · {a.plate}</div>
+                        <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{a.driverName}</div>
+                        <div className="text-sm text-slate-400">{a.driverId} · {a.vehicleId} · {a.plate}</div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="text-[10px] font-black text-green-600">{money2(txs.reduce((s,t)=>s+t.gross,0))}</div>
-                        <div className="text-[7px] text-slate-400">{txs.length} TX</div>
+                        <div className="text-sm font-black text-green-600">{money2(txs.reduce((s,t)=>s+t.gross,0))}</div>
+                        <div className="text-xs text-slate-400">{txs.length} TX</div>
                       </div>
                     </div>
                   )
@@ -150,7 +150,7 @@ export default function SimulationPage() {
         {/* ── TAB: SCÉNARIO TRACÉ ── */}
         {tab==='scenario'&&(
           <div className="space-y-3">
-            <div className="text-[10px] text-slate-500 dark:text-slate-400">
+            <div className="text-sm text-slate-500 dark:text-slate-400">
               Cliquez sur une transaction pour tracer sa chaîne complète : Activité → TX → Ledger → Réconciliation
             </div>
 
@@ -170,14 +170,14 @@ export default function SimulationPage() {
                       style={{background:isSel?'#f8fafc':undefined}}>
                       <span className="text-base shrink-0">{dept?.emoji??'📍'}</span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{tx.id} · {tx.driverName}</div>
-                        <div className="text-[8px] text-slate-400">{act?.origin} → {act?.dest} · {act?.dist}km · {act?.dur}min</div>
+                        <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{tx.id} · {tx.driverName}</div>
+                        <div className="text-sm text-slate-400">{act?.origin} → {act?.dest} · {act?.dist}km · {act?.dur}min</div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="text-[10px] font-black text-slate-800 dark:text-white">{money2(tx.gross)}</div>
-                        <div className="text-[8px] text-slate-400">+{money2(tx.tip)} tip · TPS:{money2(tx.tps)}</div>
+                        <div className="text-sm font-black text-slate-800 dark:text-white">{money2(tx.gross)}</div>
+                        <div className="text-sm text-slate-400">+{money2(tx.tip)} tip · TPS:{money2(tx.tps)}</div>
                       </div>
-                      <span className="text-[8px]">{isSel?'▲':'▼'}</span>
+                      <span className="text-sm">{isSel?'▲':'▼'}</span>
                     </button>
                   )
                 })}
@@ -206,16 +206,16 @@ export default function SimulationPage() {
                   ].map((s,i)=>(
                     <div key={s.step} className="flex items-start gap-3">
                       <div className="flex flex-col items-center shrink-0">
-                        <div className="w-8 h-8 rounded-xl bg-black flex items-center justify-center text-white text-[10px] font-black">{s.step}</div>
+                        <div className="w-8 h-8 rounded-xl bg-black flex items-center justify-center text-white text-sm font-black">{s.step}</div>
                         {i<10&&<div className="w-0.5 h-4 bg-slate-200 dark:bg-slate-700 mt-0.5"/>}
                       </div>
                       <div className="flex-1 pb-2">
                         <div className="flex items-center gap-1.5 mb-1">
                           <span>{s.icon}</span>
-                          <span className="text-[10px] font-black text-slate-800 dark:text-slate-200">{s.label}</span>
+                          <span className="text-sm font-black text-slate-800 dark:text-slate-200">{s.label}</span>
                         </div>
                         {s.lines.map((l,j)=>(
-                          <div key={j} className="text-[9px] font-mono text-slate-500 dark:text-slate-400">{l}</div>
+                          <div key={j} className="text-sm font-mono text-slate-500 dark:text-slate-400">{l}</div>
                         ))}
                       </div>
                     </div>
@@ -231,7 +231,7 @@ export default function SimulationPage() {
           <div className="space-y-4">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
               <div className="text-xs font-black text-slate-800 dark:text-white mb-1">Déclaration TPS/TVQ · {SIM_DECLARATION.period}</div>
-              <div className="text-[8px] font-bold text-red-500 mb-3">SIMULATION · NON TRANSMIS À REVENU QUÉBEC · DONNÉES SYNTHÉTIQUES</div>
+              <div className="text-sm font-bold text-red-500 mb-3">SIMULATION · NON TRANSMIS À REVENU QUÉBEC · DONNÉES SYNTHÉTIQUES</div>
               <div className="grid grid-cols-2 gap-3">
                 {[
                   {l:'Revenus bruts Q3 (DEMO)',   v:money(SIM_DECLARATION.grossRevenue)},
@@ -244,15 +244,15 @@ export default function SimulationPage() {
                   {l:'TVQ nette à remettre',       v:money(SIM_DECLARATION.tvqNet)},
                 ].map(r=>(
                   <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3">
-                    <div className="text-[8px] text-slate-400 mb-0.5">{r.l}</div>
+                    <div className="text-sm text-slate-400 mb-0.5">{r.l}</div>
                     <div className="text-sm font-black text-slate-800 dark:text-white">{r.v}</div>
                   </div>
                 ))}
               </div>
               <div className="mt-3 p-3 rounded-xl" style={{background:'#000'}}>
-                <div className="text-[9px] font-bold text-white/60 mb-0.5">MONTANT TOTAL SIMULÉ À REMETTRE</div>
+                <div className="text-sm font-bold text-white/60 mb-0.5">MONTANT TOTAL SIMULÉ À REMETTRE</div>
                 <div className="text-2xl font-black text-white">{money(SIM_DECLARATION.totalDue)}</div>
-                <div className="text-[8px] text-amber-400 mt-1">SIMULATION · {SIM_DECLARATION.status} · AUCUN PAIEMENT RÉEL</div>
+                <div className="text-sm text-amber-400 mt-1">SIMULATION · {SIM_DECLARATION.status} · AUCUN PAIEMENT RÉEL</div>
               </div>
             </div>
 
@@ -268,12 +268,12 @@ export default function SimulationPage() {
                 {l:'Méthode',        v:SIM_PAYMENT.method},
                 {l:'Date simulée',   v:SIM_PAYMENT.paidAt.split('T')[0]},
               ].map(r=>(
-                <div key={r.l} className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0 text-[10px]">
+                <div key={r.l} className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0 text-sm">
                   <span className="text-slate-400">{r.l}</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200">{r.v}</span>
                 </div>
               ))}
-              <div className="mt-3 text-[8px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 rounded-xl">
+              <div className="mt-3 text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 rounded-xl">
                 {SIM_PAYMENT.note}
               </div>
             </div>
@@ -285,7 +285,7 @@ export default function SimulationPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800" style={{borderTop:'3px solid #000'}}>
               <div className="text-xs font-black text-slate-800 dark:text-white">Réconciliation — {SIM_RECON.length} cas</div>
-              <div className="flex gap-3 mt-1 text-[8px] font-bold">
+              <div className="flex gap-3 mt-1 text-sm font-bold">
                 <span className="text-green-600">✅ {SIM_RECON.filter(r=>r.status==='MATCH').length} MATCH</span>
                 <span className="text-amber-600">⚠️ {SIM_RECON.filter(r=>r.status==='MINOR_VARIANCE').length} VARIANCE</span>
                 <span className="text-red-500">🔴 {SIM_RECON.filter(r=>r.status==='REVIEW_REQUIRED').length} RÉVISION</span>
@@ -298,16 +298,16 @@ export default function SimulationPage() {
                     <span className="text-lg shrink-0">{r.status==='MATCH'?'✅':r.status==='MINOR_VARIANCE'?'⚠️':'🔴'}</span>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{r.id}</span>
-                        <span className="text-[8px] font-mono text-slate-400">{r.txId}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{r.id}</span>
+                        <span className="text-sm font-mono text-slate-400">{r.txId}</span>
                       </div>
-                      {r.reason&&<div className="text-[9px] text-slate-500 mt-0.5">{r.reason}</div>}
+                      {r.reason&&<div className="text-sm text-slate-500 mt-0.5">{r.reason}</div>}
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{money2(r.expected)}</div>
-                      {r.variance!==0&&<div className="text-[9px] font-bold text-red-500">{r.variance>0?'+':''}{money2(r.variance)}</div>}
+                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{money2(r.expected)}</div>
+                      {r.variance!==0&&<div className="text-sm font-bold text-red-500">{r.variance>0?'+':''}{money2(r.variance)}</div>}
                     </div>
-                    <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full text-white shrink-0 ${r.status==='MATCH'?'bg-green-600':r.status==='MINOR_VARIANCE'?'bg-amber-500':'bg-red-600'}`}>
+                    <span className={`text-sm font-bold px-2 py-0.5 rounded-full text-white shrink-0 ${r.status==='MATCH'?'bg-green-600':r.status==='MINOR_VARIANCE'?'bg-amber-500':'bg-red-600'}`}>
                       {r.status.replace('_',' ')}
                     </span>
                   </div>
@@ -322,7 +322,7 @@ export default function SimulationPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800" style={{borderTop:'3px solid #000'}}>
               <div className="text-xs font-black text-slate-800 dark:text-white">Piste d'audit — {SIM_AUDIT.length} événements tracés</div>
-              <div className="text-[8px] text-slate-400 mt-0.5">WHO · WHAT · WHEN · BEFORE → AFTER</div>
+              <div className="text-sm text-slate-400 mt-0.5">WHO · WHAT · WHEN · BEFORE → AFTER</div>
             </div>
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {SIM_AUDIT.map(e=>(
@@ -331,12 +331,12 @@ export default function SimulationPage() {
                     <div className="w-2 h-2 rounded-full bg-black dark:bg-white mt-1.5 shrink-0"/>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-black text-slate-800 dark:text-slate-200">{e.action}</span>
-                        <span className="text-[8px] font-mono text-blue-600 dark:text-blue-400">{e.object}</span>
-                        <span className="text-[8px] text-slate-400">{e.objectType}</span>
+                        <span className="text-sm font-black text-slate-800 dark:text-slate-200">{e.action}</span>
+                        <span className="text-sm font-mono text-blue-600 dark:text-blue-400">{e.object}</span>
+                        <span className="text-sm text-slate-400">{e.objectType}</span>
                       </div>
-                      <div className="text-[8px] text-slate-500 mt-0.5">{e.detail}</div>
-                      <div className="flex items-center gap-3 mt-1 text-[7px] text-slate-400">
+                      <div className="text-sm text-slate-500 mt-0.5">{e.detail}</div>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
                         <span>👤 {e.actor}</span>
                         <span>🕐 {e.at.split('T')[1].slice(0,8)}</span>
                         {e.before&&<span>{e.before} → <strong className="text-slate-600 dark:text-slate-300">{e.after}</strong></span>}
@@ -375,15 +375,15 @@ export default function SimulationPage() {
                   {l:'Événements audit',  v:String(SIM_RAPPORT.auditEvents)},
                 ].map(r=>(
                   <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2.5">
-                    <div className="text-[7px] text-slate-400">{r.l}</div>
-                    <div className="text-[10px] font-black text-slate-800 dark:text-white">{r.v}</div>
+                    <div className="text-xs text-slate-400">{r.l}</div>
+                    <div className="text-sm font-black text-slate-800 dark:text-white">{r.v}</div>
                   </div>
                 ))}
               </div>
 
               {/* PASS/PARTIAL/FAIL */}
               <div className="space-y-1.5">
-                <div className="text-[9px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2">Résultats PASS/PARTIAL/FAIL</div>
+                <div className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-2">Résultats PASS/PARTIAL/FAIL</div>
                 {[
                   {l:'Entreprise Uber QC · isolation ENT-DEMO-001',      s:'PASS'},
                   {l:'6 départements Uber actifs',                        s:'PASS'},
@@ -402,14 +402,14 @@ export default function SimulationPage() {
                   {l:'Driver Gov → Enterprise Gov tracé réel',           s:'PARTIAL'},
                 ].map(r=>(
                   <div key={r.l} className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-                    <span className="text-[9px] text-slate-600 dark:text-slate-400">{r.l}</span>
-                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full text-white shrink-0 ml-2 ${r.s==='PASS'?'bg-green-600':r.s==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{r.s}</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{r.l}</span>
+                    <span className={`text-sm font-black px-2 py-0.5 rounded-full text-white shrink-0 ml-2 ${r.s==='PASS'?'bg-green-600':r.s==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{r.s}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="text-[8px] text-slate-400 text-center p-3 bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-xl">
+            <div className="text-sm text-slate-400 text-center p-3 bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-xl">
               {SIM_RAPPORT.note}
             </div>
           </div>

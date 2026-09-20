@@ -43,7 +43,7 @@ export default function AuditPage() {
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">Journal d'audit</h1>
           <p className="text-sm text-slate-500 mt-1">Qui · Quoi · Quand · Sur quelle donnée · Résultat</p>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           {PILOT} · Journal append-only DEMO · Données synthétiques · Horodatage local
         </div>
 
@@ -57,7 +57,7 @@ export default function AuditPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center`}>
               <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -65,7 +65,7 @@ export default function AuditPage() {
         {/* Tabs */}
         <div className="flex gap-1.5 flex-wrap">
           {([['events','📋 Événements'],['financial','💰 Financier'],['tax','🧾 Fiscal'],['gov','🏛️ Gouvernemental']] as const).map(([t,l])=>(
-            <button key={t} onClick={()=>setTab(t)} className="px-3 py-2 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:tab===t?'#000':'transparent',color:tab===t?'white':'#64748B',borderColor:tab===t?'#000':'rgba(148,163,184,0.30)'}}>
+            <button key={t} onClick={()=>setTab(t)} className="px-3 py-2 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:tab===t?'#000':'transparent',color:tab===t?'white':'#64748B',borderColor:tab===t?'#000':'rgba(148,163,184,0.30)'}}>
               {l}
             </button>
           ))}
@@ -81,16 +81,16 @@ export default function AuditPage() {
                   placeholder="ID, utilisateur, action, module, objet…"
                   className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs pl-9 outline-none text-slate-800 dark:text-white"/>
               </div>
-              <div className="flex gap-1.5 flex-wrap text-[8px]">
-                <select value={moduleF} onChange={(e:React.ChangeEvent<HTMLSelectElement>)=>setModuleF(e.target.value)} className="px-2 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-[8px]">
+              <div className="flex gap-1.5 flex-wrap text-sm">
+                <select value={moduleF} onChange={(e:React.ChangeEvent<HTMLSelectElement>)=>setModuleF(e.target.value)} className="px-2 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-sm">
                   <option value="ALL">Tous modules</option>
                   {MODULES.map(m=><option key={m} value={m}>{m}</option>)}
                 </select>
-                <select value={actionF} onChange={(e:React.ChangeEvent<HTMLSelectElement>)=>setActionF(e.target.value)} className="px-2 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-[8px]">
+                <select value={actionF} onChange={(e:React.ChangeEvent<HTMLSelectElement>)=>setActionF(e.target.value)} className="px-2 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-sm">
                   <option value="ALL">Toutes actions</option>
                   {ACTIONS.map(a=><option key={a} value={a}>{a}</option>)}
                 </select>
-                <select value={deptF} onChange={(e:React.ChangeEvent<HTMLSelectElement>)=>setDeptF(e.target.value)} className="px-2 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-[8px]">
+                <select value={deptF} onChange={(e:React.ChangeEvent<HTMLSelectElement>)=>setDeptF(e.target.value)} className="px-2 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-sm">
                   <option value="ALL">Tous depts</option>
                   {DEPARTMENTS.filter(d=>d.status==='ACTIVE').map(d=><option key={d.slug} value={d.slug}>{d.name}</option>)}
                 </select>
@@ -102,13 +102,13 @@ export default function AuditPage() {
               <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
                 <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                   <span className="text-xs font-bold text-slate-800 dark:text-white">{filtered.length} événement(s)</span>
-                  <button className="px-2 py-1 rounded-lg text-[8px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer">↓ Exporter DEMO</button>
+                  <button className="px-2 py-1 rounded-lg text-sm font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer">↓ Exporter DEMO</button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead><tr className="border-b border-slate-100 dark:border-slate-800 bg-black">
                       {['ID','Date','Utilisateur','Action','Module','Objet','Résultat'].map(h=>(
-                        <th key={h} className="px-3 py-2 text-left text-[8px] font-bold text-white whitespace-nowrap">{h}</th>
+                        <th key={h} className="px-3 py-2 text-left text-sm font-bold text-white whitespace-nowrap">{h}</th>
                       ))}
                     </tr></thead>
                     <tbody>
@@ -117,13 +117,13 @@ export default function AuditPage() {
                         const rc = RESULT_CONF[e.result]??{color:'#64748B'}
                         return (
                           <tr key={e.id} onClick={()=>setSel(sel===e.id?null:e.id)} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer" style={{background:sel===e.id?'#EEF3FB':''}}>
-                            <td className="px-3 py-2 font-mono text-[7px] text-blue-600 dark:text-blue-400 whitespace-nowrap">{e.id}</td>
-                            <td className="px-3 py-2 font-mono text-[8px] text-slate-400 whitespace-nowrap">{fmtDt(e.at)}</td>
-                            <td className="px-3 py-2 text-[9px] text-slate-700 dark:text-slate-300 whitespace-nowrap">{e.user.length>12?e.user.split(' ')[0]:e.user}</td>
-                            <td className="px-3 py-2 whitespace-nowrap"><span className="text-[8px] font-bold" style={{color:ac?.color??'#64748B'}}>{ac?.icon??'⚡'} {e.action}</span></td>
-                            <td className="px-3 py-2 text-[8px] text-slate-400 whitespace-nowrap">{e.module}</td>
-                            <td className="px-3 py-2 text-[9px] text-slate-600 dark:text-slate-400 whitespace-nowrap max-w-[80px] truncate">{e.obj}</td>
-                            <td className="px-3 py-2"><span className="text-[8px] font-bold whitespace-nowrap" style={{color:rc.color}}>{e.result}</span></td>
+                            <td className="px-3 py-2 font-mono text-xs text-blue-600 dark:text-blue-400 whitespace-nowrap">{e.id}</td>
+                            <td className="px-3 py-2 font-mono text-sm text-slate-400 whitespace-nowrap">{fmtDt(e.at)}</td>
+                            <td className="px-3 py-2 text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">{e.user.length>12?e.user.split(' ')[0]:e.user}</td>
+                            <td className="px-3 py-2 whitespace-nowrap"><span className="text-sm font-bold" style={{color:ac?.color??'#64748B'}}>{ac?.icon??'⚡'} {e.action}</span></td>
+                            <td className="px-3 py-2 text-sm text-slate-400 whitespace-nowrap">{e.module}</td>
+                            <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap max-w-[80px] truncate">{e.obj}</td>
+                            <td className="px-3 py-2"><span className="text-sm font-bold whitespace-nowrap" style={{color:rc.color}}>{e.result}</span></td>
                           </tr>
                         )
                       })}
@@ -154,14 +154,14 @@ export default function AuditPage() {
                         {l:'Après',      v:selEvt.next??'—'},
                       ].map(r=>(
                         <div key={r.l} className="flex justify-between border-b border-slate-100 dark:border-slate-800 last:border-0 py-1">
-                          <span className="text-[9px] text-slate-400">{r.l}</span>
-                          <span className="text-[9px] font-bold text-slate-800 dark:text-slate-200 text-right max-w-[55%] truncate">{r.v}</span>
+                          <span className="text-sm text-slate-400">{r.l}</span>
+                          <span className="text-sm font-bold text-slate-800 dark:text-slate-200 text-right max-w-[55%] truncate">{r.v}</span>
                         </div>
                       ))}
                     </div>
                   </>
                 ):(
-                  <div className="p-6 text-center text-[10px] text-slate-400 italic">Cliquer sur un événement pour voir le détail complet</div>
+                  <div className="p-6 text-center text-sm text-slate-400 italic">Cliquer sur un événement pour voir le détail complet</div>
                 )}
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function AuditPage() {
         {/* ── FINANCIER ── */}
         {tab==='financial'&&(
           <div className="space-y-3">
-            <div className="text-[9px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl font-bold">
+            <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl font-bold">
               Aucune suppression silencieuse · Historique complet · Soft delete uniquement · DEMO
             </div>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
@@ -184,14 +184,14 @@ export default function AuditPage() {
                     <span className="text-lg shrink-0">{ac.icon}</span>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{e.user}</span>
-                        <span className="text-[8px] font-bold" style={{color:ac.color}}>{e.action}</span>
-                        <span className="text-[7px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded">{e.role}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{e.user}</span>
+                        <span className="text-sm font-bold" style={{color:ac.color}}>{e.action}</span>
+                        <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded">{e.role}</span>
                       </div>
-                      <div className="text-[9px] text-slate-400">{e.obj} · {e.objId} · {fmtDt(e.at)}</div>
-                      {e.prev&&<div className="text-[8px] text-slate-400 mt-0.5">{e.prev} → {e.next}</div>}
+                      <div className="text-sm text-slate-400">{e.obj} · {e.objId} · {fmtDt(e.at)}</div>
+                      {e.prev&&<div className="text-sm text-slate-400 mt-0.5">{e.prev} → {e.next}</div>}
                     </div>
-                    <span className="text-[9px] font-bold shrink-0" style={{color:rc.color}}>{e.result}</span>
+                    <span className="text-sm font-bold shrink-0" style={{color:rc.color}}>{e.result}</span>
                   </div>
                 )
               })}
@@ -202,7 +202,7 @@ export default function AuditPage() {
         {/* ── FISCAL ── */}
         {tab==='tax'&&(
           <div className="space-y-3">
-            <div className="text-[9px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/8 border border-red-200 dark:border-red-500/20 px-3 py-2 rounded-xl font-bold">
+            <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/8 border border-red-200 dark:border-red-500/20 px-3 py-2 rounded-xl font-bold">
               Estimation pilote — aucune transmission officielle
             </div>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
@@ -213,11 +213,11 @@ export default function AuditPage() {
                   <div key={e.id} className="flex items-start gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <span className="text-lg shrink-0">{ac.icon}</span>
                     <div className="flex-1">
-                      <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{e.action} · {e.obj}</div>
-                      <div className="text-[9px] text-slate-400">{e.user} · {fmtDt(e.at)}</div>
-                      {e.next&&<div className="text-[8px] text-purple-600 dark:text-purple-400">{e.next}</div>}
+                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{e.action} · {e.obj}</div>
+                      <div className="text-sm text-slate-400">{e.user} · {fmtDt(e.at)}</div>
+                      {e.next&&<div className="text-sm text-purple-600 dark:text-purple-400">{e.next}</div>}
                     </div>
-                    <span className="text-[9px] font-bold" style={{color:RESULT_CONF[e.result]?.color??'#64748B'}}>{e.result}</span>
+                    <span className="text-sm font-bold" style={{color:RESULT_CONF[e.result]?.color??'#64748B'}}>{e.result}</span>
                   </div>
                 )
               })}
@@ -228,7 +228,7 @@ export default function AuditPage() {
         {/* ── GOUVERNEMENTAL ── */}
         {tab==='gov'&&(
           <div className="space-y-4">
-            <div className="text-[9px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/8 border border-red-200 dark:border-red-500/20 px-3 py-2 rounded-xl">
+            <div className="text-sm font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/8 border border-red-200 dark:border-red-500/20 px-3 py-2 rounded-xl">
               ⚠️ SIMULATION UNIQUEMENT — Aucune connexion gouvernementale réelle — Les mots « simulé » et « DEMO » sont intentionnels
             </div>
             {/* Timeline gouvernementale */}
@@ -241,9 +241,9 @@ export default function AuditPage() {
                   ):(
                     <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{background:i===0?'#000':i===8?'rgba(5,150,105,0.1)':'rgba(0,61,165,0.06)'}}>
                       <div className="w-2 h-2 rounded-full shrink-0" style={{background:i===0?'#06B029':i===8?'#059669':'#003DA5'}}/>
-                      <span className="text-[10px] font-bold" style={{color:i===0?'white':i===8?'#059669':'#003DA5'}}>{step}</span>
-                      {i>=4&&<span className="text-[7px] font-bold text-amber-500 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded ml-auto">SIMULÉ</span>}
-                      {i<4&&i>0&&<span className="text-[7px] font-bold text-green-600 bg-green-50 dark:bg-green-500/10 px-1.5 py-0.5 rounded ml-auto">PILOTE</span>}
+                      <span className="text-sm font-bold" style={{color:i===0?'white':i===8?'#059669':'#003DA5'}}>{step}</span>
+                      {i>=4&&<span className="text-xs font-bold text-amber-500 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded ml-auto">SIMULÉ</span>}
+                      {i<4&&i>0&&<span className="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-500/10 px-1.5 py-0.5 rounded ml-auto">PILOTE</span>}
                     </div>
                   )
                 ))}

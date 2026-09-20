@@ -288,26 +288,26 @@ export default function IntegrationTestsPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-white font-black text-base">Tests d'intégration — Phase 33</div>
-              <div className="text-[9px] mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>
+              <div className="text-sm mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>
                 {CURRENT_ENT.id} · {TESTS.length} tests · {cats.length} catégories · {PILOT}
               </div>
               <div className="flex items-center gap-3 mt-2">
                 {[{l:'PASS',v:pass,c:'#059669'},{l:'PARTIAL',v:partial,c:'#B45309'},{l:'FAIL',v:fail,c:'#DC2626'}].map(s=>(
                   <div key={s.l} className="text-center">
                     <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-                    <div className="text-[7px] font-bold" style={{color:'rgba(255,255,255,0.4)'}}>{s.l}</div>
+                    <div className="text-xs font-bold" style={{color:'rgba(255,255,255,0.4)'}}>{s.l}</div>
                   </div>
                 ))}
               </div>
             </div>
             <div className="text-center shrink-0">
               <div className="text-4xl font-black" style={{color:score>=80?'#059669':score>=60?'#B45309':'#DC2626'}}>{score}%</div>
-              <div className="text-[8px] font-bold text-white/50">score global</div>
+              <div className="text-sm font-bold text-white/50">score global</div>
             </div>
           </div>
         </div>
 
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           ⚠️ {PILOT} · Tests d'intégration · Données synthétiques · Aucune transmission réelle
         </div>
 
@@ -329,9 +329,9 @@ export default function IntegrationTestsPage() {
                 <span className="text-lg">{catSt==='PASS'?'✅':catSt==='FAIL'?'❌':'⚠️'}</span>
                 <div className="flex-1">
                   <div className="text-sm font-black text-slate-800 dark:text-white">{cat}</div>
-                  <div className="text-[9px] text-slate-400">{catPass}/{catTests.length} tests passés</div>
+                  <div className="text-sm text-slate-400">{catPass}/{catTests.length} tests passés</div>
                 </div>
-                <span className={`text-[9px] font-black px-2.5 py-1 rounded-full text-white ${catSt==='PASS'?'bg-green-600':catSt==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{catSt}</span>
+                <span className={`text-sm font-black px-2.5 py-1 rounded-full text-white ${catSt==='PASS'?'bg-green-600':catSt==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{catSt}</span>
                 <span className="text-slate-400 text-sm">{isOpen?'▲':'▼'}</span>
               </button>
 
@@ -343,15 +343,15 @@ export default function IntegrationTestsPage() {
                         <span className="text-base shrink-0 mt-0.5">{t.status==='PASS'?'✅':t.status==='FAIL'?'❌':'⚠️'}</span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <span className="text-[10px] font-black text-slate-800 dark:text-slate-200">{t.label}</span>
-                            <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-full text-white ${t.status==='PASS'?'bg-green-600':t.status==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{t.status}</span>
+                            <span className="text-sm font-black text-slate-800 dark:text-slate-200">{t.label}</span>
+                            <span className={`text-xs font-black px-1.5 py-0.5 rounded-full text-white ${t.status==='PASS'?'bg-green-600':t.status==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{t.status}</span>
                           </div>
-                          <div className="text-[9px] text-slate-500 dark:text-slate-400 font-mono">{t.detail}</div>
-                          <div className="flex gap-3 mt-1 text-[8px] text-slate-400">
+                          <div className="text-sm text-slate-500 dark:text-slate-400 font-mono">{t.detail}</div>
+                          <div className="flex gap-3 mt-1 text-sm text-slate-400">
                             <span>Module: <span className="font-bold">{t.module}</span></span>
                             <span>Table: <span className="font-bold">{t.table}</span></span>
                           </div>
-                          {t.fix&&<div className="mt-1.5 text-[8px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded">🔧 {t.fix}</div>}
+                          {t.fix&&<div className="mt-1.5 text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded">🔧 {t.fix}</div>}
                         </div>
                       </div>
                     </div>
@@ -370,17 +370,17 @@ export default function IntegrationTestsPage() {
               <div key={t.id} className="flex items-start gap-3 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                 <span className="text-base shrink-0">{t.status==='FAIL'?'❌':'⚠️'}</span>
                 <div className="flex-1">
-                  <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{t.label}</div>
-                  <div className="text-[9px] text-blue-600 dark:text-blue-400 mt-0.5">🔧 {t.fix}</div>
+                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{t.label}</div>
+                  <div className="text-sm text-blue-600 dark:text-blue-400 mt-0.5">🔧 {t.fix}</div>
                 </div>
-                <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full text-white shrink-0 ${t.status==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{t.status}</span>
+                <span className={`text-sm font-bold px-2 py-0.5 rounded-full text-white shrink-0 ${t.status==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{t.status}</span>
               </div>
             ))}
             {TESTS.filter(t=>t.status!=='PASS'&&t.fix).length===0&&(
-              <div className="text-[10px] text-green-600 dark:text-green-400 font-bold">✅ Aucun problème critique avec correction requise</div>
+              <div className="text-sm text-green-600 dark:text-green-400 font-bold">✅ Aucun problème critique avec correction requise</div>
             )}
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[8px] text-slate-400">
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-sm text-slate-400">
             Score: {score}% · {pass} PASS · {partial} PARTIAL · {fail} FAIL · {TESTS.length} tests au total · {PILOT}
           </div>
         </div>

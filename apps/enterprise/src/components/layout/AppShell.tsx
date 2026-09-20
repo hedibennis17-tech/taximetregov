@@ -41,7 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <div>
               <div className="text-xs font-black text-slate-900 dark:text-white">TAXIMETER.GOV</div>
-              <div className="text-[9px] text-blue-700 font-bold">Enterprise Gov</div>
+              <div className="text-sm text-blue-700 font-bold">Enterprise Gov</div>
             </div>
           </div>
 
@@ -54,12 +54,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="font-black text-white" style={{fontFamily:'system-ui',fontSize:'1rem',lineHeight:1}}>Eats</span>
             </div>
             <div className="flex items-center gap-1 mt-1.5">
-              {['🚕','🚗','🟢','🛒','📦'].map((e,i)=><span key={i} className="text-[11px]">{e}</span>)}
-              <span className="text-[7px] font-bold ml-1" style={{color:'rgba(255,255,255,0.35)'}}>6 services</span>
+              {['🚕','🚗','🟢','🛒','📦'].map((e,i)=><span key={i} className="text-sm">{e}</span>)}
+              <span className="text-xs font-bold ml-1" style={{color:'rgba(255,255,255,0.35)'}}>6 services</span>
             </div>
             <div className="flex items-center gap-1 mt-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400"/>
-              <span className="text-[8px] font-bold" style={{color:'rgba(255,255,255,0.55)'}}>Connecté · PILOTE</span>
+              <span className="text-sm font-bold" style={{color:'rgba(255,255,255,0.55)'}}>Connecté · PILOTE</span>
             </div>
           </div>
 
@@ -67,17 +67,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {user && (
             <div className="mt-2.5 px-1">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-black shrink-0" style={{background:roleColor}}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-black shrink-0" style={{background:roleColor}}>
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200 truncate">{user.name}</div>
-                  <div className="text-[8px] text-slate-400 truncate">{user.email}</div>
+                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{user.name}</div>
+                  <div className="text-sm text-slate-400 truncate">{user.email}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-1.5">
-                <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{background:roleColor}}>{roleLabel}</span>
-                <span className="text-[7px] font-bold text-green-600 dark:text-green-400">🔒 Sécurisé</span>
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full text-white" style={{background:roleColor}}>{roleLabel}</span>
+                <span className="text-xs font-bold text-green-600 dark:text-green-400">🔒 Sécurisé</span>
               </div>
             </div>
           )}
@@ -87,7 +87,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto py-2 px-2">
           {NAV_SECTIONS.map(sec=>(
             <div key={sec.section} className="mb-3">
-              <div className="text-[8px] font-bold text-slate-400 uppercase px-2 mb-1">{sec.section}</div>
+              <div className="text-sm font-bold text-slate-400 uppercase px-2 mb-1">{sec.section}</div>
               {sec.items.map(item=>{
                 const active = pathname===item.href||(item.href!=='/'&&pathname.startsWith(item.href))
                 return (
@@ -104,12 +104,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Footer */}
         <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-          <div className="text-[8px] text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg">
+          <div className="text-sm text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg">
             ⚠️ DONNÉES SYNTHÉTIQUES — PILOTE
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-[10px] text-slate-400 hover:text-red-500 transition-colors w-full cursor-pointer py-1"
+            className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-500 transition-colors w-full cursor-pointer py-1"
           >
             <LogOut size={12}/> Déconnexion
           </button>
@@ -127,20 +127,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Menu size={16} className="text-slate-500"/>
           </button>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] text-slate-400 hidden md:block">
+            <div className="text-sm text-slate-400 hidden md:block">
               {CURRENT_ENT.tradeName} · {CURRENT_ENT.id} · NEQ: {CURRENT_ENT.neq}
             </div>
           </div>
           <Link href="/notifications" className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
             <Bell size={16} className="text-slate-500"/>
-            {unread>0&&<div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-black text-white">{unread}</div>}
+            {unread>0&&<div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-sm font-black text-white">{unread}</div>}
           </Link>
           {user && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white shrink-0" style={{background:roleColor}}>
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center text-sm font-black text-white shrink-0" style={{background:roleColor}}>
                 {initials}
               </div>
-              <div className="text-[10px] font-bold text-slate-700 dark:text-slate-200 hidden md:block">{user.name}</div>
+              <div className="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:block">{user.name}</div>
               <button onClick={handleLogout} className="ml-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer hidden md:block">
                 <LogOut size={12}/>
               </button>

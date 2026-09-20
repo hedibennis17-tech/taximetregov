@@ -42,12 +42,12 @@ export default function OperationsPage() {
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">Centre des opérations</h1>
           <p className="text-sm text-slate-500 mt-1">Activités · Courses · Livraisons · Performance · Traçabilité</p>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · DONNÉES SYNTHÉTIQUES · 20 activités pilote représentatives</div>
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · DONNÉES SYNTHÉTIQUES · 20 activités pilote représentatives</div>
 
         {/* Chaîne traçabilité */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 shadow-sm">
-          <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Chaîne de traçabilité</div>
-          <div className="flex items-center gap-1 flex-wrap text-[8px] font-bold">
+          <div className="text-sm font-bold text-slate-400 uppercase mb-2">Chaîne de traçabilité</div>
+          <div className="flex items-center gap-1 flex-wrap text-sm font-bold">
             {['ACTIVITÉ','→','TRANSACTION','→','LEDGER','→','FISCALITÉ','→','DÉCLARATION','→','TAXIMETER.GOV'].map((s,i)=>(
               <span key={i} className={s==='→'?'text-slate-300 dark:text-slate-700':'px-2 py-1 rounded-lg bg-black text-white'}>{s}</span>
             ))}
@@ -64,7 +64,7 @@ export default function OperationsPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-xl p-3`}>
               <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -78,11 +78,11 @@ export default function OperationsPage() {
               className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs pl-9 outline-none text-slate-800 dark:text-white"/>
           </div>
           <div className="flex gap-1.5 flex-wrap">
-            <button onClick={()=>setDeptF('ALL')} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:deptF==='ALL'?'#000':'transparent',color:deptF==='ALL'?'white':'#64748B',borderColor:deptF==='ALL'?'#000':'rgba(148,163,184,0.30)'}}>
+            <button onClick={()=>setDeptF('ALL')} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:deptF==='ALL'?'#000':'transparent',color:deptF==='ALL'?'white':'#64748B',borderColor:deptF==='ALL'?'#000':'rgba(148,163,184,0.30)'}}>
               Tous ({OPS_ACTIVITIES.length})
             </button>
             {DEPARTMENTS.filter(d=>d.status==='ACTIVE').map(d=>(
-              <button key={d.slug} onClick={()=>setDeptF(d.slug)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:deptF===d.slug?d.color:'transparent',color:deptF===d.slug?'white':'#64748B',borderColor:deptF===d.slug?d.color:'rgba(148,163,184,0.30)'}}>
+              <button key={d.slug} onClick={()=>setDeptF(d.slug)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:deptF===d.slug?d.color:'transparent',color:deptF===d.slug?'white':'#64748B',borderColor:deptF===d.slug?d.color:'rgba(148,163,184,0.30)'}}>
                 {d.emoji} {d.name}
               </button>
             ))}
@@ -94,13 +94,13 @@ export default function OperationsPage() {
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
             <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <span className="text-xs font-bold text-slate-800 dark:text-white">{filtered.length} activité(s)</span>
-              <Link href="/reconciliation" className="text-[9px] font-bold text-qc-blue hover:underline">→ Réconciliation</Link>
+              <Link href="/reconciliation" className="text-sm font-bold text-qc-blue hover:underline">→ Réconciliation</Link>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead><tr className="border-b border-slate-100 dark:border-slate-800 bg-black">
                   {['ID','Service','Chauffeur','Trajet','Dist.','Brut','Tip','TPS','Statut'].map(h=>(
-                    <th key={h} className="px-3 py-2.5 text-left text-[8px] font-bold text-white uppercase whitespace-nowrap">{h}</th>
+                    <th key={h} className="px-3 py-2.5 text-left text-sm font-bold text-white uppercase whitespace-nowrap">{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
@@ -109,15 +109,15 @@ export default function OperationsPage() {
                     const isSelected = sel===a.id
                     return (
                       <tr key={a.id} onClick={()=>setSel(isSelected?null:a.id)} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer" style={{background:isSelected?'#EEF3FB':''}}>
-                        <td className="px-3 py-2 font-mono text-[8px] text-blue-600 dark:text-blue-400 whitespace-nowrap">{a.id}</td>
-                        <td className="px-3 py-2 text-[9px] whitespace-nowrap">{SVC_ICONS[a.svc]??'📍'} {a.svc}</td>
-                        <td className="px-3 py-2 text-[9px] text-slate-500 whitespace-nowrap">{a.driverId}</td>
-                        <td className="px-3 py-2 text-[9px] text-slate-500 whitespace-nowrap max-w-[100px] truncate">{a.origin}→{a.dest}</td>
-                        <td className="px-3 py-2 text-[9px] text-center text-slate-500">{a.dist}km</td>
+                        <td className="px-3 py-2 font-mono text-sm text-blue-600 dark:text-blue-400 whitespace-nowrap">{a.id}</td>
+                        <td className="px-3 py-2 text-sm whitespace-nowrap">{SVC_ICONS[a.svc]??'📍'} {a.svc}</td>
+                        <td className="px-3 py-2 text-sm text-slate-500 whitespace-nowrap">{a.driverId}</td>
+                        <td className="px-3 py-2 text-sm text-slate-500 whitespace-nowrap max-w-[100px] truncate">{a.origin}→{a.dest}</td>
+                        <td className="px-3 py-2 text-sm text-center text-slate-500">{a.dist}km</td>
                         <td className="px-3 py-2 font-bold text-green-600 dark:text-green-400 whitespace-nowrap">{money2(a.fare)}</td>
-                        <td className="px-3 py-2 text-[9px] text-blue-600 dark:text-blue-400">{a.tip>0?money2(a.tip):'—'}</td>
-                        <td className="px-3 py-2 text-[9px] text-purple-600 dark:text-purple-400">{money2(a.tps)}</td>
-                        <td className="px-3 py-2"><span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap" style={{color:sc.color,background:sc.bg}}>{a.status}</span></td>
+                        <td className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400">{a.tip>0?money2(a.tip):'—'}</td>
+                        <td className="px-3 py-2 text-sm text-purple-600 dark:text-purple-400">{money2(a.tps)}</td>
+                        <td className="px-3 py-2"><span className="text-xs font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap" style={{color:sc.color,background:sc.bg}}>{a.status}</span></td>
                       </tr>
                     )
                   })}
@@ -154,13 +154,13 @@ export default function OperationsPage() {
                     {l:'TX liée',      v:selAct.txId},
                   ].map(r=>(
                     <div key={r.l} className="flex justify-between border-b border-slate-100 dark:border-slate-800 last:border-0 py-1">
-                      <span className="text-[9px] text-slate-400">{r.l}</span>
-                      <span className="text-[9px] font-bold text-slate-800 dark:text-slate-200">{r.v}</span>
+                      <span className="text-sm text-slate-400">{r.l}</span>
+                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{r.v}</span>
                     </div>
                   ))}
                   {/* Chaîne traçabilité mini */}
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div className="text-[8px] font-bold text-slate-400 mb-1.5">Traçabilité</div>
+                    <div className="text-sm font-bold text-slate-400 mb-1.5">Traçabilité</div>
                     {[
                       {l:'Activité',  v:'✅ '+selAct.id,   c:'#059669'},
                       {l:'Transaction',v:'✅ '+selAct.txId,c:'#059669'},
@@ -169,15 +169,15 @@ export default function OperationsPage() {
                       {l:'Déclaration',v:'⏳ Q3 en cours',   c:'#B45309'},
                     ].map(r=>(
                       <div key={r.l} className="flex justify-between py-0.5">
-                        <span className="text-[8px] text-slate-400">{r.l}</span>
-                        <span className="text-[8px] font-bold" style={{color:r.c}}>{r.v}</span>
+                        <span className="text-sm text-slate-400">{r.l}</span>
+                        <span className="text-sm font-bold" style={{color:r.c}}>{r.v}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </>
             ):(
-              <div className="p-6 text-center text-[10px] text-slate-400 italic">
+              <div className="p-6 text-center text-sm text-slate-400 italic">
                 Cliquer sur une activité pour voir son détail et sa chaîne de traçabilité
               </div>
             )}
@@ -197,11 +197,11 @@ export default function OperationsPage() {
               <div key={s.l} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 text-center">
                 <div className="text-lg mb-0.5">{s.icon}</div>
                 <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-                <div className="text-[8px] text-slate-400 mt-0.5">{s.l}</div>
+                <div className="text-sm text-slate-400 mt-0.5">{s.l}</div>
               </div>
             ))}
           </div>
-          <Link href="/reconciliation" className="mt-3 block text-center text-[9px] font-bold text-qc-blue hover:underline">→ Voir réconciliation complète</Link>
+          <Link href="/reconciliation" className="mt-3 block text-center text-sm font-bold text-qc-blue hover:underline">→ Voir réconciliation complète</Link>
         </div>
       </div>
     </AppShell>

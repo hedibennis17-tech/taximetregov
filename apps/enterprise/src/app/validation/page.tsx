@@ -161,14 +161,14 @@ export default function ValidationPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="text-white font-black text-base">Validation End-to-End · Phases 29–31</div>
-              <div className="text-[9px] mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>TAXIMETER.GOV · {CURRENT_ENT.id} · {PILOT}</div>
-              <div className="text-[8px] mt-1" style={{color:'rgba(255,255,255,0.35)'}}>
+              <div className="text-sm mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>TAXIMETER.GOV · {CURRENT_ENT.id} · {PILOT}</div>
+              <div className="text-sm mt-1" style={{color:'rgba(255,255,255,0.35)'}}>
                 Flux: Chauffeur → Activité → Transaction → Ledger → TPS/TVQ → Déclaration → Paiement
               </div>
             </div>
             <div className="text-center shrink-0">
               <div className="text-3xl font-black" style={{color: score>=85?'#059669':score>=65?'#B45309':'#DC2626'}}>{score}%</div>
-              <div className="text-[8px] font-bold text-white/50">score global</div>
+              <div className="text-sm font-bold text-white/50">score global</div>
             </div>
           </div>
 
@@ -181,13 +181,13 @@ export default function ValidationPage() {
             ].map(s=>(
               <div key={s.l} className="text-center">
                 <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-                <div className="text-[7px] font-bold" style={{color:'rgba(255,255,255,0.4)'}}>{s.l}</div>
+                <div className="text-xs font-bold" style={{color:'rgba(255,255,255,0.4)'}}>{s.l}</div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           ⚠️ {PILOT} · Rapport de validation synthétique · Aucune transmission gouvernementale réelle
         </div>
 
@@ -206,11 +206,11 @@ export default function ValidationPage() {
               {l:payment?.period??'—',      icon:'🏦', ok:!!payment},
             ].map((s,i)=>(
               <React.Fragment key={i}>
-                <div className={`text-center px-2.5 py-1.5 rounded-xl border text-[8px] font-bold ${s.ok?'border-green-300 dark:border-green-500/30 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400':'border-red-200 bg-red-50 text-red-500'}`}>
+                <div className={`text-center px-2.5 py-1.5 rounded-xl border text-sm font-bold ${s.ok?'border-green-300 dark:border-green-500/30 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400':'border-red-200 bg-red-50 text-red-500'}`}>
                   <div>{s.icon}</div>
                   <div className="mt-0.5 max-w-[70px] truncate">{s.l}</div>
                 </div>
-                {i<7&&<span className="text-slate-300 dark:text-slate-700 text-[10px] font-bold">→</span>}
+                {i<7&&<span className="text-slate-300 dark:text-slate-700 text-sm font-bold">→</span>}
               </React.Fragment>
             ))}
           </div>
@@ -234,9 +234,9 @@ export default function ValidationPage() {
                 <span className="text-base">{catStatus==='PASS'?'✅':catStatus==='FAIL'?'❌':'⚠️'}</span>
                 <div className="flex-1">
                   <div className="text-sm font-black text-slate-800 dark:text-white">{cat}</div>
-                  <div className="text-[9px] text-slate-400">{catPass}/{catTests.length} tests passés</div>
+                  <div className="text-sm text-slate-400">{catPass}/{catTests.length} tests passés</div>
                 </div>
-                <span className={`text-[9px] font-black px-2 py-1 rounded-full text-white shrink-0 ${catStatus==='PASS'?'bg-green-600':catStatus==='FAIL'?'bg-red-600':'bg-amber-600'}`}>
+                <span className={`text-sm font-black px-2 py-1 rounded-full text-white shrink-0 ${catStatus==='PASS'?'bg-green-600':catStatus==='FAIL'?'bg-red-600':'bg-amber-600'}`}>
                   {catStatus}
                 </span>
                 <span className="text-slate-400 text-xs">{isOpen?'▲':'▼'}</span>
@@ -248,10 +248,10 @@ export default function ValidationPage() {
                     <div key={t.id} className={`p-3 rounded-xl border ${t.result==='PASS'?'bg-green-50 dark:bg-green-500/8 border-green-200 dark:border-green-500/20':t.result==='FAIL'?'bg-red-50 dark:bg-red-500/8 border-red-200 dark:border-red-500/20':'bg-amber-50 dark:bg-amber-500/8 border-amber-200 dark:border-amber-500/20'}`}>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm">{t.result==='PASS'?'✅':t.result==='FAIL'?'❌':'⚠️'}</span>
-                        <span className="text-[10px] font-black text-slate-800 dark:text-slate-200">{t.label}</span>
-                        <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-full text-white ml-auto ${t.result==='PASS'?'bg-green-600':t.result==='FAIL'?'bg-red-600':'bg-amber-600'}`}>{t.result}</span>
+                        <span className="text-sm font-black text-slate-800 dark:text-slate-200">{t.label}</span>
+                        <span className={`text-xs font-black px-1.5 py-0.5 rounded-full text-white ml-auto ${t.result==='PASS'?'bg-green-600':t.result==='FAIL'?'bg-red-600':'bg-amber-600'}`}>{t.result}</span>
                       </div>
-                      <div className="text-[9px] text-slate-500 dark:text-slate-400 font-mono leading-relaxed">{t.detail}</div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400 font-mono leading-relaxed">{t.detail}</div>
                     </div>
                   ))}
                 </div>
@@ -263,7 +263,7 @@ export default function ValidationPage() {
         {/* Rapport final */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
           <div className="text-xs font-black text-slate-800 dark:text-white mb-3">Rapport final — Phases 29–31</div>
-          <div className="space-y-1.5 text-[9px]">
+          <div className="space-y-1.5 text-sm">
             {[
               {l:'Authentification Supabase + RBAC',     s:'PASS'},
               {l:'Isolation données ENT-DEMO-001',        s:'PASS'},
@@ -280,13 +280,13 @@ export default function ValidationPage() {
             ].map(r=>(
               <div key={r.l} className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                 <span className="text-slate-600 dark:text-slate-400">{r.l}</span>
-                <span className={`font-black px-2 py-0.5 rounded-full text-white text-[8px] ${r.s==='PASS'?'bg-green-600':r.s==='FAIL'?'bg-red-600':'bg-amber-600'}`}>{r.s}</span>
+                <span className={`font-black px-2 py-0.5 rounded-full text-white text-sm ${r.s==='PASS'?'bg-green-600':r.s==='FAIL'?'bg-red-600':'bg-amber-600'}`}>{r.s}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="text-[8px] text-slate-400 text-center">
+        <div className="text-sm text-slate-400 text-center">
           TAXIMETER.GOV · {PILOT} · Rapport de validation Phases 28–31 · enterprise_id: {CURRENT_ENT.id}
         </div>
       </div>

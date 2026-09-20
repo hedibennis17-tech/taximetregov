@@ -214,8 +214,8 @@ export default function OnboardingPage() {
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className="text-sm font-bold px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">{u.role}</span>
-                          <span className={`text-[11px] font-bold px-1 py-0.5 rounded ${u.mfa?'text-green-600 bg-green-50':'text-red-500 bg-red-50'}`}>{u.mfa?'MFA ✅':'MFA ⚠️'}</span>
-                          <span className={`text-[11px] font-bold ${u.status==='ACTIF'?'text-green-600':'text-amber-600'}`}>{u.status}</span>
+                          <span className={`text-sm font-bold px-1 py-0.5 rounded ${u.mfa?'text-green-600 bg-green-50':'text-red-500 bg-red-50'}`}>{u.mfa?'MFA ✅':'MFA ⚠️'}</span>
+                          <span className={`text-sm font-bold ${u.status==='ACTIF'?'text-green-600':'text-amber-600'}`}>{u.status}</span>
                         </div>
                       </div>
                     </div>
@@ -239,7 +239,7 @@ export default function OnboardingPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-0.5">
                             <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{d.name}</span>
-                            <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${d.status==='ACTIVE'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-purple-600 bg-purple-50'}`}>{d.status}</span>
+                            <span className={`text-sm font-bold px-1.5 py-0.5 rounded-full ${d.status==='ACTIVE'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-purple-600 bg-purple-50'}`}>{d.status}</span>
                           </div>
                           <div className="text-sm text-slate-400">{d.desc}</div>
                           {d.drivers>0&&(
@@ -269,7 +269,7 @@ export default function OnboardingPage() {
                       <span className="text-sm font-bold flex-1 text-slate-700 dark:text-slate-300">{d.name}</span>
                       <div className="text-right">
                         <div className="text-base font-black text-slate-800 dark:text-white">{d.drivers.toLocaleString('fr-CA')}</div>
-                        <div className="text-[11px] text-amber-500">SYNTH.</div>
+                        <div className="text-sm text-amber-500">SYNTH.</div>
                       </div>
                     </div>
                   ))}
@@ -277,7 +277,7 @@ export default function OnboardingPage() {
                     <span className="text-sm font-bold flex-1 text-white">TOTAL (estimation DEMO)</span>
                     <div className="text-right">
                       <div className="text-base font-black text-white">{UBER_DEPTS.reduce((s,d)=>s+d.drivers,0).toLocaleString('fr-CA')}</div>
-                      <div className="text-[11px] text-amber-400">SYNTHÉTIQUE</div>
+                      <div className="text-sm text-amber-400">SYNTHÉTIQUE</div>
                     </div>
                   </div>
                   <div className="text-sm text-slate-400 italic">12 351 véhicules Uber = référence publique (Travelnet 2024) — pas le nb de chauffeurs</div>
@@ -298,7 +298,7 @@ export default function OnboardingPage() {
                       <span className="text-sm font-bold flex-1 text-slate-700 dark:text-slate-300">{d.name}</span>
                       <div className="text-right">
                         <div className="text-base font-black text-slate-800 dark:text-white">{d.veh.toLocaleString('fr-CA')}</div>
-                        <div className="text-[11px] text-amber-500">SYNTH.</div>
+                        <div className="text-sm text-amber-500">SYNTH.</div>
                       </div>
                     </div>
                   ))}
@@ -324,7 +324,7 @@ export default function OnboardingPage() {
                         <div key={item} className="flex items-center gap-2 py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                           <div className="w-2 h-2 rounded-full bg-green-500 shrink-0"/>
                           <span className="text-sm text-slate-600 dark:text-slate-400">{item}</span>
-                          <span className="text-[11px] font-bold text-green-600 bg-green-50 dark:bg-green-500/10 px-1.5 py-0.5 rounded-full ml-auto">Configuré</span>
+                          <span className="text-sm font-bold text-green-600 bg-green-50 dark:bg-green-500/10 px-1.5 py-0.5 rounded-full ml-auto">Configuré</span>
                         </div>
                       ))}
                     </div>
@@ -349,14 +349,14 @@ export default function OnboardingPage() {
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-2 h-2 rounded-full shrink-0 ${api.status==='CONNECTÉ'?'bg-green-500':'bg-purple-400'}`}/>
                         <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{api.name}</span>
-                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full text-white ml-auto ${api.status==='CONNECTÉ'?'bg-green-600':'bg-purple-500'}`}>{api.status}</span>
+                        <span className={`text-sm font-bold px-1.5 py-0.5 rounded-full text-white ml-auto ${api.status==='CONNECTÉ'?'bg-green-600':'bg-purple-500'}`}>{api.status}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-sm text-slate-400">
                         <div>Env: <span className="font-bold text-slate-600 dark:text-slate-300">{api.env}</span></div>
                         <div>Auth: <span className="font-bold text-slate-600 dark:text-slate-300">{api.auth}</span></div>
                         <div>Client ID: <span className="font-mono">••••••••</span></div>
                         <div>Secret: <span className="font-mono">•••••••••••••••••</span></div>
-                        <div className="col-span-2">Endpoint: <span className="font-mono text-slate-500 text-[11px]">{api.endpoint}</span></div>
+                        <div className="col-span-2">Endpoint: <span className="font-mono text-slate-500 text-sm">{api.endpoint}</span></div>
                         {api.lastSync&&<div className="col-span-2">Dernière sync: <span className="font-bold text-slate-600 dark:text-slate-300">{api.lastSync}</span></div>}
                       </div>
                     </div>
@@ -448,7 +448,7 @@ export default function OnboardingPage() {
                 <div className="font-black tracking-tighter text-white" style={{fontSize:'1.4rem',fontFamily:'system-ui',letterSpacing:'-0.04em',lineHeight:1}}>uber</div>
                 <div>
                   <div className="text-sm font-bold text-white">Enterprise Gov</div>
-                  <div className="text-[11px]" style={{color:'rgba(255,255,255,0.5)'}}>DEMO · PILOTE</div>
+                  <div className="text-sm" style={{color:'rgba(255,255,255,0.5)'}}>DEMO · PILOTE</div>
                 </div>
               </div>
               <div className="p-4 space-y-1.5">
@@ -472,7 +472,7 @@ export default function OnboardingPage() {
               {['🚗 Rides · UberX · XL','🚕 Uber Taxi','🟢 Uber Green','🍔 Uber Eats','🛒 Uber Grocery','📦 Uber Courier','🚚 Uber Direct'].map(s=>(
                 <div key={s} className="text-sm text-slate-500 py-0.5">{s}</div>
               ))}
-              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-green-600 dark:text-green-400 font-bold">
+              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-sm text-green-600 dark:text-green-400 font-bold">
                 ✅ Aucune donnée concurrente dans ce compte
               </div>
             </div>

@@ -60,10 +60,10 @@ export default function LoginPage() {
             </div>
             <div className="text-left">
               <div className="text-lg font-black text-slate-900" style={{letterSpacing:'-0.02em'}}>TAXIMETER.GOV</div>
-              <div className="text-[10px] font-bold text-slate-500">Enterprise Gov</div>
+              <div className="text-sm font-bold text-slate-500">Enterprise Gov</div>
             </div>
           </div>
-          <div className="inline-block text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full">
+          <div className="inline-block text-sm font-bold text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full">
             ⚠️ MODE DÉMO · DONNÉES SYNTHÉTIQUES · PILOTE
           </div>
         </div>
@@ -75,7 +75,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleLogin} className="space-y-3">
               <div>
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Courriel</label>
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Courriel</label>
                 <input
                   type="email"
                   value={email}
@@ -87,7 +87,7 @@ export default function LoginPage() {
                 />
               </div>
               <div>
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Mot de passe</label>
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Mot de passe</label>
                 <input
                   type="password"
                   value={password}
@@ -100,7 +100,7 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <div className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+                <div className="text-sm font-bold text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
                   ❌ {error}
                 </div>
               )}
@@ -123,7 +123,7 @@ export default function LoginPage() {
 
           {/* Accès rapide DEMO */}
           <div className="px-6 pb-6 pt-3 border-t border-slate-100">
-            <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-2">Accès rapide · DÉMO</div>
+            <div className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Accès rapide · DÉMO</div>
             <div className="space-y-1.5">
               {QUICK.map(u => (
                 <button
@@ -136,16 +136,16 @@ export default function LoginPage() {
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-black shrink-0"
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-black shrink-0"
                       style={{background: u.role==='SUPER_ADMIN'?'#DC2626': u.role==='OWNER'?'#000':'#059669'}}>
                       {u.name.split(' ').map(n=>n[0]).join('')}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10px] font-bold text-slate-800">{u.name}</div>
-                      <div className="text-[8px] text-slate-400 truncate">{u.email}</div>
-                      <div className="text-[8px] font-mono text-slate-500 mt-0.5">🔑 {u.password}</div>
+                      <div className="text-sm font-bold text-slate-800">{u.name}</div>
+                      <div className="text-sm text-slate-400 truncate">{u.email}</div>
+                      <div className="text-sm font-mono text-slate-500 mt-0.5">🔑 {u.password}</div>
                     </div>
-                    <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full text-white shrink-0"
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full text-white shrink-0"
                       style={{background: u.role==='SUPER_ADMIN'?'#DC2626': u.role==='OWNER'?'#000':'#059669'}}>
                       {u.role.replace('_',' ')}
                     </span>
@@ -153,13 +153,13 @@ export default function LoginPage() {
                 </button>
               ))}
             </div>
-            <div className="mt-3 text-[8px] text-slate-400 italic">
+            <div className="mt-3 text-sm text-slate-400 italic">
               Le mot de passe doit être configuré dans Supabase Authentication pour chaque compte.
             </div>
           </div>
         </div>
 
-        <div className="text-center mt-5 text-[8px] text-slate-400 leading-relaxed">
+        <div className="text-center mt-5 text-sm text-slate-400 leading-relaxed">
           TAXIMETER.GOV · Version pilote · Environnement de démonstration<br/>
           Aucune donnée réelle · Aucune connexion gouvernementale officielle
         </div>

@@ -64,16 +64,16 @@ export default function CompliancePage() {
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Centre de conformité</h1>
             <p className="text-sm text-slate-500 mt-0.5">Entreprise · Chauffeurs · Véhicules · Documents · Fiscal · Plateformes · Dossiers</p>
           </div>
-          <button className="px-3 py-2 rounded-xl text-[9px] font-bold bg-slate-800 text-white cursor-pointer hover:bg-slate-700 shrink-0">↓ Exporter · DEMO</button>
+          <button className="px-3 py-2 rounded-xl text-sm font-bold bg-slate-800 text-white cursor-pointer hover:bg-slate-700 shrink-0">↓ Exporter · DEMO</button>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           ⚠️ {PILOT} · Scores = indicateurs administratifs DEMO — aucune valeur légale ou gouvernementale
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 flex-wrap">
           {TABS.map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)} className="px-3 py-2 rounded-xl text-[9px] font-bold border transition-all cursor-pointer whitespace-nowrap" style={{background:tab===t.id?'#000':'transparent',color:tab===t.id?'white':'#64748B',borderColor:tab===t.id?'#000':'rgba(148,163,184,0.30)'}}>
+            <button key={t.id} onClick={()=>setTab(t.id)} className="px-3 py-2 rounded-xl text-sm font-bold border transition-all cursor-pointer whitespace-nowrap" style={{background:tab===t.id?'#000':'transparent',color:tab===t.id?'white':'#64748B',borderColor:tab===t.id?'#000':'rgba(148,163,184,0.30)'}}>
               {t.label}
             </button>
           ))}
@@ -82,9 +82,9 @@ export default function CompliancePage() {
         {/* Filtre département */}
         {['overview','drivers','vehicles','documents','tax'].includes(tab)&&(
           <div className="flex gap-1.5 flex-wrap">
-            <button onClick={()=>setDeptF('ALL')} className="px-2.5 py-1.5 rounded-xl text-[8px] font-bold border cursor-pointer transition-all" style={{background:deptF==='ALL'?'#000':'transparent',color:deptF==='ALL'?'white':'#64748B',borderColor:deptF==='ALL'?'#000':'rgba(148,163,184,0.30)'}}>Tous</button>
+            <button onClick={()=>setDeptF('ALL')} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border cursor-pointer transition-all" style={{background:deptF==='ALL'?'#000':'transparent',color:deptF==='ALL'?'white':'#64748B',borderColor:deptF==='ALL'?'#000':'rgba(148,163,184,0.30)'}}>Tous</button>
             {active.map(d=>(
-              <button key={d.slug} onClick={()=>setDeptF(d.slug)} className="px-2.5 py-1.5 rounded-xl text-[8px] font-bold border cursor-pointer transition-all" style={{background:deptF===d.slug?d.color:'transparent',color:deptF===d.slug?'white':'#64748B',borderColor:deptF===d.slug?d.color:'rgba(148,163,184,0.30)'}}>
+              <button key={d.slug} onClick={()=>setDeptF(d.slug)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border cursor-pointer transition-all" style={{background:deptF===d.slug?d.color:'transparent',color:deptF===d.slug?'white':'#64748B',borderColor:deptF===d.slug?d.color:'rgba(148,163,184,0.30)'}}>
                 {d.emoji} {d.name}
               </button>
             ))}
@@ -98,7 +98,7 @@ export default function CompliancePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col items-center justify-center">
                 <div className="text-4xl font-black" style={{color:totalScore>=90?'#059669':'#B45309'}}>{totalScore}%</div>
-                <div className="text-[9px] font-bold text-slate-500 mt-1 text-center">Score global (DEMO)</div>
+                <div className="text-sm font-bold text-slate-500 mt-1 text-center">Score global (DEMO)</div>
                 <div className="mt-2 w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                   <div className="h-full rounded-full bg-green-500" style={{width:`${totalScore}%`}}/>
                 </div>
@@ -111,7 +111,7 @@ export default function CompliancePage() {
                 <div key={s.l} className={`${s.bg} rounded-2xl p-4 flex flex-col items-center justify-center shadow-sm`}>
                   <div className="text-2xl mb-1">{s.icon}</div>
                   <div className="text-2xl font-black" style={{color:s.c}}>{s.v}</div>
-                  <div className="text-[8px] text-slate-500 text-center mt-0.5">{s.l}</div>
+                  <div className="text-sm text-slate-500 text-center mt-0.5">{s.l}</div>
                 </div>
               ))}
             </div>
@@ -127,7 +127,7 @@ export default function CompliancePage() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{d.emoji}</span>
-                          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{d.deptName}</span>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{d.deptName}</span>
                         </div>
                         <span className="text-sm font-black" style={{color:avg>=90?'#059669':avg>=80?'#B45309':'#DC2626'}}>{avg}%</span>
                       </div>
@@ -137,11 +137,11 @@ export default function CompliancePage() {
                             <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded-sm overflow-hidden flex items-end">
                               <div className="w-full rounded-sm" style={{height:`${val}%`,background:Number(val)>=90?'#059669':Number(val)>=80?'#B45309':'#DC2626'}}/>
                             </div>
-                            <div className="text-[7px] text-slate-400 mt-0.5">{label}</div>
+                            <div className="text-xs text-slate-400 mt-0.5">{label}</div>
                           </div>
                         ))}
                       </div>
-                      <div className="flex justify-between text-[7px] text-slate-400 mt-1">
+                      <div className="flex justify-between text-xs text-slate-400 mt-1">
                         {d.alerts>0&&<span className="text-amber-500">⚠️ {d.alerts} alertes</span>}
                         {d.exceptions>0&&<span className="text-red-500">❌ {d.exceptions} exceptions</span>}
                       </div>
@@ -155,7 +155,7 @@ export default function CompliancePage() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
               <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <span className="text-sm font-bold text-slate-800 dark:text-white">Obligations ({COMPLIANCE_OBLIGATIONS.length})</span>
-                <span className="text-[8px] text-red-500 font-bold">{totalAlerts} actives</span>
+                <span className="text-sm text-red-500 font-bold">{totalAlerts} actives</span>
               </div>
               {COMPLIANCE_OBLIGATIONS.slice(0,5).map(o=>{
                 const sc = COMPLIANCE_STATUS_CONF[o.status]!
@@ -165,11 +165,11 @@ export default function CompliancePage() {
                   <div key={o.id} className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <span className="text-base shrink-0">{cc.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200 truncate">{o.label}</div>
-                      <div className="text-[8px] text-slate-400">Échéance: {fmtDate(o.due)}</div>
+                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{o.label}</div>
+                      <div className="text-sm text-slate-400">Échéance: {fmtDate(o.due)}</div>
                     </div>
-                    <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{color:sc.color,background:sc.bg}}>{sc.icon} {sc.label}</span>
-                    {overdue&&<span className="text-[7px] font-bold text-red-500 shrink-0">EN RETARD</span>}
+                    <span className="text-sm font-bold px-1.5 py-0.5 rounded-full shrink-0" style={{color:sc.color,background:sc.bg}}>{sc.icon} {sc.label}</span>
+                    {overdue&&<span className="text-xs font-bold text-red-500 shrink-0">EN RETARD</span>}
                   </div>
                 )
               })}
@@ -189,7 +189,7 @@ export default function CompliancePage() {
               ].map(s=>(
                 <div key={s.l} className={`${s.bg} rounded-xl p-2.5 text-center`}>
                   <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-                  <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+                  <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
                 </div>
               ))}
             </div>
@@ -206,12 +206,12 @@ export default function CompliancePage() {
                     <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-sm font-black text-white shrink-0">{d.name.split(' ').map((n:string)=>n[0]).join('')}</div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{d.name}</span>
-                        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${d.status==='ACTIVE'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-red-500 bg-red-50 dark:bg-red-500/10'}`}>{d.status}</span>
-                        <span className={`text-[8px] font-bold ${d.docs==='OK'?'text-green-600':'text-red-500'}`}>{d.docs==='OK'?'✅ Docs OK':'⚠️ '+d.docs}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{d.name}</span>
+                        <span className={`text-sm font-bold px-1.5 py-0.5 rounded-full ${d.status==='ACTIVE'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-red-500 bg-red-50 dark:bg-red-500/10'}`}>{d.status}</span>
+                        <span className={`text-sm font-bold ${d.docs==='OK'?'text-green-600':'text-red-500'}`}>{d.docs==='OK'?'✅ Docs OK':'⚠️ '+d.docs}</span>
                       </div>
-                      <div className="text-[9px] font-mono text-slate-400">{d.id}{d.vehicle?` · ${d.vehicle}`:''}</div>
-                      {issues.length>0&&<div className="text-[8px] text-red-500 mt-1">⚠️ {issues.join(' · ')}</div>}
+                      <div className="text-sm font-mono text-slate-400">{d.id}{d.vehicle?` · ${d.vehicle}`:''}</div>
+                      {issues.length>0&&<div className="text-sm text-red-500 mt-1">⚠️ {issues.join(' · ')}</div>}
                       <div className="grid grid-cols-4 gap-2 mt-2">
                         {[
                           {l:'Identité',    v:'✅'},
@@ -221,12 +221,12 @@ export default function CompliancePage() {
                         ].map(r=>(
                           <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-1.5 text-center">
                             <div className="text-sm">{r.v}</div>
-                            <div className="text-[7px] text-slate-400">{r.l}</div>
+                            <div className="text-xs text-slate-400">{r.l}</div>
                           </div>
                         ))}
                       </div>
                     </div>
-                    <Link href={`/drivers/${d.id}`} className="px-2 py-1 rounded-lg text-[8px] font-bold bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 shrink-0">→ Dossier</Link>
+                    <Link href={`/drivers/${d.id}`} className="px-2 py-1 rounded-lg text-sm font-bold bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 shrink-0">→ Dossier</Link>
                   </div>
                 </div>
               )
@@ -245,7 +245,7 @@ export default function CompliancePage() {
               ].map(s=>(
                 <div key={s.l} className={`${s.bg} rounded-xl p-2.5 text-center`}>
                   <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-                  <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+                  <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
                 </div>
               ))}
             </div>
@@ -262,12 +262,12 @@ export default function CompliancePage() {
                     <div className="text-2xl shrink-0">🚗</div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{v.id}</span>
-                        <span className="text-[8px] font-mono text-slate-400">{v.plate}</span>
-                        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${v.status==='ACTIVE'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-red-500 bg-red-50'}`}>{v.status}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{v.id}</span>
+                        <span className="text-sm font-mono text-slate-400">{v.plate}</span>
+                        <span className={`text-sm font-bold px-1.5 py-0.5 rounded-full ${v.status==='ACTIVE'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-red-500 bg-red-50'}`}>{v.status}</span>
                       </div>
-                      <div className="text-[9px] text-slate-400">{v.make} {v.model} {v.year} · VIN: ••••-DEMO</div>
-                      {issues.length>0&&<div className="text-[8px] text-red-500 mt-1">⚠️ {issues.join(' · ')}</div>}
+                      <div className="text-sm text-slate-400">{v.make} {v.model} {v.year} · VIN: ••••-DEMO</div>
+                      {issues.length>0&&<div className="text-sm text-red-500 mt-1">⚠️ {issues.join(' · ')}</div>}
                       <div className="grid grid-cols-4 gap-2 mt-2">
                         {[
                           {l:'Inspection',    v:inspStatus==='ACTIVE'?'✅':inspStatus==='EXPIRING'?'⚠️':'❌'},
@@ -277,7 +277,7 @@ export default function CompliancePage() {
                         ].map(r=>(
                           <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-1.5 text-center">
                             <div className="text-sm">{r.v}</div>
-                            <div className="text-[7px] text-slate-400">{r.l}</div>
+                            <div className="text-xs text-slate-400">{r.l}</div>
                           </div>
                         ))}
                       </div>
@@ -301,7 +301,7 @@ export default function CompliancePage() {
               ].map(s=>(
                 <div key={s.l} className={`${s.bg} rounded-xl p-2.5 text-center`}>
                   <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-                  <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+                  <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
                 </div>
               ))}
             </div>
@@ -310,7 +310,7 @@ export default function CompliancePage() {
                 <table className="w-full text-xs">
                   <thead><tr className="border-b border-slate-100 dark:border-slate-800 bg-black">
                     {['Document','Type','Titulaire','Émission','Expiration','Statut','Validé par'].map(h=>(
-                      <th key={h} className="px-3 py-2.5 text-left text-[8px] font-bold text-white whitespace-nowrap">{h}</th>
+                      <th key={h} className="px-3 py-2.5 text-left text-sm font-bold text-white whitespace-nowrap">{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
@@ -319,12 +319,12 @@ export default function CompliancePage() {
                       return (
                         <tr key={d.id} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                           <td className="px-3 py-2.5 font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">{(d as any).label??d.id}</td>
-                          <td className="px-3 py-2.5 text-[9px] text-slate-500 whitespace-nowrap">{d.type}</td>
-                          <td className="px-3 py-2.5 text-[9px] text-slate-500 whitespace-nowrap">{(d as any).ownerId??'—'}</td>
-                          <td className="px-3 py-2.5 text-[9px] font-mono text-slate-400 whitespace-nowrap">{fmtDate((d as any).issued??d.uploadedAt)}</td>
-                          <td className="px-3 py-2.5 text-[9px] font-mono text-slate-400 whitespace-nowrap">{fmtDate((d as any).expires??(d as any).expiresAt??'—')}</td>
-                          <td className="px-3 py-2.5"><span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap" style={{color:st.color,background:st.bg}}>{st.label}</span></td>
-                          <td className="px-3 py-2.5 text-[9px] text-slate-400">{(d as any).verifiedBy??(d as any).validatedBy??'—'}</td>
+                          <td className="px-3 py-2.5 text-sm text-slate-500 whitespace-nowrap">{d.type}</td>
+                          <td className="px-3 py-2.5 text-sm text-slate-500 whitespace-nowrap">{(d as any).ownerId??'—'}</td>
+                          <td className="px-3 py-2.5 text-sm font-mono text-slate-400 whitespace-nowrap">{fmtDate((d as any).issued??d.uploadedAt)}</td>
+                          <td className="px-3 py-2.5 text-sm font-mono text-slate-400 whitespace-nowrap">{fmtDate((d as any).expires??(d as any).expiresAt??'—')}</td>
+                          <td className="px-3 py-2.5"><span className="text-sm font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap" style={{color:st.color,background:st.bg}}>{st.label}</span></td>
+                          <td className="px-3 py-2.5 text-sm text-slate-400">{(d as any).verifiedBy??(d as any).validatedBy??'—'}</td>
                         </tr>
                       )
                     })}
@@ -338,7 +338,7 @@ export default function CompliancePage() {
         {/* ── FISCAL ── */}
         {tab==='tax'&&(
           <div className="space-y-4">
-            <div className="text-[9px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/8 border border-red-200 dark:border-red-500/20 px-3 py-2 rounded-xl">
+            <div className="text-sm font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/8 border border-red-200 dark:border-red-500/20 px-3 py-2 rounded-xl">
               ESTIMATION FISCALE — MODE PILOTE — AUCUNE TRANSMISSION OFFICIELLE
             </div>
             <div className="grid grid-cols-3 gap-3">
@@ -349,7 +349,7 @@ export default function CompliancePage() {
               ].map(s=>(
                 <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center`}>
                   <div className="text-2xl font-black" style={{color:s.c}}>{s.v}</div>
-                  <div className="text-[9px] text-slate-500 mt-0.5">{s.l}</div>
+                  <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
                 </div>
               ))}
             </div>
@@ -358,9 +358,9 @@ export default function CompliancePage() {
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <div className="text-sm font-bold text-slate-800 dark:text-white">{tp.period}</div>
-                    <div className="text-[9px] text-slate-400">{fmtDate(tp.start)} → {fmtDate(tp.end)}</div>
+                    <div className="text-sm text-slate-400">{fmtDate(tp.start)} → {fmtDate(tp.end)}</div>
                   </div>
-                  <span className={`text-[8px] font-bold px-2 py-1 rounded-full ${tp.status==='PAID'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10'}`}>{tp.status==='PAID'?'Clôturée':'En cours'}</span>
+                  <span className={`text-sm font-bold px-2 py-1 rounded-full ${tp.status==='PAID'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10'}`}>{tp.status==='PAID'?'Clôturée':'En cours'}</span>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   {[
@@ -371,7 +371,7 @@ export default function CompliancePage() {
                   ].map(r=>(
                     <div key={r.l} className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2.5 text-center">
                       <div className="text-sm font-black" style={{color:r.c}}>{r.v}</div>
-                      <div className="text-[8px] text-slate-400 mt-0.5">{r.l}</div>
+                      <div className="text-sm text-slate-400 mt-0.5">{r.l}</div>
                     </div>
                   ))}
                 </div>
@@ -383,7 +383,7 @@ export default function CompliancePage() {
         {/* ── PLATEFORMES ── */}
         {tab==='platforms'&&(
           <div className="space-y-3">
-            <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+            <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
               Connexions affichées = état de la démo PILOTE · Aucune API Uber réelle connectée
             </div>
             {ENT_CONNECTIONS.map(c=>{
@@ -394,11 +394,11 @@ export default function CompliancePage() {
                     <div className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${cs.dot}`}/>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{c.name}</span>
-                        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{color:cs.color,background:`${cs.color}15`}}>{cs.label}</span>
-                        <span className="text-[7px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded">{c.type}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{c.name}</span>
+                        <span className="text-sm font-bold px-1.5 py-0.5 rounded-full" style={{color:cs.color,background:`${cs.color}15`}}>{cs.label}</span>
+                        <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded">{c.type}</span>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-[9px]">
+                      <div className="grid grid-cols-3 gap-2 text-sm">
                         <div><span className="text-slate-400">Données reçues: </span><span className="font-bold text-slate-700 dark:text-slate-300">{c.dataRx.toLocaleString('fr-CA')}</span></div>
                         <div><span className="text-slate-400">Dernière sync: </span><span className="font-mono text-slate-500">{c.lastSync?fmtDt(c.lastSync):'—'}</span></div>
                         <div><span className="text-slate-400">Erreurs: </span><span className={`font-bold ${c.errors>0?'text-red-500':'text-green-600 dark:text-green-400'}`}>{c.errors}</span></div>
@@ -416,7 +416,7 @@ export default function CompliancePage() {
           <div className="space-y-3">
             <div className="flex gap-1.5 flex-wrap">
               {['ALL','EN ANALYSE','OUVERT','RÉSOLU','FERMÉ'].map(s=>(
-                <button key={s} onClick={()=>setCaseStatus(s)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border cursor-pointer transition-all" style={{background:caseStatus===s?'#000':'transparent',color:caseStatus===s?'white':'#64748B',borderColor:caseStatus===s?'#000':'rgba(148,163,184,0.30)'}}>
+                <button key={s} onClick={()=>setCaseStatus(s)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border cursor-pointer transition-all" style={{background:caseStatus===s?'#000':'transparent',color:caseStatus===s?'white':'#64748B',borderColor:caseStatus===s?'#000':'rgba(148,163,184,0.30)'}}>
                   {s==='ALL'?`Tous (${COMPLIANCE_CASES.length})`:CASE_STATUS_CONF[s]?.label??s}
                 </button>
               ))}
@@ -431,19 +431,19 @@ export default function CompliancePage() {
                     <span className="text-2xl shrink-0">{tc.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-[10px] font-mono font-bold text-slate-600 dark:text-slate-400">{c.id}</span>
-                        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
-                        <span className="text-[7px] font-bold" style={{color:PRIORITY_CONF[c.priority]?.color??'#64748B'}}>{c.priority}</span>
-                        {dept&&<span className="text-[7px] px-1.5 py-0.5 rounded font-bold" style={{color:dept.color,background:`${dept.color}15`}}>{dept.emoji} {dept.name}</span>}
+                        <span className="text-sm font-mono font-bold text-slate-600 dark:text-slate-400">{c.id}</span>
+                        <span className="text-sm font-bold px-1.5 py-0.5 rounded-full" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
+                        <span className="text-xs font-bold" style={{color:PRIORITY_CONF[c.priority]?.color??'#64748B'}}>{c.priority}</span>
+                        {dept&&<span className="text-xs px-1.5 py-0.5 rounded font-bold" style={{color:dept.color,background:`${dept.color}15`}}>{dept.emoji} {dept.name}</span>}
                       </div>
-                      <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200 mb-0.5">{tc.label} · {c.obj}: {c.objId}</div>
-                      <div className="text-[9px] text-slate-500">{c.desc}</div>
-                      {c.notes&&<div className="text-[9px] text-blue-600 dark:text-blue-400 mt-0.5 italic">Note: {c.notes}</div>}
-                      <div className="text-[8px] text-slate-400 mt-1">Ouvert: {fmtDt(c.openedAt)} · Assigné: {c.assignedTo??'Non assigné'}</div>
-                      {c.resolvedAt&&<div className="text-[8px] text-green-600 dark:text-green-400">Résolu: {fmtDt(c.resolvedAt)}</div>}
+                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">{tc.label} · {c.obj}: {c.objId}</div>
+                      <div className="text-sm text-slate-500">{c.desc}</div>
+                      {c.notes&&<div className="text-sm text-blue-600 dark:text-blue-400 mt-0.5 italic">Note: {c.notes}</div>}
+                      <div className="text-sm text-slate-400 mt-1">Ouvert: {fmtDt(c.openedAt)} · Assigné: {c.assignedTo??'Non assigné'}</div>
+                      {c.resolvedAt&&<div className="text-sm text-green-600 dark:text-green-400">Résolu: {fmtDt(c.resolvedAt)}</div>}
                       <div className="flex gap-1.5 flex-wrap mt-2">
                         {c.actions.map(a=>(
-                          <button key={a} className="px-2 py-1 rounded-lg text-[8px] font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer hover:bg-slate-100">{a}</button>
+                          <button key={a} className="px-2 py-1 rounded-lg text-sm font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer hover:bg-slate-100">{a}</button>
                         ))}
                       </div>
                     </div>
@@ -457,7 +457,7 @@ export default function CompliancePage() {
         {/* ── PRÊT GOV ── */}
         {tab==='readiness'&&(
           <div className="space-y-4">
-            <div className="text-[9px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/8 border border-red-200 dark:border-red-500/20 px-3 py-2 rounded-xl">
+            <div className="text-sm font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/8 border border-red-200 dark:border-red-500/20 px-3 py-2 rounded-xl">
               ⚠️ MODE PILOTE · AUCUNE TRANSMISSION GOUVERNEMENTALE RÉELLE · Indicateurs administratifs uniquement
             </div>
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
@@ -466,16 +466,16 @@ export default function CompliancePage() {
                 <div key={item.id} className="flex items-center gap-3 py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-lg shrink-0">{item.status==='OK'?'✅':'⚠️'}</span>
                   <div className="flex-1">
-                    <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{item.label}</div>
-                    <div className="text-[9px] text-slate-400">{item.note}</div>
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{item.label}</div>
+                    <div className="text-sm text-slate-400">{item.note}</div>
                   </div>
-                  <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${item.status==='OK'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-500/10'}`}>{item.status==='OK'?'Prêt':'Attention'}</span>
+                  <span className={`text-sm font-bold px-1.5 py-0.5 rounded-full shrink-0 ${item.status==='OK'?'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10':'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-500/10'}`}>{item.status==='OK'?'Prêt':'Attention'}</span>
                 </div>
               ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <button className="py-2.5 rounded-xl text-[10px] font-bold bg-slate-800 text-white cursor-pointer">📋 Préparer la transmission · DEMO</button>
-              <div className="py-2.5 rounded-xl text-[10px] font-bold text-center bg-slate-50 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700">⛔ Transmettre au gouvernement — Non disponible</div>
+              <button className="py-2.5 rounded-xl text-sm font-bold bg-slate-800 text-white cursor-pointer">📋 Préparer la transmission · DEMO</button>
+              <div className="py-2.5 rounded-xl text-sm font-bold text-center bg-slate-50 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700">⛔ Transmettre au gouvernement — Non disponible</div>
             </div>
           </div>
         )}

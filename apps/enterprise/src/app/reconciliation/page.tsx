@@ -39,12 +39,12 @@ export default function ReconciliationPage() {
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">Réconciliation</h1>
           <p className="text-sm text-slate-500 mt-1">Source vs Revenue Ledger · Matching · Exceptions · Transparence financière</p>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · Un écart ≠ une fraude automatique — chaque cas est analysé individuellement</div>
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT} · Un écart ≠ une fraude automatique — chaque cas est analysé individuellement</div>
 
         {/* Workflow */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 shadow-sm">
-          <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Processus de réconciliation</div>
-          <div className="flex items-center gap-1 flex-wrap text-[8px] font-bold">
+          <div className="text-sm font-bold text-slate-400 uppercase mb-2">Processus de réconciliation</div>
+          <div className="flex items-center gap-1 flex-wrap text-sm font-bold">
             {WORKFLOW.map((s,i)=>(
               <span key={i} className={s==='→'?'text-slate-300 dark:text-slate-700':'px-2 py-1 rounded-lg'} style={s!=='→'?{background:'#EEF3FB',color:'#003DA5'}:{}}>{s}</span>
             ))}
@@ -63,7 +63,7 @@ export default function ReconciliationPage() {
             <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center`}>
               <div className="text-lg mb-0.5">{s.icon}</div>
               <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -71,7 +71,7 @@ export default function ReconciliationPage() {
         {/* Tabs */}
         <div className="flex gap-1.5 flex-wrap">
           {([['overview','📊 Vue globale'],['items','🔄 Items'],['exceptions','⚠️ Exceptions'],['statements','📋 Relevés']] as const).map(([t,l])=>(
-            <button key={t} onClick={()=>setTab(t)} className="px-3 py-2 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:tab===t?'#003DA5':'transparent',color:tab===t?'white':'#64748B',borderColor:tab===t?'#003DA5':'rgba(148,163,184,0.30)'}}>
+            <button key={t} onClick={()=>setTab(t)} className="px-3 py-2 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:tab===t?'#003DA5':'transparent',color:tab===t?'white':'#64748B',borderColor:tab===t?'#003DA5':'rgba(148,163,184,0.30)'}}>
               {l}
             </button>
           ))}
@@ -95,8 +95,8 @@ export default function ReconciliationPage() {
                   <div key={i} className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-sm shrink-0">{row.icon}</div>
                     <div className="flex-1 py-1">
-                      <div className="text-[9px] font-black text-blue-700 dark:text-blue-400">{row.from}</div>
-                      <div className="text-[9px] text-slate-500">{row.to}</div>
+                      <div className="text-sm font-black text-blue-700 dark:text-blue-400">{row.from}</div>
+                      <div className="text-sm text-slate-500">{row.to}</div>
                     </div>
                     {i<5&&<div className="text-slate-300 dark:text-slate-700 text-xs self-end pb-1 shrink-0">↓</div>}
                   </div>
@@ -115,8 +115,8 @@ export default function ReconciliationPage() {
                 return (
                   <div key={prov} className="py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{prov}</span>
-                      <div className="flex gap-3 text-[9px]">
+                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{prov}</span>
+                      <div className="flex gap-3 text-sm">
                         <span className="text-green-600 dark:text-green-400">✅ {ok}</span>
                         {ko>0&&<span className="text-red-500">⚠️ {ko}</span>}
                         <span className="font-bold text-slate-800 dark:text-slate-200">{money(total)}</span>
@@ -146,7 +146,7 @@ export default function ReconciliationPage() {
                 {(['ALL','MATCHED','VARIANCE','MISSING'] as const).map(f=>{
                   const sc = f==='ALL'?null:RECON_STATUS_CONF[f]
                   return (
-                    <button key={f} onClick={()=>setFilter(f)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:filter===f?'#003DA5':'transparent',color:filter===f?'white':'#64748B',borderColor:filter===f?'#003DA5':'rgba(148,163,184,0.30)'}}>
+                    <button key={f} onClick={()=>setFilter(f)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:filter===f?'#003DA5':'transparent',color:filter===f?'white':'#64748B',borderColor:filter===f?'#003DA5':'rgba(148,163,184,0.30)'}}>
                       {f==='ALL'?`Tous (${RECON_ITEMS.length})`:`${sc?.icon} ${sc?.label}`}
                     </button>
                   )
@@ -158,7 +158,7 @@ export default function ReconciliationPage() {
                 <table className="w-full text-xs">
                   <thead><tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                     {['Recon ID','TX ID','Date','Fournisseur','Chauffeur','Source','Ledger','Diff','TPS src','TPS ldgr','Statut'].map(h=>(
-                      <th key={h} className="px-3 py-2.5 text-left text-[8px] font-bold text-slate-400 uppercase whitespace-nowrap">{h}</th>
+                      <th key={h} className="px-3 py-2.5 text-left text-sm font-bold text-slate-400 uppercase whitespace-nowrap">{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
@@ -167,17 +167,17 @@ export default function ReconciliationPage() {
                       const drv = ENT_DRIVERS.find(d=>d.id===r.driverId)
                       return (
                         <tr key={r.id} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                          <td className="px-3 py-2.5 font-mono text-[9px] text-blue-600 dark:text-blue-400">{r.id}</td>
-                          <td className="px-3 py-2.5 font-mono text-[9px] text-slate-500">{r.txId}</td>
-                          <td className="px-3 py-2.5 text-[9px] text-slate-400 whitespace-nowrap">{fmtDt(r.at)}</td>
-                          <td className="px-3 py-2.5 text-[9px] text-slate-700 dark:text-slate-300">{r.provider}</td>
-                          <td className="px-3 py-2.5 text-[9px] text-slate-500 whitespace-nowrap">{drv?.name??r.driverId}</td>
+                          <td className="px-3 py-2.5 font-mono text-sm text-blue-600 dark:text-blue-400">{r.id}</td>
+                          <td className="px-3 py-2.5 font-mono text-sm text-slate-500">{r.txId}</td>
+                          <td className="px-3 py-2.5 text-sm text-slate-400 whitespace-nowrap">{fmtDt(r.at)}</td>
+                          <td className="px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300">{r.provider}</td>
+                          <td className="px-3 py-2.5 text-sm text-slate-500 whitespace-nowrap">{drv?.name??r.driverId}</td>
                           <td className="px-3 py-2.5 font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">{money2(r.sourceAmt)}</td>
                           <td className="px-3 py-2.5 text-slate-600 dark:text-slate-400 whitespace-nowrap">{money2(r.ledgerAmt)}</td>
                           <td className={`px-3 py-2.5 font-black whitespace-nowrap ${r.diff!==0?'text-red-500':'text-green-600 dark:text-green-400'}`}>{r.diff!==0?`${money2(r.diff)}`:'—'}</td>
-                          <td className="px-3 py-2.5 text-[9px] text-purple-600 dark:text-purple-400 whitespace-nowrap">{money2(r.tpsSource)}</td>
-                          <td className="px-3 py-2.5 text-[9px] text-slate-400 whitespace-nowrap">{money2(r.tpsLedger)}</td>
-                          <td className="px-3 py-2.5"><span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap" style={{color:sc.color,background:sc.bg}}>{sc.icon} {sc.label}</span></td>
+                          <td className="px-3 py-2.5 text-sm text-purple-600 dark:text-purple-400 whitespace-nowrap">{money2(r.tpsSource)}</td>
+                          <td className="px-3 py-2.5 text-sm text-slate-400 whitespace-nowrap">{money2(r.tpsLedger)}</td>
+                          <td className="px-3 py-2.5"><span className="text-sm px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap" style={{color:sc.color,background:sc.bg}}>{sc.icon} {sc.label}</span></td>
                         </tr>
                       )
                     })}
@@ -188,7 +188,7 @@ export default function ReconciliationPage() {
             {filtered.some(r=>r.note)&&(
               <div className="space-y-1">
                 {filtered.filter(r=>r.note).map(r=>(
-                  <div key={r.id} className="bg-amber-50 dark:bg-amber-500/8 border border-amber-200 dark:border-amber-500/20 rounded-xl px-3 py-2 text-[9px]">
+                  <div key={r.id} className="bg-amber-50 dark:bg-amber-500/8 border border-amber-200 dark:border-amber-500/20 rounded-xl px-3 py-2 text-sm">
                     <span className="font-bold text-amber-700 dark:text-amber-400">{r.id}</span> <span className="text-slate-600 dark:text-slate-300 italic">— {r.note}</span>
                   </div>
                 ))}
@@ -210,22 +210,22 @@ export default function ReconciliationPage() {
                     <div>
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span className="text-lg">{tc.icon}</span>
-                        <span className="text-[10px] font-black text-slate-800 dark:text-slate-200">{e.id}</span>
-                        <span className="text-[8px] font-bold" style={{color:tc.color}}>{tc.label}</span>
-                        <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
+                        <span className="text-sm font-black text-slate-800 dark:text-slate-200">{e.id}</span>
+                        <span className="text-sm font-bold" style={{color:tc.color}}>{tc.label}</span>
+                        <span className="text-sm px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
                       </div>
-                      <div className="text-[9px] text-slate-400 font-mono">{e.txId??'—'} · {drv?.name??e.driverId??'—'} · {e.provider} · {fmtDt(e.at)}</div>
+                      <div className="text-sm text-slate-400 font-mono">{e.txId??'—'} · {drv?.name??e.driverId??'—'} · {e.provider} · {fmtDt(e.at)}</div>
                     </div>
-                    {e.diff!==0&&<div className="text-right shrink-0"><div className="text-lg font-black text-red-500">{money2(e.diff)}</div><div className="text-[8px] text-slate-400">écart</div></div>}
+                    {e.diff!==0&&<div className="text-right shrink-0"><div className="text-lg font-black text-red-500">{money2(e.diff)}</div><div className="text-sm text-slate-400">écart</div></div>}
                   </div>
-                  <div className="text-[9px] text-slate-600 dark:text-slate-300 mb-2">{e.desc}</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-300 mb-2">{e.desc}</div>
                   {e.resolution&&(
-                    <div className="bg-green-50 dark:bg-green-500/8 border border-green-200 dark:border-green-500/15 rounded-xl px-3 py-2 text-[9px] text-green-700 dark:text-green-400 mb-2">
+                    <div className="bg-green-50 dark:bg-green-500/8 border border-green-200 dark:border-green-500/15 rounded-xl px-3 py-2 text-sm text-green-700 dark:text-green-400 mb-2">
                       ✅ Résolution: {e.resolution}
                     </div>
                   )}
                   {!e.resolution&&e.action&&(
-                    <div className="bg-blue-50 dark:bg-blue-500/8 border border-blue-200 dark:border-blue-500/15 rounded-xl px-3 py-2 text-[9px] text-blue-700 dark:text-blue-400">
+                    <div className="bg-blue-50 dark:bg-blue-500/8 border border-blue-200 dark:border-blue-500/15 rounded-xl px-3 py-2 text-sm text-blue-700 dark:text-blue-400">
                       🎯 Action requise: {e.action}
                     </div>
                   )}
@@ -244,7 +244,7 @@ export default function ReconciliationPage() {
                 <table className="w-full text-xs">
                   <thead><tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                     {['TX ID','Provider','Source fournisseur','Enterprise Ledger','Chauffeur déclaré','Différence','Statut'].map(h=>(
-                      <th key={h} className="px-3 py-2.5 text-left text-[8px] font-bold text-slate-400 uppercase whitespace-nowrap">{h}</th>
+                      <th key={h} className="px-3 py-2.5 text-left text-sm font-bold text-slate-400 uppercase whitespace-nowrap">{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
@@ -253,20 +253,20 @@ export default function ReconciliationPage() {
                       const tx  = ALL_TRANSACTIONS.find(t=>t.id===r.txId)
                       return (
                         <tr key={r.id} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                          <td className="px-3 py-2.5 font-mono text-[9px] text-blue-600 dark:text-blue-400">{r.txId}</td>
-                          <td className="px-3 py-2.5 text-[9px]">{r.provider}</td>
+                          <td className="px-3 py-2.5 font-mono text-sm text-blue-600 dark:text-blue-400">{r.txId}</td>
+                          <td className="px-3 py-2.5 text-sm">{r.provider}</td>
                           <td className="px-3 py-2.5 font-bold text-green-600 dark:text-green-400">{money2(r.sourceAmt)}</td>
                           <td className="px-3 py-2.5 text-slate-600 dark:text-slate-400">{money2(r.ledgerAmt)}</td>
                           <td className="px-3 py-2.5 text-blue-600 dark:text-blue-400">{tx?money2(tx.driverAmt):'—'}</td>
                           <td className={`px-3 py-2.5 font-black ${r.diff!==0?'text-red-500':'text-slate-300 dark:text-slate-700'}`}>{r.diff!==0?money2(r.diff):'—'}</td>
-                          <td className="px-3 py-2.5"><span className="text-[8px] font-bold" style={{color:sc.color}}>{sc.icon} {sc.label}</span></td>
+                          <td className="px-3 py-2.5"><span className="text-sm font-bold" style={{color:sc.color}}>{sc.icon} {sc.label}</span></td>
                         </tr>
                       )
                     })}
                   </tbody>
                 </table>
               </div>
-              <div className="mt-3 text-[9px] text-slate-400 italic">Source fournisseur ≠ Enterprise Ledger n'implique pas d'irrégularité — chaque cas est analysé séparément · {PILOT}</div>
+              <div className="mt-3 text-sm text-slate-400 italic">Source fournisseur ≠ Enterprise Ledger n'implique pas d'irrégularité — chaque cas est analysé séparément · {PILOT}</div>
             </div>
           </div>
         )}

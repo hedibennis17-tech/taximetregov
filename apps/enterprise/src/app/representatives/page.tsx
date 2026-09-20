@@ -22,20 +22,20 @@ export default function RepresentativesPage() {
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">Représentants autorisés</h1>
             <p className="text-sm text-slate-500 mt-1">Personnes autorisées à agir au nom de l'entreprise</p>
           </div>
-          <button onClick={()=>setShowInvite(!showInvite)} className="px-3 py-2 rounded-xl text-[10px] font-bold bg-qc-blue text-white cursor-pointer hover:bg-blue-700 shrink-0">+ Inviter</button>
+          <button onClick={()=>setShowInvite(!showInvite)} className="px-3 py-2 rounded-xl text-sm font-bold bg-qc-blue text-white cursor-pointer hover:bg-blue-700 shrink-0">+ Inviter</button>
         </div>
 
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT}</div>
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">{PILOT}</div>
 
         {/* Workflow invitation */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 shadow-sm">
-          <div className="text-[9px] font-bold text-slate-400 uppercase mb-2">Workflow d'invitation</div>
-          <div className="flex items-center gap-1 flex-wrap text-[8px] font-bold">
+          <div className="text-sm font-bold text-slate-400 uppercase mb-2">Workflow d'invitation</div>
+          <div className="flex items-center gap-1 flex-wrap text-sm font-bold">
             {INVITE_WORKFLOW.map((s,i)=>(
               <span key={i} className={s==='→'?'text-slate-300 dark:text-slate-700':'px-2 py-1 rounded-lg'} style={s!=='→'?{background:'#EEF3FB',color:'#003DA5'}:{}}>{s}</span>
             ))}
           </div>
-          <div className="text-[8px] text-slate-400 mt-1">Expiration invitation: 7 jours · PILOTE</div>
+          <div className="text-sm text-slate-400 mt-1">Expiration invitation: 7 jours · PILOTE</div>
         </div>
 
         {/* Modal invitation DEMO */}
@@ -53,7 +53,7 @@ export default function RepresentativesPage() {
                 <button className="flex-1 py-2 rounded-xl text-xs font-bold bg-qc-blue text-white cursor-pointer hover:bg-blue-700">Envoyer invitation · DEMO</button>
                 <button onClick={()=>setShowInvite(false)} className="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer">Annuler</button>
               </div>
-              <div className="text-[8px] text-amber-600 dark:text-amber-400 text-center">PILOTE — Aucune invitation réelle envoyée</div>
+              <div className="text-sm text-amber-600 dark:text-amber-400 text-center">PILOTE — Aucune invitation réelle envoyée</div>
             </div>
           </div>
         )}
@@ -71,12 +71,12 @@ export default function RepresentativesPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span className="text-sm font-bold text-slate-800 dark:text-white">{rep.firstName} {rep.lastName}</span>
-                    <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full text-white" style={{background:rc.color}}>{rc.label}</span>
-                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
+                    <span className="text-sm font-black px-1.5 py-0.5 rounded-full text-white" style={{background:rc.color}}>{rc.label}</span>
+                    <span className="text-sm px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
                   </div>
-                  <div className="text-[9px] text-slate-500">{rep.email}</div>
-                  <div className="text-[9px] text-slate-400 mt-0.5">{rep.phone}</div>
-                  <div className="flex gap-3 text-[8px] text-slate-400 mt-1.5">
+                  <div className="text-sm text-slate-500">{rep.email}</div>
+                  <div className="text-sm text-slate-400 mt-0.5">{rep.phone}</div>
+                  <div className="flex gap-3 text-sm text-slate-400 mt-1.5">
                     <span>Ajouté: {fmtDate(rep.addedAt)}</span>
                     <span>Connexion: {rep.lastLogin?fmtDt(rep.lastLogin):'Jamais'}</span>
                   </div>
@@ -84,8 +84,8 @@ export default function RepresentativesPage() {
                 <div className="flex flex-col gap-1.5 shrink-0">
                   {rep.role!=='OWNER'&&(
                     <>
-                      <button className="px-2.5 py-1.5 rounded-lg text-[8px] font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 cursor-pointer">Modifier</button>
-                      {rep.status==='ACTIVE'&&<button className="px-2.5 py-1.5 rounded-lg text-[8px] font-bold bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 cursor-pointer">Révoquer</button>}
+                      <button className="px-2.5 py-1.5 rounded-lg text-sm font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 cursor-pointer">Modifier</button>
+                      {rep.status==='ACTIVE'&&<button className="px-2.5 py-1.5 rounded-lg text-sm font-bold bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 cursor-pointer">Révoquer</button>}
                     </>
                   )}
                 </div>

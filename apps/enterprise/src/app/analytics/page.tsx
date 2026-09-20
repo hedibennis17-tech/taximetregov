@@ -51,11 +51,11 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <div className="text-sm font-black text-slate-900 dark:text-white">Analytics — Québec</div>
-            <div className="text-[9px] text-slate-400">Tous départements · DONNÉES SYNTHÉTIQUES</div>
+            <div className="text-sm text-slate-400">Tous départements · DONNÉES SYNTHÉTIQUES</div>
           </div>
         </div>
 
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           ⚠️ {PILOT} · DONNÉES SYNTHÉTIQUES · Aucune transmission gouvernementale réelle
         </div>
 
@@ -63,13 +63,13 @@ export default function AnalyticsPage() {
         <div className="flex gap-2 flex-wrap">
           <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-1">
             {['Q3','YTD','12M'].map(p=>(
-              <button key={p} onClick={()=>setPeriod(p)} className="px-3 py-1.5 rounded-lg text-[9px] font-bold cursor-pointer transition-all" style={{background:period===p?'#000':'transparent',color:period===p?'white':'#64748B'}}>{p}</button>
+              <button key={p} onClick={()=>setPeriod(p)} className="px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all" style={{background:period===p?'#000':'transparent',color:period===p?'white':'#64748B'}}>{p}</button>
             ))}
           </div>
           <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-1 flex-wrap">
-            <button onClick={()=>setDeptF('ALL')} className="px-2.5 py-1.5 rounded-lg text-[9px] font-bold cursor-pointer transition-all" style={{background:deptF==='ALL'?'#000':'transparent',color:deptF==='ALL'?'white':'#64748B'}}>Tous</button>
+            <button onClick={()=>setDeptF('ALL')} className="px-2.5 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all" style={{background:deptF==='ALL'?'#000':'transparent',color:deptF==='ALL'?'white':'#64748B'}}>Tous</button>
             {active.map(d=>(
-              <button key={d.slug} onClick={()=>setDeptF(d.slug)} className="px-2.5 py-1.5 rounded-lg text-[9px] font-bold cursor-pointer transition-all" style={{background:deptF===d.slug?d.color:'transparent',color:deptF===d.slug?'white':'#64748B'}}>
+              <button key={d.slug} onClick={()=>setDeptF(d.slug)} className="px-2.5 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all" style={{background:deptF===d.slug?d.color:'transparent',color:deptF===d.slug?'white':'#64748B'}}>
                 {d.emoji} {d.name.split(' ').pop()}
               </button>
             ))}
@@ -86,7 +86,7 @@ export default function AnalyticsPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-2xl p-4`}>
               <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[9px] text-slate-400 mt-1">{s.l}</div>
+              <div className="text-sm text-slate-400 mt-1">{s.l}</div>
             </div>
           ))}
         </div>
@@ -99,7 +99,7 @@ export default function AnalyticsPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-xl p-3`}>
               <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -108,13 +108,13 @@ export default function AnalyticsPage() {
           {/* Graphique mensuel 12 mois */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
             <div className="text-sm font-bold text-slate-800 dark:text-white mb-1">Évolution 12 mois — Revenus</div>
-            <div className="text-[9px] text-slate-400 mb-3">Oct 2025 – Sep 2026 · SYNTHÉTIQUE</div>
+            <div className="text-sm text-slate-400 mb-3">Oct 2025 – Sep 2026 · SYNTHÉTIQUE</div>
             <div className="flex items-end gap-0.5 h-24">
               {ANALYTICS_MONTHLY.map(m=>(
                 <div key={m.m} className="flex-1 flex flex-col items-center gap-0.5 group relative">
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-black text-white text-[7px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">{(m.gross/1000).toFixed(0)}k$</div>
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">{(m.gross/1000).toFixed(0)}k$</div>
                   <div className="w-full rounded-t-sm" style={{height:`${(m.gross/maxMonthGross)*100}%`,background:'#000'}}/>
-                  <div className="text-[6px] text-slate-400 rotate-45 origin-left">{m.m.split(' ')[0]}</div>
+                  <div className="text-sm text-slate-400 rotate-45 origin-left">{m.m.split(' ')[0]}</div>
                 </div>
               ))}
             </div>
@@ -125,11 +125,11 @@ export default function AnalyticsPage() {
             <div className="text-sm font-bold text-slate-800 dark:text-white mb-3">Par département (DEMO)</div>
             {active.map(d=>(
               <div key={d.id} className="mb-2.5">
-                <div className="flex justify-between text-[9px] mb-0.5">
+                <div className="flex justify-between text-sm mb-0.5">
                   <span className="font-bold text-slate-700 dark:text-slate-300">{d.emoji} {d.name}</span>
                   <div className="flex gap-3">
                     <span style={{color:d.color}} className="font-black">{money(d.gross)}</span>
-                    <span className="text-purple-500 text-[8px]">TPS: {money2(d.tps)}</span>
+                    <span className="text-purple-500 text-sm">TPS: {money2(d.tps)}</span>
                   </div>
                 </div>
                 <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -143,14 +143,14 @@ export default function AnalyticsPage() {
         {/* Activités mensuelles */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
           <div className="text-sm font-bold text-slate-800 dark:text-white mb-1">Activités mensuelles</div>
-          <div className="text-[9px] text-slate-400 mb-3">Courses + livraisons · SYNTHÉTIQUE</div>
+          <div className="text-sm text-slate-400 mb-3">Courses + livraisons · SYNTHÉTIQUE</div>
           <div className="flex items-end gap-0.5 h-16">
             {ANALYTICS_MONTHLY.map(m=>{
               const max = Math.max(...ANALYTICS_MONTHLY.map(x=>x.acts))
               return (
                 <div key={m.m} className="flex-1 flex flex-col items-center gap-0.5">
                   <div className="w-full rounded-t-sm" style={{height:`${(m.acts/max)*100}%`,background:'#06B029'}}/>
-                  <div className="text-[6px] text-slate-400 rotate-45 origin-left">{m.m.split(' ')[0]}</div>
+                  <div className="text-sm text-slate-400 rotate-45 origin-left">{m.m.split(' ')[0]}</div>
                 </div>
               )
             })}
@@ -160,21 +160,21 @@ export default function AnalyticsPage() {
         {/* Analytique géographique */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
           <div className="text-sm font-bold text-slate-800 dark:text-white mb-1">Activité par région (DEMO)</div>
-          <div className="text-[9px] text-slate-400 mb-3">⚠️ DONNÉES SYNTHÉTIQUES — Non officielles</div>
+          <div className="text-sm text-slate-400 mb-3">⚠️ DONNÉES SYNTHÉTIQUES — Non officielles</div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead><tr className="border-b border-slate-100 dark:border-slate-800 bg-black">
                 {['Région','Chauffeurs*','Véhicules','Activités','Revenus (DEMO)','TPS (DEMO)'].map(h=>(
-                  <th key={h} className="px-3 py-2 text-left text-[8px] font-bold text-white whitespace-nowrap">{h}</th>
+                  <th key={h} className="px-3 py-2 text-left text-sm font-bold text-white whitespace-nowrap">{h}</th>
                 ))}
               </tr></thead>
               <tbody>
                 {ANALYTICS_REGIONS.map(r=>(
                   <tr key={r.region} className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                     <td className="px-3 py-2 font-bold text-slate-800 dark:text-slate-200">{r.region}</td>
-                    <td className="px-3 py-2 text-[10px] text-slate-600 dark:text-slate-400">{r.drivers.toLocaleString('fr-CA')}</td>
-                    <td className="px-3 py-2 text-[10px] text-slate-600 dark:text-slate-400">{r.vehicles.toLocaleString('fr-CA')}</td>
-                    <td className="px-3 py-2 text-[10px] text-slate-600 dark:text-slate-400">{r.acts.toLocaleString('fr-CA')}</td>
+                    <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">{r.drivers.toLocaleString('fr-CA')}</td>
+                    <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">{r.vehicles.toLocaleString('fr-CA')}</td>
+                    <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">{r.acts.toLocaleString('fr-CA')}</td>
                     <td className="px-3 py-2 font-bold text-green-600 dark:text-green-400">{money(r.gross)}</td>
                     <td className="px-3 py-2 text-purple-600 dark:text-purple-400">{money2(r.tps)}</td>
                   </tr>
@@ -182,14 +182,14 @@ export default function AnalyticsPage() {
               </tbody>
             </table>
           </div>
-          <div className="text-[7px] text-slate-400 italic mt-2">* Nb chauffeurs par région = synthétique · {UBER_DRIVERS_SAMPLE.length} chauffeurs échantillon disponibles dans pilote</div>
+          <div className="text-xs text-slate-400 italic mt-2">* Nb chauffeurs par région = synthétique · {UBER_DRIVERS_SAMPLE.length} chauffeurs échantillon disponibles dans pilote</div>
         </div>
 
         {/* Export */}
         <div className="flex gap-2 flex-wrap">
-          <button className="px-4 py-2 rounded-xl text-[9px] font-bold bg-black text-white cursor-pointer hover:bg-slate-800">↓ Exporter PDF · DEMO</button>
-          <button className="px-4 py-2 rounded-xl text-[9px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-200">↓ CSV</button>
-          <button className="px-4 py-2 rounded-xl text-[9px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-200">↓ Excel</button>
+          <button className="px-4 py-2 rounded-xl text-sm font-bold bg-black text-white cursor-pointer hover:bg-slate-800">↓ Exporter PDF · DEMO</button>
+          <button className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-200">↓ CSV</button>
+          <button className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-200">↓ Excel</button>
         </div>
       </div>
     </AppShell>

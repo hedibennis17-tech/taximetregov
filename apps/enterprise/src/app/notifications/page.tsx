@@ -46,13 +46,13 @@ export default function NotificationsPage() {
             <p className="text-sm text-slate-500 mt-0.5">Fiscal · Documents · Conformité · API · Gouvernement · Système</p>
           </div>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           {PILOT} · Notifications synthétiques · Aucune communication gouvernementale réelle
         </div>
 
         {/* Workflow */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 shadow-sm">
-          <div className="flex items-center gap-1 flex-wrap text-[8px] font-bold">
+          <div className="flex items-center gap-1 flex-wrap text-sm font-bold">
             {WORKFLOW.map((s,i)=>(
               <span key={i} className={s==='→'?'text-slate-300 dark:text-slate-700':'px-2 py-1 rounded-lg bg-black text-white'}>{s}</span>
             ))}
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
           ].map(s=>(
             <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center`}>
               <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-              <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+              <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
             </div>
           ))}
         </div>
@@ -84,20 +84,20 @@ export default function NotificationsPage() {
           </div>
           <div className="flex gap-1.5 flex-wrap">
             {['ALL','NOUVELLE','LUE','EN TRAITEMENT','RÉSOLUE','FERMÉE'].map(s=>(
-              <button key={s} onClick={()=>setStatusF(s)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border cursor-pointer transition-all" style={{background:statusF===s?'#000':'transparent',color:statusF===s?'white':'#64748B',borderColor:statusF===s?'#000':'rgba(148,163,184,0.30)'}}>
+              <button key={s} onClick={()=>setStatusF(s)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border cursor-pointer transition-all" style={{background:statusF===s?'#000':'transparent',color:statusF===s?'white':'#64748B',borderColor:statusF===s?'#000':'rgba(148,163,184,0.30)'}}>
                 {s==='ALL'?`Tous (${ALL_NOTIFICATIONS.length})`:s}
               </button>
             ))}
             {['ALL','CRITICAL','HIGH','MEDIUM','LOW'].map(p=>(
-              <button key={p} onClick={()=>setPriorityF(p)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border cursor-pointer transition-all" style={{background:priorityF===p?NOTIF_PRIORITY_CONF[p]?.color??'#000':'transparent',color:priorityF===p?'white':'#64748B',borderColor:priorityF===p?NOTIF_PRIORITY_CONF[p]?.color??'#000':'rgba(148,163,184,0.30)'}}>
+              <button key={p} onClick={()=>setPriorityF(p)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border cursor-pointer transition-all" style={{background:priorityF===p?NOTIF_PRIORITY_CONF[p]?.color??'#000':'transparent',color:priorityF===p?'white':'#64748B',borderColor:priorityF===p?NOTIF_PRIORITY_CONF[p]?.color??'#000':'rgba(148,163,184,0.30)'}}>
                 {p==='ALL'?'Tous niveaux':NOTIF_PRIORITY_CONF[p]?.label??p}
               </button>
             ))}
           </div>
           <div className="flex gap-1.5 flex-wrap">
-            <button onClick={()=>setDeptF('ALL')} className="px-2 py-1 rounded-lg text-[8px] font-bold border cursor-pointer" style={{background:deptF==='ALL'?'#000':'transparent',color:deptF==='ALL'?'white':'#64748B',borderColor:deptF==='ALL'?'#000':'rgba(148,163,184,0.30)'}}>Tous depts</button>
+            <button onClick={()=>setDeptF('ALL')} className="px-2 py-1 rounded-lg text-sm font-bold border cursor-pointer" style={{background:deptF==='ALL'?'#000':'transparent',color:deptF==='ALL'?'white':'#64748B',borderColor:deptF==='ALL'?'#000':'rgba(148,163,184,0.30)'}}>Tous depts</button>
             {DEPARTMENTS.filter(d=>d.status==='ACTIVE').map(d=>(
-              <button key={d.slug} onClick={()=>setDeptF(d.slug)} className="px-2 py-1 rounded-lg text-[8px] font-bold border cursor-pointer" style={{background:deptF===d.slug?d.color:'transparent',color:deptF===d.slug?'white':'#64748B',borderColor:deptF===d.slug?d.color:'rgba(148,163,184,0.30)'}}>
+              <button key={d.slug} onClick={()=>setDeptF(d.slug)} className="px-2 py-1 rounded-lg text-sm font-bold border cursor-pointer" style={{background:deptF===d.slug?d.color:'transparent',color:deptF===d.slug?'white':'#64748B',borderColor:deptF===d.slug?d.color:'rgba(148,163,184,0.30)'}}>
                 {d.emoji} {d.name.split(' ').pop()}
               </button>
             ))}
@@ -107,7 +107,7 @@ export default function NotificationsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Liste notifications */}
           <div className="lg:col-span-2 space-y-1.5">
-            <div className="text-[9px] text-slate-400 px-1">{filtered.length} notification(s)</div>
+            <div className="text-sm text-slate-400 px-1">{filtered.length} notification(s)</div>
             {filtered.map(n=>{
               const tc = NOTIF_TYPE_CONF[n.type]!
               const pc = NOTIF_PRIORITY_CONF[n.priority]!
@@ -122,19 +122,19 @@ export default function NotificationsPage() {
                     <span className="text-xl shrink-0">{tc.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                        <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{n.title}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{n.title}</span>
                         {!n.read&&<div className="w-2 h-2 rounded-full bg-blue-500 shrink-0"/>}
                       </div>
-                      <div className="text-[9px] text-slate-500 leading-snug truncate">{n.desc}</div>
+                      <div className="text-sm text-slate-500 leading-snug truncate">{n.desc}</div>
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full" style={{color:pc.color,background:pc.bg}}>{pc.label}</span>
-                        <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full" style={{color:tc.color,background:tc.bg}}>{tc.label}</span>
-                        {dept&&<span className="text-[7px] px-1.5 py-0.5 rounded font-bold" style={{color:dept.color,background:`${dept.color}15`}}>{dept.emoji}</span>}
-                        <span className="text-[8px] font-mono text-slate-400">{fmtDt(n.at)}</span>
-                        <span className="text-[8px] text-slate-400">· {n.source}</span>
+                        <span className="text-xs font-bold px-1.5 py-0.5 rounded-full" style={{color:pc.color,background:pc.bg}}>{pc.label}</span>
+                        <span className="text-xs font-bold px-1.5 py-0.5 rounded-full" style={{color:tc.color,background:tc.bg}}>{tc.label}</span>
+                        {dept&&<span className="text-xs px-1.5 py-0.5 rounded font-bold" style={{color:dept.color,background:`${dept.color}15`}}>{dept.emoji}</span>}
+                        <span className="text-sm font-mono text-slate-400">{fmtDt(n.at)}</span>
+                        <span className="text-sm text-slate-400">· {n.source}</span>
                       </div>
                     </div>
-                    <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap ${n.status==='NOUVELLE'?'text-red-500 bg-red-50':n.status==='RÉSOLUE'||n.status==='FERMÉE'?'text-slate-400 bg-slate-100 dark:bg-slate-800':'text-blue-600 bg-blue-50'}`}>{n.status}</span>
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 whitespace-nowrap ${n.status==='NOUVELLE'?'text-red-500 bg-red-50':n.status==='RÉSOLUE'||n.status==='FERMÉE'?'text-slate-400 bg-slate-100 dark:bg-slate-800':'text-blue-600 bg-blue-50'}`}>{n.status}</span>
                   </div>
                 </div>
               )
@@ -150,8 +150,8 @@ export default function NotificationsPage() {
                   <span className="text-xs font-bold text-slate-800 dark:text-white truncate">{selN.id}</span>
                 </div>
                 <div className="p-4 space-y-1.5">
-                  <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200 mb-2">{selN.title}</div>
-                  <div className="text-[9px] text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800 rounded-xl p-2 mb-2">{selN.desc}</div>
+                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-2">{selN.title}</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800 rounded-xl p-2 mb-2">{selN.desc}</div>
                   {[
                     {l:'Type',        v:NOTIF_TYPE_CONF[selN.type]?.label},
                     {l:'Priorité',    v:selN.priority},
@@ -162,13 +162,13 @@ export default function NotificationsPage() {
                     {l:'Lu',          v:selN.read?'Oui':'Non'},
                   ].map(r=>(
                     <div key={r.l} className="flex justify-between border-b border-slate-100 dark:border-slate-800 last:border-0 py-1">
-                      <span className="text-[9px] text-slate-400">{r.l}</span>
-                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300">{r.v}</span>
+                      <span className="text-sm text-slate-400">{r.l}</span>
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{r.v}</span>
                     </div>
                   ))}
                   {selN.action&&(
                     <div className="pt-2">
-                      <button className="w-full py-2 rounded-xl text-[9px] font-bold bg-black text-white cursor-pointer">{selN.action}</button>
+                      <button className="w-full py-2 rounded-xl text-sm font-bold bg-black text-white cursor-pointer">{selN.action}</button>
                     </div>
                   )}
                 </div>
@@ -190,7 +190,7 @@ export default function NotificationsPage() {
               ].map(s=>(
                 <div key={s.l} className="flex items-center gap-2 py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-base shrink-0">{s.icon}</span>
-                  <span className="text-[9px] flex-1 text-slate-600 dark:text-slate-400">{s.l}</span>
+                  <span className="text-sm flex-1 text-slate-600 dark:text-slate-400">{s.l}</span>
                   <span className="text-sm font-black" style={{color:s.c}}>{s.v}</span>
                 </div>
               ))}

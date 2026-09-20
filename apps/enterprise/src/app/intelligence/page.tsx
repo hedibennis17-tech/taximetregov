@@ -51,14 +51,14 @@ export default function IntelligencePage() {
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">Intelligence & Analyses</h1>
           <p className="text-sm text-slate-500 mt-1">Revenus · Services · Tendances · Anomalies · Insights</p>
         </div>
-        <div className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
+        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
           {PILOT} · ANALYSE AUTOMATIQUE DEMO · Une anomalie détectée ≠ une irrégularité confirmée · Aucune décision gouvernementale automatique
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1.5 flex-wrap">
           {([['overview','📊 Vue globale'],['revenue','💰 Revenus'],['services','🏬 Services'],['anomalies','🔍 Anomalies'],['trends','📈 Tendances']] as const).map(([t,l])=>(
-            <button key={t} onClick={()=>setTab(t)} className="px-3 py-2 rounded-xl text-[9px] font-bold border transition-all cursor-pointer" style={{background:tab===t?'#000':'transparent',color:tab===t?'white':'#64748B',borderColor:tab===t?'#000':'rgba(148,163,184,0.30)'}}>
+            <button key={t} onClick={()=>setTab(t)} className="px-3 py-2 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:tab===t?'#000':'transparent',color:tab===t?'white':'#64748B',borderColor:tab===t?'#000':'rgba(148,163,184,0.30)'}}>
               {l}
             </button>
           ))}
@@ -77,7 +77,7 @@ export default function IntelligencePage() {
               ].map(s=>(
                 <div key={s.l} className={`${s.bg} rounded-2xl p-4`}>
                   <div className="text-lg font-black" style={{color:s.c}}>{s.v}</div>
-                  <div className="text-[9px] text-slate-400 mt-1">{s.l}</div>
+                  <div className="text-sm text-slate-400 mt-1">{s.l}</div>
                 </div>
               ))}
             </div>
@@ -90,7 +90,7 @@ export default function IntelligencePage() {
               ].map(s=>(
                 <div key={s.l} className={`${s.bg} rounded-xl p-3 text-center`}>
                   <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-                  <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+                  <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
                 </div>
               ))}
             </div>
@@ -104,10 +104,10 @@ export default function IntelligencePage() {
                     <span className="text-xl shrink-0">{ins.icon}</span>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{ins.title}</span>
-                        <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{background:ins.level==='IMPORTANT'?'#B45309':ins.level==='ATTENTION'?'#7C3AED':'#003DA5'}}>{ins.level}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{ins.title}</span>
+                        <span className="text-xs font-bold px-1.5 py-0.5 rounded-full text-white" style={{background:ins.level==='IMPORTANT'?'#B45309':ins.level==='ATTENTION'?'#7C3AED':'#003DA5'}}>{ins.level}</span>
                       </div>
-                      <div className="text-[9px] text-slate-500 dark:text-slate-400 leading-relaxed">{ins.desc}</div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{ins.desc}</div>
                     </div>
                   </div>
                 ))}
@@ -119,7 +119,7 @@ export default function IntelligencePage() {
               <div className="text-sm font-bold text-slate-800 dark:text-white mb-3">Flux transactionnel</div>
               <div className="flex flex-wrap gap-1 items-center">
                 {FLUX.map((s,i)=>(
-                  <span key={i} className={s==='↓'?'text-slate-300 dark:text-slate-700 font-bold':'text-[8px] font-bold px-2 py-1 rounded-lg'} style={s!=='↓'?{background:'#000',color:'white'}:{}}>{s}</span>
+                  <span key={i} className={s==='↓'?'text-slate-300 dark:text-slate-700 font-bold':'text-sm font-bold px-2 py-1 rounded-lg'} style={s!=='↓'?{background:'#000',color:'white'}:{}}>{s}</span>
                 ))}
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function IntelligencePage() {
         {/* ── REVENUS ── */}
         {tab==='revenue'&&(
           <div className="space-y-4">
-            <div className="text-[9px] text-amber-600 dark:text-amber-400 italic">Données synthétiques DEMO — non représentatives des revenus réels d'Uber</div>
+            <div className="text-sm text-amber-600 dark:text-amber-400 italic">Données synthétiques DEMO — non représentatives des revenus réels d'Uber</div>
             {/* Décomposition financière */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
               <div className="text-sm font-bold text-slate-800 dark:text-white mb-3">Décomposition financière (DEMO)</div>
@@ -143,7 +143,7 @@ export default function IntelligencePage() {
                   {l:'Pourboires (DEMO)',     v:totalTips,    pct:Math.round(totalTips/totalGross*100),c:'#003DA5'},
                 ].map(r=>(
                   <div key={r.l}>
-                    <div className="flex justify-between text-[9px] mb-0.5">
+                    <div className="flex justify-between text-sm mb-0.5">
                       <span className="text-slate-600 dark:text-slate-400">{r.l}</span>
                       <span className="font-black" style={{color:r.c}}>{money(r.v)}</span>
                     </div>
@@ -159,7 +159,7 @@ export default function IntelligencePage() {
               <div className="text-sm font-bold text-slate-800 dark:text-white mb-3">Par département (DEMO)</div>
               {active.map(d=>(
                 <div key={d.id} className="mb-2.5">
-                  <div className="flex justify-between text-[9px] mb-0.5">
+                  <div className="flex justify-between text-sm mb-0.5">
                     <span className="font-bold text-slate-700 dark:text-slate-300">{d.emoji} {d.name}</span>
                     <div className="flex gap-3">
                       <span className="font-black" style={{color:d.color}}>{money(d.gross)}</span>
@@ -178,18 +178,18 @@ export default function IntelligencePage() {
         {/* ── SERVICES ── */}
         {tab==='services'&&(
           <div className="space-y-3">
-            <div className="text-[9px] text-amber-600 dark:text-amber-400 italic">Données synthétiques DEMO · Nb chauffeurs par dept = non publié officiellement</div>
+            <div className="text-sm text-amber-600 dark:text-amber-400 italic">Données synthétiques DEMO · Nb chauffeurs par dept = non publié officiellement</div>
             {active.map(d=>(
               <div key={d.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm" style={{borderLeft:`3px solid ${d.color}`}}>
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-2xl">{d.emoji}</span>
                   <div className="flex-1">
-                    <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{d.name}</div>
-                    <div className="text-[8px] text-amber-600 dark:text-amber-400 italic">{d.fiscalNote}</div>
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{d.name}</div>
+                    <div className="text-sm text-amber-600 dark:text-amber-400 italic">{d.fiscalNote}</div>
                   </div>
                   <div className="text-right">
                     <div className="font-black" style={{color:d.color}}>{money(d.gross)}</div>
-                    <div className="text-[8px] text-slate-400">{Math.round(d.gross/totalGross*100)}% du total</div>
+                    <div className="text-sm text-slate-400">{Math.round(d.gross/totalGross*100)}% du total</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
@@ -200,14 +200,14 @@ export default function IntelligencePage() {
                     {l:'Exceptions',  v:d.exceptions||'—'},
                   ].map(s=>(
                     <div key={s.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-1.5 text-center">
-                      <div className="text-[10px] font-black text-slate-700 dark:text-slate-300">{s.v}</div>
-                      <div className="text-[7px] text-slate-400">{s.l}</div>
+                      <div className="text-sm font-black text-slate-700 dark:text-slate-300">{s.v}</div>
+                      <div className="text-xs text-slate-400">{s.l}</div>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
-            <div className="text-[7px] text-slate-400">* Nb chauffeurs par département: données synthétiques DEMO · Non publiées officiellement par Uber</div>
+            <div className="text-xs text-slate-400">* Nb chauffeurs par département: données synthétiques DEMO · Non publiées officiellement par Uber</div>
           </div>
         )}
 
@@ -222,18 +222,18 @@ export default function IntelligencePage() {
               ].map(s=>(
                 <div key={s.l} className={`${s.bg} rounded-xl p-2.5 text-center`}>
                   <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-                  <div className="text-[8px] text-slate-500 mt-0.5">{s.l}</div>
+                  <div className="text-sm text-slate-500 mt-0.5">{s.l}</div>
                 </div>
               ))}
             </div>
             <div className="flex gap-1.5 flex-wrap">
               {['ALL','OUVERTE','À VÉRIFIER','RÉSOLUE'].map(s=>(
-                <button key={s} onClick={()=>setStatusF(s)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border cursor-pointer transition-all" style={{background:statusF===s?'#000':'transparent',color:statusF===s?'white':'#64748B',borderColor:statusF===s?'#000':'rgba(148,163,184,0.30)'}}>
+                <button key={s} onClick={()=>setStatusF(s)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border cursor-pointer transition-all" style={{background:statusF===s?'#000':'transparent',color:statusF===s?'white':'#64748B',borderColor:statusF===s?'#000':'rgba(148,163,184,0.30)'}}>
                   {s==='ALL'?`Tous (${ANOMALIES.length})`:STATUS_CONF[s]?.label??s}
                 </button>
               ))}
               {['ALL','CRITIQUE','IMPORTANT','ATTENTION','INFO'].map(l=>(
-                <button key={l} onClick={()=>setLevelF(l)} className="px-2.5 py-1.5 rounded-xl text-[9px] font-bold border cursor-pointer transition-all" style={{background:levelF===l?ANOMALY_LEVEL_CONF[l]?.color??'#64748B':'transparent',color:levelF===l?'white':'#64748B',borderColor:levelF===l?ANOMALY_LEVEL_CONF[l]?.color??'#64748B':'rgba(148,163,184,0.30)'}}>
+                <button key={l} onClick={()=>setLevelF(l)} className="px-2.5 py-1.5 rounded-xl text-sm font-bold border cursor-pointer transition-all" style={{background:levelF===l?ANOMALY_LEVEL_CONF[l]?.color??'#64748B':'transparent',color:levelF===l?'white':'#64748B',borderColor:levelF===l?ANOMALY_LEVEL_CONF[l]?.color??'#64748B':'rgba(148,163,184,0.30)'}}>
                   {l==='ALL'?'Tous niveaux':ANOMALY_LEVEL_CONF[l]?.label??l}
                 </button>
               ))}
@@ -248,22 +248,22 @@ export default function IntelligencePage() {
                     <span className="text-xl shrink-0">{tc.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{a.id}</span>
-                        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{color:lc.color,background:lc.bg}}>{lc.label}</span>
-                        <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
+                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{a.id}</span>
+                        <span className="text-sm font-bold px-1.5 py-0.5 rounded-full" style={{color:lc.color,background:lc.bg}}>{lc.label}</span>
+                        <span className="text-sm font-bold px-1.5 py-0.5 rounded-full" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
                       </div>
-                      <div className="text-[9px] text-slate-700 dark:text-slate-200">{a.desc}</div>
-                      <div className="flex gap-3 text-[8px] text-slate-400 mt-1 flex-wrap">
+                      <div className="text-sm text-slate-700 dark:text-slate-200">{a.desc}</div>
+                      <div className="flex gap-3 text-sm text-slate-400 mt-1 flex-wrap">
                         <span>{fmtDt(a.at)}</span>
                         {a.diff!==0&&<span className="font-bold text-red-500">Écart: {money2(a.diff)}</span>}
                       </div>
                     </div>
-                    {a.actId&&<Link href="/reconciliation" className="px-2 py-1 rounded-lg text-[8px] font-bold bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">→ Recon</Link>}
+                    {a.actId&&<Link href="/reconciliation" className="px-2 py-1 rounded-lg text-sm font-bold bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">→ Recon</Link>}
                   </div>
                 </div>
               )
             })}
-            <div className="text-[8px] text-slate-400 text-center italic">Une anomalie ≠ une irrégularité confirmée · Chaque cas nécessite une analyse individuelle · {PILOT}</div>
+            <div className="text-sm text-slate-400 text-center italic">Une anomalie ≠ une irrégularité confirmée · Chaque cas nécessite une analyse individuelle · {PILOT}</div>
           </div>
         )}
 
@@ -272,13 +272,13 @@ export default function IntelligencePage() {
           <div className="space-y-4">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
               <div className="text-sm font-bold text-slate-800 dark:text-white mb-1">Évolution 12 mois — Revenus + Activités (DEMO)</div>
-              <div className="text-[9px] text-slate-400 mb-3">Oct 2025 → Sep 2026 · Synthétique</div>
+              <div className="text-sm text-slate-400 mb-3">Oct 2025 → Sep 2026 · Synthétique</div>
               <div className="flex items-end gap-0.5 h-28 mb-2">
                 {ANALYTICS_MONTHLY.map(m=>(
                   <div key={m.m} className="flex-1 flex flex-col items-center gap-0.5 group relative">
-                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-black text-white text-[7px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">{(m.gross/1000).toFixed(0)}k$</div>
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">{(m.gross/1000).toFixed(0)}k$</div>
                     <div className="w-full rounded-t-sm" style={{height:`${(m.gross/maxMonth)*100}%`,background:'#000'}}/>
-                    <div className="text-[6px] text-slate-400 rotate-45 origin-left">{m.m.split(' ')[0]}</div>
+                    <div className="text-sm text-slate-400 rotate-45 origin-left">{m.m.split(' ')[0]}</div>
                   </div>
                 ))}
               </div>
@@ -292,7 +292,7 @@ export default function IntelligencePage() {
                   )
                 })}
               </div>
-              <div className="flex gap-3 text-[8px] mt-2">
+              <div className="flex gap-3 text-sm mt-2">
                 <div className="flex items-center gap-1"><div className="w-3 h-2 rounded bg-black"/><span className="text-slate-500">Revenus</span></div>
                 <div className="flex items-center gap-1"><div className="w-3 h-2 rounded" style={{background:'#06B029'}}/><span className="text-slate-500">Activités</span></div>
               </div>
@@ -311,8 +311,8 @@ export default function IntelligencePage() {
               ].map(r=>(
                 <div key={r.l} className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <div className="flex-1">
-                    <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{r.l}</div>
-                    <div className="text-[8px] text-slate-400">{r.note}</div>
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{r.l}</div>
+                    <div className="text-sm text-slate-400">{r.note}</div>
                   </div>
                   <div className="text-lg font-black" style={{color:r.c}}>{r.v}</div>
                 </div>

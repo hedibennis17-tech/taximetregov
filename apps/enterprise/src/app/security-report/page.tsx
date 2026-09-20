@@ -162,21 +162,21 @@ export default function SecurityReportPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-white font-black text-base">🔐 Rapport Sécurité — Phase 34</div>
-              <div className="text-[9px] mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>
+              <div className="text-sm mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>
                 {CURRENT_ENT.id} · {TESTS.length} tests · Auth + RLS + RBAC + API + Secrets · {PILOT}
               </div>
               <div className="flex items-center gap-4 mt-2">
                 {[{l:'PASS',v:pass,c:'#059669'},{l:'PARTIAL',v:partial,c:'#B45309'},{l:'FAIL',v:fail,c:'#DC2626'}].map(s=>(
                   <div key={s.l} className="text-center">
                     <div className="text-xl font-black" style={{color:s.c}}>{s.v}</div>
-                    <div className="text-[7px] font-bold" style={{color:'rgba(255,255,255,0.4)'}}>{s.l}</div>
+                    <div className="text-xs font-bold" style={{color:'rgba(255,255,255,0.4)'}}>{s.l}</div>
                   </div>
                 ))}
               </div>
             </div>
             <div className="text-center shrink-0">
               <div className="text-4xl font-black" style={{color:score>=80?'#059669':score>=60?'#B45309':'#DC2626'}}>{score}%</div>
-              <div className="text-[8px] font-bold text-white/50">sécurité</div>
+              <div className="text-sm font-bold text-white/50">sécurité</div>
             </div>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function SecurityReportPage() {
         <div className="flex gap-1 flex-wrap">
           {([['report','📋 Rapport'],['matrix','🗂️ Matrice accès'],['rls','🛡️ RLS SQL'],['tests','🧪 Tests négatifs']] as const).map(([id,label])=>(
             <button key={id} onClick={()=>setTab(id as typeof tab)}
-              className="px-3 py-1.5 rounded-xl text-[9px] font-bold cursor-pointer border transition-all"
+              className="px-3 py-1.5 rounded-xl text-sm font-bold cursor-pointer border transition-all"
               style={{background:tab===id?'#000':'white',color:tab===id?'white':'#64748B',borderColor:tab===id?'#000':'#e2e8f0'}}>
               {label}
             </button>
@@ -206,17 +206,17 @@ export default function SecurityReportPage() {
                     <span className="text-lg">{cs==='PASS'?'✅':cs==='FAIL'?'❌':'⚠️'}</span>
                     <div className="flex-1">
                       <div className="text-xs font-black text-slate-800 dark:text-white">{cat}</div>
-                      <div className="text-[8px] text-slate-400">{cp}/{ct.length} PASS</div>
+                      <div className="text-sm text-slate-400">{cp}/{ct.length} PASS</div>
                     </div>
-                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full text-white ${cs==='PASS'?'bg-green-600':cs==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{cs}</span>
+                    <span className={`text-sm font-black px-2 py-0.5 rounded-full text-white ${cs==='PASS'?'bg-green-600':cs==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{cs}</span>
                   </div>
                   <div className="px-5 pb-3 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-2">
                     {ct.map(t=>(
-                      <div key={t.id} className={`p-2.5 rounded-xl border text-[9px] ${t.status==='PASS'?'bg-green-50 dark:bg-green-500/8 border-green-200 dark:border-green-500/20':t.status==='FAIL'?'bg-red-50 dark:bg-red-500/8 border-red-200':'bg-amber-50 dark:bg-amber-500/8 border-amber-200 dark:border-amber-500/20'}`}>
+                      <div key={t.id} className={`p-2.5 rounded-xl border text-sm ${t.status==='PASS'?'bg-green-50 dark:bg-green-500/8 border-green-200 dark:border-green-500/20':t.status==='FAIL'?'bg-red-50 dark:bg-red-500/8 border-red-200':'bg-amber-50 dark:bg-amber-500/8 border-amber-200 dark:border-amber-500/20'}`}>
                         <div className="flex items-center gap-1.5 mb-0.5">
                           <span>{t.status==='PASS'?'✅':t.status==='FAIL'?'❌':'⚠️'}</span>
                           <span className="font-bold text-slate-800 dark:text-slate-200">{t.label}</span>
-                          <span className={`ml-auto text-[7px] font-black px-1.5 py-0.5 rounded-full text-white ${t.status==='PASS'?'bg-green-600':t.status==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{t.status}</span>
+                          <span className={`ml-auto text-xs font-black px-1.5 py-0.5 rounded-full text-white ${t.status==='PASS'?'bg-green-600':t.status==='FAIL'?'bg-red-600':'bg-amber-500'}`}>{t.status}</span>
                         </div>
                         <div className="font-mono text-slate-500 dark:text-slate-400">{t.detail}</div>
                         {t.fix&&<div className="mt-1 text-blue-600 dark:text-blue-400 font-bold">🔧 {t.fix}</div>}
@@ -236,7 +236,7 @@ export default function SecurityReportPage() {
               <div className="text-xs font-black text-slate-800 dark:text-white">Matrice d'accès — READ / WRITE / APPROVE</div>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-[8px]">
+              <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-slate-800">
                     <th className="px-3 py-2 text-left font-bold text-slate-600 dark:text-slate-400 w-32">Module</th>
@@ -258,9 +258,9 @@ export default function SecurityReportPage() {
                         return (
                           <td key={r} className="px-1.5 py-1.5 text-center">
                             <div className="flex gap-0.5 justify-center">
-                              <span className={`text-[8px] font-bold px-1 rounded ${read?'text-green-600 bg-green-50':'text-slate-300 bg-slate-50 dark:bg-slate-800'}`}>{read?'R':'─'}</span>
-                              {write!==null&&<span className={`text-[8px] font-bold px-1 rounded ${write?'text-blue-600 bg-blue-50':'text-slate-300 bg-slate-50 dark:bg-slate-800'}`}>{write?'W':'─'}</span>}
-                              {approve!==null&&<span className={`text-[8px] font-bold px-1 rounded ${approve?'text-purple-600 bg-purple-50':'text-slate-300 bg-slate-50 dark:bg-slate-800'}`}>{approve?'A':'─'}</span>}
+                              <span className={`text-sm font-bold px-1 rounded ${read?'text-green-600 bg-green-50':'text-slate-300 bg-slate-50 dark:bg-slate-800'}`}>{read?'R':'─'}</span>
+                              {write!==null&&<span className={`text-sm font-bold px-1 rounded ${write?'text-blue-600 bg-blue-50':'text-slate-300 bg-slate-50 dark:bg-slate-800'}`}>{write?'W':'─'}</span>}
+                              {approve!==null&&<span className={`text-sm font-bold px-1 rounded ${approve?'text-purple-600 bg-purple-50':'text-slate-300 bg-slate-50 dark:bg-slate-800'}`}>{approve?'A':'─'}</span>}
                             </div>
                           </td>
                         )
@@ -270,7 +270,7 @@ export default function SecurityReportPage() {
                 </tbody>
               </table>
             </div>
-            <div className="px-5 py-2 border-t border-slate-100 dark:border-slate-800 flex gap-4 text-[8px] text-slate-400">
+            <div className="px-5 py-2 border-t border-slate-100 dark:border-slate-800 flex gap-4 text-sm text-slate-400">
               <span><span className="font-bold text-green-600">R</span> = READ</span>
               <span><span className="font-bold text-blue-600">W</span> = WRITE</span>
               <span><span className="font-bold text-purple-600">A</span> = APPROVE</span>
@@ -282,7 +282,7 @@ export default function SecurityReportPage() {
         {/* ── RLS SQL ── */}
         {tab==='rls'&&(
           <div className="space-y-3">
-            <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl px-4 py-3 text-[9px] font-bold text-amber-700 dark:text-amber-400">
+            <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl px-4 py-3 text-sm font-bold text-amber-700 dark:text-amber-400">
               ⚠️ Ces policies sont définies dans <code>src/lib/security/rls-policies.sql</code>. À appliquer dans Supabase → SQL Editor du projet <code>aisojdmxsskzrdjrhrzw</code>
             </div>
             {[
@@ -297,11 +297,11 @@ export default function SecurityReportPage() {
               <div key={p.table} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-lg">⚠️</span>
-                  <span className="text-[10px] font-black text-slate-800 dark:text-slate-200">{p.table}</span>
-                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-white ml-auto">À APPLIQUER</span>
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-200">{p.table}</span>
+                  <span className="text-sm font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-white ml-auto">À APPLIQUER</span>
                 </div>
-                <div className="text-[9px] font-mono text-slate-500 dark:text-slate-400 mb-1">{p.policy}</div>
-                <div className="text-[9px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 rounded-lg px-2 py-1 font-mono">{p.rule}</div>
+                <div className="text-sm font-mono text-slate-500 dark:text-slate-400 mb-1">{p.policy}</div>
+                <div className="text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 rounded-lg px-2 py-1 font-mono">{p.rule}</div>
               </div>
             ))}
           </div>
@@ -310,7 +310,7 @@ export default function SecurityReportPage() {
         {/* ── TESTS NÉGATIFS ── */}
         {tab==='tests'&&(
           <div className="space-y-2">
-            <div className="text-[10px] text-slate-500 mb-2">Résultats des tests de sécurité négatifs — comportements refusés attendus</div>
+            <div className="text-sm text-slate-500 mb-2">Résultats des tests de sécurité négatifs — comportements refusés attendus</div>
             {[
               {scenario:'DRIVER → /admin (security:admin)',         result:'BLOQUÉ ✅', method:'hasPermission(DRIVER, security:admin) = false → redirect /'},
               {scenario:'DRIVER → /security',                      result:'BLOQUÉ ✅', method:'hasPermission(DRIVER, security:view) = false → redirect /'},
@@ -327,16 +327,16 @@ export default function SecurityReportPage() {
             ].map((t,i)=>(
               <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border ${t.result.includes('✅')&&!t.result.includes('⚠️')?'bg-green-50 dark:bg-green-500/8 border-green-200 dark:border-green-500/20':t.result.includes('⚠️')?'bg-amber-50 dark:bg-amber-500/8 border-amber-200 dark:border-amber-500/20':'bg-red-50 border-red-200'}`}>
                 <div className="flex-1">
-                  <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{t.scenario}</div>
-                  <div className="text-[8px] font-mono text-slate-500 dark:text-slate-400 mt-0.5">{t.method}</div>
+                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200">{t.scenario}</div>
+                  <div className="text-sm font-mono text-slate-500 dark:text-slate-400 mt-0.5">{t.method}</div>
                 </div>
-                <span className="text-[9px] font-black shrink-0">{t.result}</span>
+                <span className="text-sm font-black shrink-0">{t.result}</span>
               </div>
             ))}
           </div>
         )}
 
-        <div className="text-[8px] text-slate-400 text-center">
+        <div className="text-sm text-slate-400 text-center">
           Score sécurité: {score}% · {pass} PASS · {partial} PARTIAL · {fail} FAIL · {TESTS.length} tests · {PILOT}
         </div>
       </div>

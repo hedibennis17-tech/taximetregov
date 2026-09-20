@@ -104,8 +104,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="text-center">
           <div className="w-10 h-10 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-3"/>
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Vérification de la session…</div>
-          <div className="text-[8px] text-slate-300 mt-1">TAXIMETER.GOV · PILOTE</div>
+          <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Vérification de la session…</div>
+          <div className="text-sm text-slate-300 mt-1">TAXIMETER.GOV · PILOTE</div>
         </div>
       </div>
     )
