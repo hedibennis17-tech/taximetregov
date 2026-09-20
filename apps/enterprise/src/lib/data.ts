@@ -229,6 +229,7 @@ export const NAV_SECTIONS = [
     {href:'/security',         label:'Sécurité & Gov.'},
     {href:'/audit',            label:'Journal d\'audit'},
     {href:'/notifications',    label:'Notifications'},
+    {href:'/validation',       label:'✅ Validation E2E'},
   ]},
 ]
 
@@ -1283,3 +1284,56 @@ export const GOV_MSG_TYPE_CONF: Record<string,{icon:string;color:string}> = {
   INFORMATION: {icon:'📢',color:'#64748B'},
   SOUMISSION:  {icon:'📤',color:'#003DA5'},
 }
+
+// ── REVENUE LEDGER — Flux financier complet DEMO ──
+export type LedgerEntry = {
+  id:           string
+  txId:         string
+  actId:        string
+  driverId:     string
+  vehicleId:    string
+  deptId:       string
+  enterpriseId: string
+  at:           string
+  type:         'TRIP'|'DELIVERY'|'TIP'|'ADJUSTMENT'|'REFUND'|'FEE'
+  gross:        number
+  tip:          number
+  fees:         number
+  taxableAmt:   number
+  tps:          number
+  tvq:          number
+  net:          number
+  source:       string
+  status:       'POSTED'|'PENDING'|'REVERSED'
+  reconStatus:  'MATCHED'|'UNMATCHED'|'EXCEPTION'
+}
+
+export const REVENUE_LEDGER: LedgerEntry[] = [
+  // Uber Rides — D1
+  {id:'RL-001',txId:'TX-ENT-001',actId:'ACT-ENT-001',driverId:'DRV-001',vehicleId:'VEH-001',deptId:'D1',enterpriseId:'ENT-DEMO-001',at:'2026-09-18T08:45:00Z',type:'TRIP',      gross:28.50,tip:3.00,fees:7.13,taxableAmt:28.50,tps:1.43,tvq:2.84,net:17.10,source:'UBER_RIDES', status:'POSTED', reconStatus:'MATCHED'},
+  {id:'RL-002',txId:'TX-ENT-002',actId:'ACT-ENT-002',driverId:'DRV-002',vehicleId:'VEH-002',deptId:'D1',enterpriseId:'ENT-DEMO-001',at:'2026-09-18T09:12:00Z',type:'TIP',       gross:0,   tip:4.00,fees:0,    taxableAmt:4.00,  tps:0.20,tvq:0.40,net:3.40, source:'UBER_RIDES', status:'POSTED', reconStatus:'MATCHED'},
+  {id:'RL-003',txId:'TX-ENT-003',actId:'ACT-ENT-003',driverId:'DRV-003',vehicleId:'VEH-003',deptId:'D2',enterpriseId:'ENT-DEMO-001',at:'2026-09-18T09:30:00Z',type:'TRIP',      gross:35.00,tip:5.00,fees:8.75,taxableAmt:35.00,tps:1.75,tvq:3.49,net:21.01,source:'UBER_TAXI',  status:'POSTED', reconStatus:'MATCHED'},
+  {id:'RL-004',txId:'TX-ENT-004',actId:'ACT-ENT-004',driverId:'DRV-004',vehicleId:'VEH-004',deptId:'D4',enterpriseId:'ENT-DEMO-001',at:'2026-09-18T10:05:00Z',type:'DELIVERY',  gross:15.00,tip:2.00,fees:4.50,taxableAmt:15.00,tps:0.75,tvq:1.50,net:8.25, source:'UBER_EATS',  status:'POSTED', reconStatus:'MATCHED'},
+  {id:'RL-005',txId:'TX-ENT-005',actId:'ACT-ENT-005',driverId:'DRV-005',vehicleId:'VEH-005',deptId:'D3',enterpriseId:'ENT-DEMO-001',at:'2026-09-18T10:20:00Z',type:'TRIP',      gross:42.00,tip:0,   fees:10.50,taxableAmt:42.00,tps:2.10,tvq:4.19,net:25.21,source:'UBER_GREEN',  status:'POSTED', reconStatus:'MATCHED'},
+  {id:'RL-006',txId:'TX-ENT-006',actId:'ACT-ENT-006',driverId:'DRV-006',vehicleId:'VEH-006',deptId:'D5',enterpriseId:'ENT-DEMO-001',at:'2026-09-18T11:00:00Z',type:'DELIVERY',  gross:22.00,tip:3.50,fees:6.60,taxableAmt:22.00,tps:1.10,tvq:2.19,net:11.61,source:'UBER_GROCERY',status:'POSTED', reconStatus:'MATCHED'},
+  {id:'RL-007',txId:'TX-ENT-007',actId:'ACT-ENT-007',driverId:'DRV-001',vehicleId:'VEH-001',deptId:'D6',enterpriseId:'ENT-DEMO-001',at:'2026-09-18T11:30:00Z',type:'DELIVERY',  gross:18.00,tip:1.00,fees:5.40,taxableAmt:18.00,tps:0.90,tvq:1.80,net:9.90, source:'UBER_COURIER',status:'POSTED', reconStatus:'MATCHED'},
+  {id:'RL-008',txId:'TX-ENT-008',actId:'ACT-ENT-008',driverId:'DRV-002',vehicleId:'VEH-002',deptId:'D1',enterpriseId:'ENT-DEMO-001',at:'2026-09-17T14:20:00Z',type:'ADJUSTMENT', gross:0,  tip:0,   fees:0,    taxableAmt:-5.00, tps:-0.25,tvq:-0.50,net:-4.25,source:'ADJUSTMENT', status:'POSTED', reconStatus:'MATCHED'},
+  {id:'RL-009',txId:'TX-ENT-009',actId:'ACT-ENT-009',driverId:'DRV-003',vehicleId:'VEH-003',deptId:'D4',enterpriseId:'ENT-DEMO-001',at:'2026-09-17T12:02:00Z',type:'DELIVERY',  gross:12.00,tip:2.00,fees:3.60,taxableAmt:12.00,tps:0.60,tvq:1.20,net:6.60, source:'UBER_EATS',  status:'POSTED', reconStatus:'MATCHED'},
+  {id:'RL-010',txId:'TX-ENT-010',actId:'ACT-ENT-010',driverId:'DRV-004',vehicleId:'VEH-004',deptId:'D2',enterpriseId:'ENT-DEMO-001',at:'2026-09-17T16:05:00Z',type:'TRIP',      gross:21.00,tip:0,   fees:5.25,taxableAmt:21.00,tps:1.05,tvq:2.09,net:12.61,source:'UBER_TAXI',  status:'POSTED', reconStatus:'EXCEPTION'},
+  // Entrée PENDING — test réconciliation
+  {id:'RL-011',txId:'TX-ENT-011',actId:'ACT-DEMO-011',driverId:'DRV-005',vehicleId:'VEH-005',deptId:'D1',enterpriseId:'ENT-DEMO-001',at:'2026-09-20T06:00:00Z',type:'TRIP',      gross:33.00,tip:4.00,fees:8.25,taxableAmt:33.00,tps:1.65,tvq:3.29,net:19.81,source:'UBER_RIDES', status:'PENDING',reconStatus:'UNMATCHED'},
+]
+
+export const LEDGER_SUMMARY = {
+  enterpriseId:   'ENT-DEMO-001',
+  period:         'Septembre 2026',
+  totalGross:     REVENUE_LEDGER.filter(e=>e.status==='POSTED').reduce((s,e)=>s+e.gross+e.tip,0),
+  totalTPS:       REVENUE_LEDGER.filter(e=>e.status==='POSTED').reduce((s,e)=>s+e.tps,0),
+  totalTVQ:       REVENUE_LEDGER.filter(e=>e.status==='POSTED').reduce((s,e)=>s+e.tvq,0),
+  totalNet:       REVENUE_LEDGER.filter(e=>e.status==='POSTED').reduce((s,e)=>s+e.net,0),
+  matched:        REVENUE_LEDGER.filter(e=>e.reconStatus==='MATCHED').length,
+  unmatched:      REVENUE_LEDGER.filter(e=>e.reconStatus==='UNMATCHED').length,
+  exceptions:     REVENUE_LEDGER.filter(e=>e.reconStatus==='EXCEPTION').length,
+  note:           'DONNÉES SYNTHÉTIQUES · PILOTE DEMO · AUCUNE VALEUR FISCALE OFFICIELLE',
+}
+

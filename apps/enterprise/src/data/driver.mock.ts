@@ -111,7 +111,7 @@ export const driverActivities: DriverActivity[] = [
     blockingReasons: [],
     icon: '🚗',
     label: 'Rideshare',
-    description: 'Prix fourni par Uber/Lyft · Taximètre désactivé',
+    description: 'Prix fourni par Uber · Taximètre désactivé',
   },
   {
     activityType: 'FOOD_DELIVERY',
@@ -239,7 +239,7 @@ export interface PlatformAccount {
 
 export const mockPlatformAccounts: PlatformAccount[] = [
   { platformAccountId: 'PA-001', driverId: 'DR-00001234', provider: 'uber', name: 'Uber', icon: '⬛', externalAccountId: 'UBER-ABC-456', status: 'CONNECTED', connectedAt: '2024-09-15T00:00:00Z', lastSync: '2026-08-24T14:55:00Z', authorizationStatus: 'AUTHORIZED', syncStatus: 'SYNCED', activityType: 'RIDESHARE', taximeterEnabled: false, todayTrips: 3, todayRevenue: 87.30 },
-  { platformAccountId: 'PA-002', driverId: 'DR-00001234', provider: 'lyft', name: 'Lyft', icon: '🔵', externalAccountId: 'LYFT-XYZ-789', status: 'DISCONNECTED', connectedAt: '2024-10-01T00:00:00Z', lastSync: '2026-08-23T18:00:00Z', authorizationStatus: 'REVOKED', syncStatus: 'FAILED', activityType: 'RIDESHARE', taximeterEnabled: false, todayTrips: 0, todayRevenue: 0 },
+  { platformAccountId: 'PA-002', driverId: 'DR-00001234', provider: 'uber_direct', name: 'Uber Direct', icon: '🚚', externalAccountId: 'UBRD-XYZ-789', status: 'DISCONNECTED', connectedAt: '2024-10-01T00:00:00Z', lastSync: '2026-08-23T18:00:00Z', authorizationStatus: 'REVOKED', syncStatus: 'FAILED', activityType: 'RIDESHARE', taximeterEnabled: false, todayTrips: 0, todayRevenue: 0 },
   { platformAccountId: 'PA-003', driverId: 'DR-00001234', provider: 'doordash', name: 'DoorDash', icon: '🔴', externalAccountId: 'DD-123-456', status: 'CONNECTED', connectedAt: '2024-10-15T00:00:00Z', lastSync: '2026-08-24T13:10:00Z', authorizationStatus: 'AUTHORIZED', syncStatus: 'SYNCED', activityType: 'FOOD_DELIVERY', taximeterEnabled: false, todayTrips: 8, todayRevenue: 112.40 },
   { platformAccountId: 'PA-004', driverId: 'DR-00001234', provider: 'ubereats', name: 'Uber Eats', icon: '🟢', externalAccountId: null, status: 'NOT_CONNECTED', connectedAt: null, lastSync: null, authorizationStatus: null, syncStatus: null, activityType: 'FOOD_DELIVERY', taximeterEnabled: false, todayTrips: 0, todayRevenue: 0 },
   { platformAccountId: 'PA-005', driverId: 'DR-00001234', provider: 'instacart', name: 'Instacart', icon: '🛒', externalAccountId: null, status: 'NOT_CONNECTED', connectedAt: null, lastSync: null, authorizationStatus: null, syncStatus: null, activityType: 'GROCERY', taximeterEnabled: false, todayTrips: 0, todayRevenue: 0 },
