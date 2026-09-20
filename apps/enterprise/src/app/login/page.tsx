@@ -9,14 +9,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
-  const [checking, setChecking] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
   // Rediriger si déjà connecté
   useEffect(() => {
+    setMounted(true)
     getSession().then(s => {
       if (s) router.replace('/')
-      else   setChecking(false)
-    }).catch(() => setChecking(false))
+    }).catch(() => {})
   }, [router])
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -46,16 +46,7 @@ export default function LoginPage() {
     {email:'jp.roy@uber-demo.taximetergov.demo',             name:'Jean-Philippe Roy', role:'FINANCE'},
   ]
 
-  if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{background:'#f1f5f9'}}>
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-2"/>
-          <div className="text-[10px] text-slate-400">Vérification de la session…</div>
-        </div>
-      </div>
-    )
-  }
+  if (!mounted) return null
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{background:'#f1f5f9'}}>
