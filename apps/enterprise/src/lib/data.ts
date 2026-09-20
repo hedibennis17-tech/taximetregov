@@ -233,6 +233,7 @@ export const NAV_SECTIONS = [
     {href:'/simulation',      label:'🏛️ Simulation Gov.'},
     {href:'/integration-tests', label:'🧪 Tests Intégration'},
     {href:'/security-report',   label:'🔐 Sécurité Phase 34'},
+    {href:'/sync-monitor',      label:'🔄 Sync Monitor Phase 35'},
   ]},
 ]
 
