@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import './globals.css'
+import { AuthProvider } from '@/lib/auth/AuthProvider'
 
 export const metadata: Metadata = {
   title: 'TAXIMETER.GOV — Enterprise Gov',
@@ -11,7 +12,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <body className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-sans antialiased">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )

@@ -3,6 +3,8 @@ import React from 'react'
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth/AuthProvider'
+import { signOut } from '@/lib/supabase/auth'
 import { Menu, X, Bell, LogOut, Building2, ChevronDown } from 'lucide-react'
 import { NAV_SECTIONS, CURRENT_ENT, NOTIFICATIONS } from '@/lib/data'
 
