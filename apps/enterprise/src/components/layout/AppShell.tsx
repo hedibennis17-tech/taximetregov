@@ -2,7 +2,7 @@
 import React from 'react'
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Menu, X, Bell, LogOut, Building2, ChevronDown } from 'lucide-react'
 import { NAV_SECTIONS, CURRENT_ENT, NOTIFICATIONS } from '@/lib/data'
 
