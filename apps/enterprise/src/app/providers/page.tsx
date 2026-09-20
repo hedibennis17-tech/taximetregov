@@ -5,7 +5,9 @@ import { PILOT, money, money2, fmtDt, PROVIDERS, PROVIDER_SERVICES, SVC_CAT_CONF
 
 const PRV_STATUS: Record<string,{label:string;color:string;bg:string;dot:string}> = {
   CONNECTED:{label:'Connecté', color:'#059669',bg:'rgba(5,150,105,0.12)',dot:'bg-green-500'},
+  ACTIVE:   {label:'Actif',    color:'#059669',bg:'rgba(5,150,105,0.12)',dot:'bg-green-500'},
   PLANNED:  {label:'Planifié', color:'#7C3AED',bg:'rgba(124,58,237,0.12)',dot:'bg-purple-400'},
+  SIMULATION:{label:'Simulation',color:'#B45309',bg:'rgba(180,83,9,0.10)',dot:'bg-amber-400'},
   ERROR:    {label:'Erreur',   color:'#DC2626',bg:'rgba(220,38,38,0.10)',dot:'bg-red-500'},
 }
 
@@ -62,7 +64,7 @@ export default function ProvidersPage() {
           <div className="space-y-2">
             <div className="text-[9px] font-bold text-slate-400 uppercase px-1">Répertoire fournisseurs</div>
             {PROVIDERS.map(p=>{
-              const sc = PRV_STATUS[p.status]!
+              const sc = PRV_STATUS[p.status] ?? {label:p.status,color:'#64748B',bg:'rgba(100,116,139,0.10)',dot:'bg-slate-400'}
               const psvcs = PROVIDER_SERVICES.filter(s=>s.providerId===p.id)
               const activeCount = psvcs.filter(s=>s.status==='ACTIVE').length
               return (
