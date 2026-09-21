@@ -605,7 +605,7 @@ export default function DemoPage() {
                     <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl p-4 space-y-3">
                       <div className="text-sm font-black text-blue-800 dark:text-blue-300">{activeFlow.toUpperCase()}</div>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                        {[{l:'WHAT',n.what},{l:'WHY',n.why},{l:'DATA',n.data},{l:'STATUS','ACTIVE ✅'},{l:'SOURCE TABLE',n.source},{l:'NEXT STEP →',n.next}].map(([l,v])=>(
+                        {([['WHAT',n.what],['WHY',n.why],['DATA',n.data],['STATUS','ACTIVE ✅'],['SOURCE TABLE',n.source],['NEXT STEP →',n.next]] as [string,string][]).map(([l,v])=>(
                           <div key={l} className="bg-white/60 dark:bg-black/20 rounded-lg p-2">
                             <div className="font-black text-slate-400 mb-0.5">{l}</div>
                             <div className="text-slate-700 dark:text-slate-300 font-semibold">{v}</div>
