@@ -8,31 +8,20 @@ import { Menu, Bell, LogOut, ChevronRight } from 'lucide-react'
 import { NAV_SECTIONS, CURRENT_ENT, NOTIFICATIONS } from '@/lib/data'
 import { signOut } from '@/lib/supabase/auth'
 
-// ── Logo Uber SVG fidèle (cercle blanc + carré noir) ──
+// ── Logos Uber / Uber Eats — vraies images PNG ──
 function UberIcon({ size = 32 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="120" height="120" rx="24" fill="black"/>
-      <circle cx="60" cy="60" r="38" fill="white"/>
-      <rect x="38" y="53" width="44" height="14" rx="2" fill="black"/>
-      <rect x="58" y="42" width="14" height="14" rx="2" fill="black"/>
-    </svg>
-  )
+  const src = size <= 32 ? '/logos/uber-icon-32.png' : '/logos/uber-icon-64.png'
+  return <img src={src} width={size} height={size} alt="Uber" style={{borderRadius: size*0.2, objectFit:'cover'}}/>
 }
 
-// ── Logo Uber Eats SVG fidèle (fond vert #06C167 + texte noir) ──
 function UberEatsIcon({ size = 32 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="120" height="120" rx="24" fill="#06C167"/>
-      <text x="50%" y="44" textAnchor="middle" fill="black"
-        fontFamily="system-ui,-apple-system,sans-serif"
-        fontWeight="900" fontSize="36" letterSpacing="-1">Uber</text>
-      <text x="50%" y="84" textAnchor="middle" fill="black"
-        fontFamily="system-ui,-apple-system,sans-serif"
-        fontWeight="900" fontSize="36" letterSpacing="-1">Eats</text>
-    </svg>
-  )
+  const src = size <= 32 ? '/logos/uber-eats-32.png' : '/logos/uber-eats-64.png'
+  return <img src={src} width={size} height={size} alt="Uber Eats" style={{borderRadius: size*0.2, objectFit:'cover'}}/>
+}
+
+function UberTextLogo({ height = 40 }: { height?: number }) {
+  const ratio = 1170/984
+  return <img src="/logos/uber-text-40.png" height={height} width={Math.round(height*ratio)} alt="Uber" style={{filter:'brightness(0) invert(1)'}}/>
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -88,11 +77,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             border: '1px solid rgba(255,255,255,0.08)',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)'
           }}>
-            {/* Logos côte à côte */}
+            {/* Logos vrais PNG côte à côte */}
             <div className="flex items-center gap-3 mb-3">
-              <UberIcon size={44}/>
-              <div className="w-px h-10 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}/>
-              <UberEatsIcon size={44}/>
+              <UberIcon size={48}/>
+              <UberEatsIcon size={48}/>
               <div className="flex-1"/>
               <div className="flex flex-col items-end">
                 <span className="text-xs font-black text-white leading-tight">Uber</span>
@@ -226,8 +214,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Breadcrumb / info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-md shrink-0">
-                <UberIcon size={20}/>
+              <div className="shrink-0">
+                <UberIcon size={24}/>
               </div>
               <span className="text-sm font-bold text-slate-800 truncate hidden sm:block">
                 {CURRENT_ENT.tradeName}
