@@ -1,36 +1,26 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ── TAXIMETER.GOV — Thème SaaS Ultra Premium Québécois ── */
 
 :root {
-  /* Couleurs principales */
   --uber-black:   #000000;
   --uber-white:   #FFFFFF;
   --eats-green:   #06C167;
   --qc-blue:      #003DA5;
   --qc-blue-dark: #002B7A;
-
-  /* Surfaces */
   --bg-app:       #F5F5F7;
   --bg-card:      #FFFFFF;
   --bg-sidebar:   #0A0A0A;
-
-  /* Texte */
   --text-primary:   #1D1D1F;
   --text-secondary: #6E6E73;
   --text-muted:     #AEAEB2;
-
-  /* Bordures */
   --border-light: rgba(0,0,0,0.06);
-  --border-dark:  rgba(255,255,255,0.08);
-
-  /* Shadows */
   --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-  --shadow-hover: 0 4px 24px rgba(0,0,0,0.10);
 }
 
-/* Reset */
-*, *::before, *::after { box-sizing: border-box; }
+* { box-sizing: border-box; }
 html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
 body {
@@ -39,51 +29,34 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Scrollbar premium */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
 
-/* Cards premium */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-  box-shadow: var(--shadow-card);
-}
-
-/* Transitions globales */
-a, button { transition: all 0.15s ease; }
-
-/* Focus rings */
 *:focus-visible {
   outline: 2px solid var(--qc-blue);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-app:   #1C1C1E;
     --bg-card:  #2C2C2E;
     --text-primary: #F5F5F7;
-    --text-secondary: #AEAEB2;
     --border-light: rgba(255,255,255,0.08);
   }
   body { background: #1C1C1E; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
 }
 
-/* Animation pulse dot */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
 .animate-pulse { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
 
-/* Animation spin */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
