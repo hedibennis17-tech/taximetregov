@@ -234,6 +234,11 @@ export const NAV_SECTIONS = [
     {href:'/integration-tests', label:'🧪 Tests Intégration'},
     {href:'/security-report',   label:'🔐 Sécurité'},
     {href:'/sync-monitor',      label:'🔄 Synchronisation'},
+    {href:'/demo',              label:'🎬 Demo Center'},
+    {href:'/executive-report',  label:'📊 Rapport Exécutif'},
+    {href:'/phase-37-report',   label:'🧪 Rapport E2E Ph.37'},
+    {href:'/phase-38-report',   label:'📋 Rapport Ph.38'},
+    {href:'/phase-39-report',   label:'📋 Rapport Ph.39'},
   ]},
 ]
 
