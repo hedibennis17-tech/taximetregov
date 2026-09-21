@@ -4,97 +4,178 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth/AuthProvider'
 import { ROLE_LABELS, ROLE_COLORS, type Role } from '@/lib/auth/rbac'
-import { Menu, Bell, LogOut, Building2 } from 'lucide-react'
+import { Menu, Bell, LogOut, ChevronRight } from 'lucide-react'
 import { NAV_SECTIONS, CURRENT_ENT, NOTIFICATIONS } from '@/lib/data'
 import { signOut } from '@/lib/supabase/auth'
 
+// ── Logo Uber SVG fidèle (cercle blanc + carré noir) ──
+function UberIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="120" height="120" rx="24" fill="black"/>
+      <circle cx="60" cy="60" r="38" fill="white"/>
+      <rect x="38" y="53" width="44" height="14" rx="2" fill="black"/>
+      <rect x="58" y="42" width="14" height="14" rx="2" fill="black"/>
+    </svg>
+  )
+}
+
+// ── Logo Uber Eats SVG fidèle (fond vert #06C167 + texte noir) ──
+function UberEatsIcon({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="120" height="120" rx="24" fill="#06C167"/>
+      <text x="50%" y="44" textAnchor="middle" fill="black"
+        fontFamily="system-ui,-apple-system,sans-serif"
+        fontWeight="900" fontSize="36" letterSpacing="-1">Uber</text>
+      <text x="50%" y="84" textAnchor="middle" fill="black"
+        fontFamily="system-ui,-apple-system,sans-serif"
+        fontWeight="900" fontSize="36" letterSpacing="-1">Eats</text>
+    </svg>
+  )
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const [open, setOpen]     = useState(false)
-  const pathname            = usePathname()
-  const router              = useRouter()
-  const { user }            = useAuth()
-  const unread              = NOTIFICATIONS.filter(n=>!n.read).length
+  const [open, setOpen]   = useState(false)
+  const pathname          = usePathname()
+  const router            = useRouter()
+  const { user }          = useAuth()
+  const unread            = NOTIFICATIONS.filter(n => !n.read).length
 
   const handleLogout = async () => {
     try { await signOut() } catch {}
     router.replace('/login')
   }
 
-  const initials = user?.name
-    ? user.name.split(' ').map((n:string)=>n[0]).join('').slice(0,2).toUpperCase()
+  const initials  = user?.name
+    ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
     : 'U'
-
   const roleColor = user ? (ROLE_COLORS[user.role as Role] ?? '#003DA5') : '#003DA5'
   const roleLabel = user ? (ROLE_LABELS[user.role as Role] ?? user.role) : ''
 
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen flex" style={{ background: '#F5F5F7' }}>
 
-      {/* ── SIDEBAR ── */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col transition-transform duration-200 ${open?'translate-x-0':'-translate-x-full'} lg:translate-x-0`}>
+      {/* ══════════════ SIDEBAR ══════════════ */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-40 w-72 flex flex-col
+        transition-transform duration-300 ease-in-out
+        ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+      `} style={{ background: '#0A0A0A', boxShadow: '4px 0 32px rgba(0,0,0,0.18)' }}>
 
-        {/* Logo TAXIMETER.GOV */}
-        <div className="px-4 pt-4 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center shrink-0">
-              <Building2 size={16} className="text-white"/>
+        {/* ── Header sidebar ── */}
+        <div className="px-5 pt-6 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+
+          {/* TAXIMETER.GOV badge */}
+          <div className="flex items-center gap-2.5 mb-5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'linear-gradient(135deg,#003DA5,#0057E7)', boxShadow: '0 2px 12px rgba(0,61,165,0.4)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
             <div>
-              <div className="text-xs font-black text-slate-900 dark:text-white">TAXIMETER.GOV</div>
-              <div className="text-sm text-blue-700 font-bold">Enterprise Gov</div>
+              <div className="text-sm font-black tracking-tight" style={{ color: 'white', letterSpacing: '-0.02em' }}>
+                TAXIMETER.GOV
+              </div>
+              <div className="text-xs font-semibold" style={{ color: '#06C167' }}>Enterprise Gov</div>
             </div>
           </div>
 
-          {/* Bloc entreprise Uber */}
-          <div className="rounded-2xl px-4 py-3" style={{background:'#000'}}>
-            <div className="font-black text-white tracking-tighter" style={{fontSize:'2rem',fontFamily:'system-ui',letterSpacing:'-0.05em',lineHeight:0.9}}>uber</div>
-            <div className="my-1.5" style={{height:'1px',background:'rgba(255,255,255,0.1)'}}/>
-            <div className="flex items-center gap-1.5">
-              <span className="font-black" style={{fontFamily:'system-ui',color:'#06B029',fontSize:'1rem',lineHeight:1}}>Uber</span>
-              <span className="font-black text-white" style={{fontFamily:'system-ui',fontSize:'1rem',lineHeight:1}}>Eats</span>
+          {/* ── Carte Uber — logos réels ── */}
+          <div className="rounded-2xl p-4" style={{
+            background: 'linear-gradient(145deg, #1A1A1A, #111)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)'
+          }}>
+            {/* Logos côte à côte */}
+            <div className="flex items-center gap-3 mb-3">
+              <UberIcon size={44}/>
+              <div className="w-px h-10 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}/>
+              <UberEatsIcon size={44}/>
+              <div className="flex-1"/>
+              <div className="flex flex-col items-end">
+                <span className="text-xs font-black text-white leading-tight">Uber</span>
+                <span className="text-xs font-black leading-tight" style={{ color: '#06C167' }}>Québec</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 mt-1.5">
-              {['🚕','🚗','🟢','🛒','📦'].map((e,i)=><span key={i} className="text-sm">{e}</span>)}
-              <span className="text-xs font-bold ml-1" style={{color:'rgba(255,255,255,0.35)'}}>6 services</span>
+
+            {/* Dépt badges */}
+            <div className="flex flex-wrap gap-1 mb-2.5">
+              {[
+                { e: '🚗', l: 'Rides' },
+                { e: '🚕', l: 'Taxi' },
+                { e: '🟢', l: 'Green' },
+                { e: '🍔', l: 'Eats' },
+                { e: '🛒', l: 'Grocery' },
+                { e: '📦', l: 'Courier' },
+              ].map(d => (
+                <span key={d.l} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
+                  style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.65)' }}>
+                  {d.e} {d.l}
+                </span>
+              ))}
             </div>
-            <div className="flex items-center gap-1 mt-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400"/>
-              <span className="text-sm font-bold" style={{color:'rgba(255,255,255,0.55)'}}>Connecté · PILOTE</span>
+
+            {/* Status */}
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#06C167' }}/>
+              <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                Connecté · PILOTE · {CURRENT_ENT.id}
+              </span>
             </div>
           </div>
 
-          {/* User connecté */}
+          {/* ── User card ── */}
           {user && (
-            <div className="mt-2.5 px-1">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-black shrink-0" style={{background:roleColor}}>
-                  {initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{user.name}</div>
-                  <div className="text-sm text-slate-400 truncate">{user.email}</div>
+            <div className="mt-3 flex items-center gap-3 px-3 py-2.5 rounded-xl"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-black shrink-0"
+                style={{ background: roleColor, boxShadow: `0 2px 8px ${roleColor}60` }}>
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-white truncate">{user.name}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                    style={{ background: roleColor + '30', color: roleColor }}>
+                    {roleLabel}
+                  </span>
+                  <span className="text-xs" style={{ color: '#06C167' }}>🔒</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 mt-1.5">
-                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full text-white" style={{background:roleColor}}>{roleLabel}</span>
-                <span className="text-xs font-bold text-green-600 dark:text-green-400">🔒 Sécurisé</span>
-              </div>
+              <button onClick={handleLogout}
+                className="p-1.5 rounded-lg cursor-pointer transition-all hover:bg-red-500/20"
+                style={{ color: 'rgba(255,255,255,0.3)' }} title="Déconnexion">
+                <LogOut size={14}/>
+              </button>
             </div>
           )}
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-2 px-2">
-          {NAV_SECTIONS.map(sec=>(
-            <div key={sec.section} className="mb-3">
-              <div className="text-sm font-bold text-slate-400 uppercase px-2 mb-1">{sec.section}</div>
-              {sec.items.map(item=>{
-                const active = pathname===item.href||(item.href!=='/'&&pathname.startsWith(item.href))
+        {/* ── Navigation ── */}
+        <nav className="flex-1 overflow-y-auto px-3 py-3"
+          style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
+          {NAV_SECTIONS.map(sec => (
+            <div key={sec.section} className="mb-4">
+              <div className="px-3 mb-1.5 text-xs font-bold uppercase tracking-widest"
+                style={{ color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em' }}>
+                {sec.section}
+              </div>
+              {sec.items.map(item => {
+                const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
                 return (
-                  <Link key={item.href} href={item.href} onClick={()=>setOpen(false)}
-                    className="flex items-center px-3 py-2 rounded-xl text-xs font-medium transition-all mb-0.5"
-                    style={{background:active?'#003DA5':'transparent',color:active?'white':'#64748B'}}>
-                    {item.label}
+                  <Link key={item.href} href={item.href} onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-0.5 transition-all group"
+                    style={{
+                      background: active
+                        ? 'linear-gradient(135deg, rgba(0,61,165,0.8), rgba(0,87,231,0.6))'
+                        : 'transparent',
+                      color: active ? 'white' : 'rgba(255,255,255,0.45)',
+                      boxShadow: active ? '0 2px 12px rgba(0,61,165,0.3)' : 'none',
+                    }}>
+                    <span className="flex-1 truncate">{item.label}</span>
+                    {active && <ChevronRight size={14} className="opacity-60 shrink-0"/>}
                   </Link>
                 )
               })}
@@ -102,52 +183,120 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        {/* Footer */}
-        <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-          <div className="text-sm text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg">
-            ⚠️ DONNÉES SYNTHÉTIQUES — PILOTE
+        {/* ── Footer sidebar ── */}
+        <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-2"
+            style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
+            <span className="text-xs">⚠️</span>
+            <span className="text-xs font-semibold" style={{ color: '#F59E0B' }}>
+              DONNÉES SYNTHÉTIQUES · PILOTE
+            </span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-500 transition-colors w-full cursor-pointer py-1"
-          >
-            <LogOut size={12}/> Déconnexion
-          </button>
+          <div className="text-xs text-center font-medium" style={{ color: 'rgba(255,255,255,0.15)' }}>
+            TAXIMETER.GOV · v2026 · Québec 🍁
+          </div>
         </div>
       </aside>
 
       {/* Overlay mobile */}
-      {open&&<div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={()=>setOpen(false)}/>}
+      {open && (
+        <div className="fixed inset-0 z-30 lg:hidden"
+          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setOpen(false)}/>
+      )}
 
-      {/* ── MAIN ── */}
-      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
-        {/* Topbar */}
-        <header className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 h-14 flex items-center px-4 gap-3">
-          <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800" onClick={()=>setOpen(true)}>
-            <Menu size={16} className="text-slate-500"/>
+      {/* ══════════════ MAIN ══════════════ */}
+      <div className="flex-1 lg:ml-72 flex flex-col min-h-screen">
+
+        {/* ── Topbar ── */}
+        <header className="sticky top-0 z-20 h-16 flex items-center px-5 gap-4"
+          style={{
+            background: 'rgba(245,245,247,0.85)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 1px 0 rgba(0,0,0,0.04)'
+          }}>
+
+          {/* Burger mobile */}
+          <button className="lg:hidden p-2 rounded-xl hover:bg-black/5 cursor-pointer transition-all"
+            onClick={() => setOpen(true)}>
+            <Menu size={18} className="text-slate-600"/>
           </button>
+
+          {/* Breadcrumb / info */}
           <div className="flex-1 min-w-0">
-            <div className="text-sm text-slate-400 hidden md:block">
-              {CURRENT_ENT.tradeName} · {CURRENT_ENT.id} · NEQ: {CURRENT_ENT.neq}
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded-md shrink-0">
+                <UberIcon size={20}/>
+              </div>
+              <span className="text-sm font-bold text-slate-800 truncate hidden sm:block">
+                {CURRENT_ENT.tradeName}
+              </span>
+              <span className="text-sm text-slate-400 hidden md:block">·</span>
+              <span className="text-sm text-slate-400 hidden md:block truncate">
+                {CURRENT_ENT.id}
+              </span>
             </div>
           </div>
-          <Link href="/notifications" className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
-            <Bell size={16} className="text-slate-500"/>
-            {unread>0&&<div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-sm font-black text-white">{unread}</div>}
-          </Link>
-          {user && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div className="w-6 h-6 rounded-lg flex items-center justify-center text-sm font-black text-white shrink-0" style={{background:roleColor}}>
-                {initials}
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Notification bell */}
+            <Link href="/notifications"
+              className="relative p-2.5 rounded-xl transition-all hover:bg-black/5"
+              style={{ color: '#64748B' }}>
+              <Bell size={18}/>
+              {unread > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center text-xs font-black text-white"
+                  style={{ background: '#DC2626', fontSize: '9px' }}>
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
+            </Link>
+
+            {/* User pill */}
+            {user && (
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl"
+                style={{ background: 'white', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-black shrink-0"
+                  style={{ background: roleColor }}>
+                  {initials}
+                </div>
+                <div className="hidden md:block">
+                  <div className="text-sm font-bold text-slate-800 leading-tight">{user.name}</div>
+                  <div className="text-xs font-semibold leading-tight" style={{ color: roleColor }}>{roleLabel}</div>
+                </div>
+                <button onClick={handleLogout}
+                  className="ml-1 p-1 rounded-lg cursor-pointer hover:bg-red-50 transition-all"
+                  style={{ color: '#94A3B8' }}>
+                  <LogOut size={13}/>
+                </button>
               </div>
-              <div className="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:block">{user.name}</div>
-              <button onClick={handleLogout} className="ml-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer hidden md:block">
-                <LogOut size={12}/>
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </header>
-        <main className="flex-1">{children}</main>
+
+        {/* ── Content ── */}
+        <main className="flex-1 p-0">
+          {children}
+        </main>
+
+        {/* ── Footer page ── */}
+        <footer className="px-6 py-3 flex items-center justify-between"
+          style={{ borderTop: '1px solid rgba(0,0,0,0.05)', background: 'rgba(245,245,247,0.5)' }}>
+          <div className="flex items-center gap-2">
+            <UberIcon size={16}/>
+            <UberEatsIcon size={16}/>
+            <span className="text-xs font-semibold text-slate-400 ml-1">Uber Québec · {CURRENT_ENT.id}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(245,158,11,0.12)', color: '#B45309' }}>
+              ⚠️ PILOTE · DONNÉES SYNTHÉTIQUES
+            </span>
+            <span className="text-xs text-slate-300">TAXIMETER.GOV © 2026 🍁</span>
+          </div>
+        </footer>
       </div>
     </div>
   )
