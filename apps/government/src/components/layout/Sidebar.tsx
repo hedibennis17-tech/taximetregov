@@ -57,6 +57,7 @@ export function Sidebar() {
     { title:'Vue d\'ensemble', items:[
       { label:'Control Center', href:'/control-center', icon:Gauge },
       { label:'Dashboard', href:'/', icon:LayoutDashboard },
+      { label:'Gov Dashboard Ph.36', href:'/gov-dashboard', icon:Building },
       { label:'Activité en direct', href:'/operations/activity', icon:Activity },
     ]},
     { title:'Chauffeurs & Véhicules', items:[
