@@ -227,7 +227,7 @@ export default function SyncMonitorPage() {
       status:'PASS',detail:'Champ created_offline_at timestamptz dans sync_queue · workflow offline→reconnect→sync prévu',tables:'sync_queue'},
     {cat:'HORS LIGNE',label:'Mode offline réel: non implémenté côté frontend (honnêteté)',
       status:'PARTIAL',detail:'Infrastructure DB prête · UI offline non implémentée · taximeter page utilise timer local uniquement',tables:'n/a',
-      fix:'Service Worker + IndexedDB pour stocker activités offline → sync au retour réseau (Phase 36+)'},
+      fix:'Service Worker + IndexedDB pour stocker activités offline → sync au retour réseau'},
   ]
 
   const rPass    = REPORT.filter(r=>r.status==='PASS').length
@@ -243,7 +243,7 @@ export default function SyncMonitorPage() {
         <div className="rounded-2xl p-5 shadow-sm" style={{background:'#000'}}>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-white font-black text-base">🔄 Monitor de synchronisation — Phase 35</div>
+              <div className="text-white font-black text-base">🔄 Monitor de synchronisation</div>
               <div className="text-sm mt-0.5" style={{color:'rgba(255,255,255,0.45)'}}>
                 Driver Gov ↔ Enterprise Gov ↔ Admin Gov · {CURRENT_ENT.id} · {PILOT}
               </div>
@@ -463,7 +463,7 @@ export default function SyncMonitorPage() {
               <div className="flex items-center gap-4 mb-3">
                 <div className="text-3xl font-black" style={{color:rScore>=80?'#059669':rScore>=60?'#B45309':'#DC2626'}}>{rScore}%</div>
                 <div>
-                  <div className="text-xs font-black text-slate-800 dark:text-white">Rapport Phase 35 — Synchronisation</div>
+                  <div className="text-xs font-black text-slate-800 dark:text-white">Rapport — Synchronisation</div>
                   <div className="flex gap-3 text-sm mt-0.5">
                     <span className="text-green-600 font-bold">✅ {rPass} PASS</span>
                     <span className="text-amber-600 font-bold">⚠️ {rPartial} PARTIAL</span>
@@ -487,7 +487,7 @@ export default function SyncMonitorPage() {
 
             {/* Corrections */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
-              <div className="text-xs font-black text-slate-800 dark:text-white mb-3">Corrections recommandées avant Phase 36</div>
+              <div className="text-xs font-black text-slate-800 dark:text-white mb-3">Corrections recommandées</div>
               {REPORT.filter(r=>r.fix).map((r,i)=>(
                 <div key={i} className="flex items-start gap-2 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
                   <span className="text-base shrink-0">🔧</span>
@@ -499,7 +499,7 @@ export default function SyncMonitorPage() {
               ))}
             </div>
 
-            <div className="text-sm text-slate-400 text-center">{PILOT} · Rapport Phase 35 · {CURRENT_ENT.id}</div>
+            <div className="text-sm text-slate-400 text-center">{PILOT} · Monitor de synchronisation · {CURRENT_ENT.id}</div>
           </div>
         )}
       </div>

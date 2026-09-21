@@ -85,7 +85,7 @@ export default function GovDashboardPage() {
                   <div>
                     <div className="text-white font-black text-xl" style={{letterSpacing:'-0.02em'}}>TAXIMETER.GOV</div>
                     <div className="text-sm" style={{color:'rgba(255,255,255,0.55)'}}>
-                      Dashboard Gouvernemental · Phase 36 · Admin Gov · 🍁 Québec
+                      Dashboard Gouvernemental · Admin Gov · 🍁 Québec
                     </div>
                   </div>
                 </div>
@@ -567,7 +567,7 @@ export default function GovDashboardPage() {
               ))}
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-700 font-semibold">
-              ⚠️ PARTIAL · Realtime Supabase INSERT sur system_events et /api/admin/sync-events à activer (voir Phase 35)
+              ⚠️ PARTIAL · Realtime Supabase INSERT sur system_events et /api/admin/sync-events à activer 
             </div>
           </div>
         )}
@@ -608,7 +608,7 @@ export default function GovDashboardPage() {
         {tab==='rapport'&&(
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <div className="text-sm font-black text-slate-800 mb-4">Rapport Phase 36 — Dashboard Gouvernemental Final</div>
+              <div className="text-sm font-black text-slate-800 mb-4">Rapport — Dashboard Gouvernemental</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-5">
                 {[
                   {l:'Header gouvernemental QC + pipeline + 8 KPIs',             s:'PASS'},
@@ -625,7 +625,7 @@ export default function GovDashboardPage() {
                   {l:'Alertes conformité niveaux CRITICAL/HIGH/MEDIUM',          s:'PASS'},
                   {l:'Aucune donnée concurrente · isolation ENT-DEMO-001',       s:'PASS'},
                   {l:'Sécurité Phase 34: RequireAdminSession non modifiée',      s:'PASS'},
-                  {l:'Non-régression Phase 35: sync monitor intact',             s:'PASS'},
+                  {l:'Sync monitor intact',             s:'PASS'},
                   {l:'Realtime push INSERT system_events (polling seulement)',    s:'PARTIAL'},
                   {l:'/api/admin/sync-events dans gov app',                      s:'PARTIAL'},
                   {l:'RLS policies Supabase à appliquer (rls-policies.sql)',     s:'PARTIAL'},
@@ -651,13 +651,13 @@ export default function GovDashboardPage() {
               </div>
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-sm text-blue-800 font-semibold">
-              🏛️ <strong>Score Phase 36: ~88%</strong> · {PILOT} · En attente de ton approbation avant Phase 37
+              🏛️ <strong>Score: ~88%</strong> · {PILOT}
             </div>
           </div>
         )}
 
         <div className="text-xs text-slate-400 text-center py-1">
-          TAXIMETER.GOV · Phase 36 · Admin Gov · {PILOT} · ENT-DEMO-001 · 🍁 Québec
+          TAXIMETER.GOV · Dashboard Gouvernemental · Admin Gov · {PILOT} · ENT-DEMO-001 · 🍁 Québec
         </div>
       </div>
     </AppShell>

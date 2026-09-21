@@ -132,7 +132,7 @@ export default function PipelineCenterPage() {
     {id:'quarantine',  label:'Quarantaine',       icon:'🚫'},
     {id:'lineage',     label:'Data Lineage',      icon:'🔗'},
     {id:'how',         label:'Comment ça marche', icon:'🎓'},
-    {id:'report',      label:'Rapport Ph.36.5',   icon:'✅'},
+    {id:'report',      label:'Rapport',           icon:'✅'},
   ]
 
   const pass    = REPORT_ITEMS.filter(r=>r.status==='PASS').length
@@ -157,7 +157,7 @@ export default function PipelineCenterPage() {
                       Data Pipeline Center
                     </div>
                     <div className="text-sm" style={{color:'rgba(255,255,255,0.55)'}}>
-                      Phase 36.5 · Manus Architecture · 4 registres · ENT-DEMO-001
+                      Centre de traitement des données · 4 registres · ENT-DEMO-001
                     </div>
                   </div>
                 </div>
@@ -231,7 +231,7 @@ export default function PipelineCenterPage() {
           <div className="space-y-4">
             {/* Règle fondamentale */}
             <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-              <div className="text-sm font-black text-slate-800 mb-3">Principe architectural — Manus</div>
+              <div className="text-sm font-black text-slate-800 mb-3">Principe architectural</div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {[
                   {icon:'📡',label:'WEBHOOK',     desc:'Signal rapide\nPas la vérité fiscale',   c:'#7C3AED',bg:'#F5F3FF'},
@@ -649,7 +649,7 @@ export default function PipelineCenterPage() {
         {tab==='report'&&(
           <div className="space-y-4">
             <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-              <div className="text-sm font-black text-slate-800 mb-4">Rapport Phase 36.5 — Manus Architecture Upgrade</div>
+              <div className="text-sm font-black text-slate-800 mb-4">Rapport — Architecture de traitement</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-5">
                 {REPORT_ITEMS.map(r=>(
                   <div key={r.cat} className={`flex items-start gap-2 p-3 rounded-xl border text-sm ${r.status==='PASS'?'bg-green-50 border-green-200':r.status==='PARTIAL'?'bg-amber-50 border-amber-200':'bg-red-50 border-red-200'}`}>
@@ -691,13 +691,13 @@ export default function PipelineCenterPage() {
               </div>
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-sm text-blue-800 font-semibold">
-              🏛️ Score Phase 36.5: ~80% · {pass} PASS · {partial} PARTIAL · {fail} FAIL · {PILOT} · En attente approbation
+              🏛️ Score: · {pass} PASS · {partial} PARTIAL · {fail} FAIL · {PILOT} · En attente approbation
             </div>
           </div>
         )}
 
         <div className="text-xs text-slate-400 text-center py-1">
-          {PILOT} · TAXIMETER.GOV Phase 36.5 · Manus Architecture · ENT-DEMO-001 · 🍁 Québec
+          {PILOT} · TAXIMETER.GOV · Centre de traitement · ENT-DEMO-001 · 🍁 Québec
         </div>
       </div>
     </AppShell>
