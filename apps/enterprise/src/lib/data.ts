@@ -239,6 +239,7 @@ export const NAV_SECTIONS = [
     {href:'/phase-37-report',   label:'🧪 Rapport E2E Ph.37'},
     {href:'/phase-38-report',   label:'📋 Rapport Ph.38'},
     {href:'/phase-39-report',   label:'📋 Rapport Ph.39'},
+    {href:'/final-audit',       label:'🏁 Audit Final'},
   ]},
 ]
 

@@ -205,10 +205,10 @@ export default function LoginPage() {
         </div>
         <div style={{ background: dark?'rgba(0,61,165,0.12)':'rgba(0,61,165,0.06)', border:'1px solid', borderColor: dark?'rgba(0,61,165,0.3)':'rgba(0,61,165,0.15)', borderRadius:12, padding:12 }}>
           {[
-            { name:'Hedi Bennis (Super Admin)', email:'hedibenns21@gmail.com',              pwd:'Taximetregov2026', role:'Super Admin · Driver App', color:'#DC2626' },
-            { name:'Jean Tremblay',        email:'jean.tremblay.demo@taximetregov.qc',       pwd:'Driver2026Demo!',  role:'Chauffeur · Taxi · Montréal', color:'#003DA5' },
-            { name:'Marie Gagnon',         email:'marie.gagnon.demo@taximetregov.qc',        pwd:'Driver2026Demo!',  role:'Chauffeure · VTC · Laval',    color:'#059669' },
-            { name:'Karim Hassan',         email:'karim.hassan.demo@taximetregov.qc',        pwd:'Driver2026Demo!',  role:'Chauffeur · Livraison',        color:'#7C3AED' },
+            { name:'Hedi Bennis (Super Admin)', email:'hedibenns21@gmail.com',              pwd:'••••••••', role:'Super Admin · Driver App', color:'#DC2626' },
+            { name:'Jean Tremblay',        email:'jean.tremblay.demo@taximetregov.qc',       pwd:'••••••••',  role:'Chauffeur · Taxi · Montréal', color:'#003DA5' },
+            { name:'Marie Gagnon',         email:'marie.gagnon.demo@taximetregov.qc',        pwd:'••••••••',  role:'Chauffeure · VTC · Laval',    color:'#059669' },
+            { name:'Karim Hassan',         email:'karim.hassan.demo@taximetregov.qc',        pwd:'••••••••',  role:'Chauffeur · Livraison',        color:'#7C3AED' },
           ].map((u,i) => (
             <button key={i} onClick={() => { setEmail(u.email); setPassword(u.pwd) }}
               style={{ width:'100%', display:'flex', alignItems:'center', gap:10, background:'transparent', border:'none',

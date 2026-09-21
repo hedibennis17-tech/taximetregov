@@ -173,9 +173,9 @@ export default function GovernmentLoginPage() {
 <div className="mt-6 rounded-xl border border-slate-700 bg-slate-800/60 p-4">
   <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-3">Accès rapide · Comptes Admin DÉMO</div>
   {[
-    { name:'Hedi Bennis',       email:'hedibenns21@gmail.com',                         pwd:'Taximetregov2026', role:'SUPER ADMIN', color:'#DC2626' },
-    { name:'Claire Beaumont',   email:'c.beaumont@admin-demo.taximetergov.demo',        pwd:'GovAdmin2026!',    role:'GOV ADMIN',   color:'#7C3AED' },
-    { name:'Marc Duplessis',    email:'m.duplessis@admin-demo.taximetergov.demo',       pwd:'GovAgent2026!',    role:'GOV AGENT',   color:'#003DA5' },
+    { name:'Hedi Bennis',       email:'hedibenns21@gmail.com',                         pwd:'••••••••', role:'SUPER ADMIN', color:'#DC2626' },
+    { name:'Claire Beaumont',   email:'c.beaumont@admin-demo.taximetergov.demo',        pwd:'••••••••',    role:'GOV ADMIN',   color:'#7C3AED' },
+    { name:'Marc Duplessis',    email:'m.duplessis@admin-demo.taximetergov.demo',       pwd:'••••••••',    role:'GOV AGENT',   color:'#003DA5' },
   ].map((u,i) => (
     <button key={i} onClick={() => { setEmail(u.email); setPassword(u.pwd) }}
       className="w-full flex items-center gap-3 py-2 text-left border-b border-slate-700/50 last:border-0 hover:opacity-80 transition-opacity cursor-pointer bg-transparent">

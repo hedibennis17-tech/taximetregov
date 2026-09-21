@@ -41,9 +41,9 @@ export default function LoginPage() {
   }
 
   const QUICK = [
-    {email:'hedibenns21@gmail.com',                         password:'Taximetregov2026', name:'Hedi Bennis',       role:'SUPER_ADMIN'},
-    {email:'s.marchand@uber-demo.taximetergov.demo',         password:'Uber2026Demo!',    name:'Sophie Marchand',   role:'OWNER'},
-    {email:'jp.roy@uber-demo.taximetergov.demo',             password:'Finance2026!',     name:'Jean-Philippe Roy', role:'FINANCE'},
+    {email:'hedibenns21@gmail.com',                         password:'••••••••', name:'Hedi Bennis',       role:'SUPER_ADMIN'},
+    {email:'s.marchand@uber-demo.taximetergov.demo',         password:'••••••••',    name:'Sophie Marchand',   role:'OWNER'},
+    {email:'jp.roy@uber-demo.taximetergov.demo',             password:'••••••••',     name:'Jean-Philippe Roy', role:'FINANCE'},
   ]
 
   if (!mounted) return null
