@@ -10,8 +10,8 @@ import { signOut } from '@/lib/supabase/auth'
 
 // ── Logos Uber / Uber Eats — vraies images PNG ──
 function UberIcon({ size = 32 }: { size?: number }) {
-  const src = size <= 32 ? '/logos/uber-icon-32.png' : '/logos/uber-icon-64.png'
-  return <img src={src} width={size} height={size} alt="Uber" style={{borderRadius: size*0.2, objectFit:'cover'}}/>
+  const src = size <= 32 ? '/logos/uber-icon-32.png' : size <= 48 ? '/logos/uber-icon-48.png' : '/logos/uber-icon-64.png'
+  return <img src={src} width={size} height={size} alt="Uber" style={{objectFit:'cover'}}/>
 }
 
 function UberEatsIcon({ size = 32 }: { size?: number }) {
@@ -19,10 +19,6 @@ function UberEatsIcon({ size = 32 }: { size?: number }) {
   return <img src={src} width={size} height={size} alt="Uber Eats" style={{borderRadius: size*0.2, objectFit:'cover'}}/>
 }
 
-function UberTextLogo({ height = 40 }: { height?: number }) {
-  const ratio = 1170/984
-  return <img src="/logos/uber-text-40.png" height={height} width={Math.round(height*ratio)} alt="Uber" style={{filter:'brightness(0) invert(1)'}}/>
-}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen]   = useState(false)
@@ -50,15 +46,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         fixed inset-y-0 left-0 z-40 w-72 flex flex-col
         transition-transform duration-300 ease-in-out
         ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
-      `} style={{ background: '#0A0A0A', boxShadow: '4px 0 32px rgba(0,0,0,0.18)' }}>
+      `} style={{ background: 'linear-gradient(180deg, #002B7A 0%, #003DA5 40%, #0047C0 100%)', boxShadow: '4px 0 32px rgba(0,61,165,0.35)' }}>
 
         {/* ── Header sidebar ── */}
-        <div className="px-5 pt-6 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="px-5 pt-6 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
 
           {/* TAXIMETER.GOV badge */}
           <div className="flex items-center gap-2.5 mb-5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'linear-gradient(135deg,#003DA5,#0057E7)', boxShadow: '0 2px 12px rgba(0,61,165,0.4)' }}>
+              style={{ background: 'rgba(255,255,255,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -73,9 +69,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* ── Carte Uber — logos réels ── */}
           <div className="rounded-2xl p-4" style={{
-            background: 'linear-gradient(145deg, #1A1A1A, #111)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)'
+            background: 'rgba(0,0,0,0.25)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)'
           }}>
             {/* Logos vrais PNG côte à côte */}
             <div className="flex items-center gap-3 mb-3">
@@ -108,7 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Status */}
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#06C167' }}/>
-              <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.65)' }}>
                 Connecté · PILOTE · {CURRENT_ENT.id}
               </span>
             </div>
@@ -117,7 +113,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* ── User card ── */}
           {user && (
             <div className="mt-3 flex items-center gap-3 px-3 py-2.5 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.15)' }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-black shrink-0"
                 style={{ background: roleColor, boxShadow: `0 2px 8px ${roleColor}60` }}>
                 {initials}
@@ -143,11 +139,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* ── Navigation ── */}
         <nav className="flex-1 overflow-y-auto px-3 py-3"
-          style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
+          style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.2) transparent' }}>
           {NAV_SECTIONS.map(sec => (
             <div key={sec.section} className="mb-4">
               <div className="px-3 mb-1.5 text-xs font-bold uppercase tracking-widest"
-                style={{ color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em' }}>
+                style={{ color: 'rgba(255,255,255,0.45)', letterSpacing: '0.1em' }}>
                 {sec.section}
               </div>
               {sec.items.map(item => {
@@ -159,7 +155,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       background: active
                         ? 'linear-gradient(135deg, rgba(0,61,165,0.8), rgba(0,87,231,0.6))'
                         : 'transparent',
-                      color: active ? 'white' : 'rgba(255,255,255,0.45)',
+                      color: active ? 'white' : 'rgba(255,255,255,0.70)',
                       boxShadow: active ? '0 2px 12px rgba(0,61,165,0.3)' : 'none',
                     }}>
                     <span className="flex-1 truncate">{item.label}</span>
@@ -172,7 +168,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* ── Footer sidebar ── */}
-        <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl mb-2"
             style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
             <span className="text-xs">⚠️</span>
@@ -180,7 +176,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               DONNÉES SYNTHÉTIQUES · PILOTE
             </span>
           </div>
-          <div className="text-xs text-center font-medium" style={{ color: 'rgba(255,255,255,0.15)' }}>
+          <div className="text-xs text-center font-medium" style={{ color: 'rgba(255,255,255,0.40)' }}>
             TAXIMETER.GOV · v2026 · Québec 🍁
           </div>
         </div>
