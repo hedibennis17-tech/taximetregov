@@ -7,8 +7,11 @@ import {
   CURRENT_ENT, ENT_DRIVERS, ENT_VEHICLES, DEPARTMENTS,
   SIM_ACTIVITIES, SIM_TRANSACTIONS, SIM_LEDGER, SIM_RECON,
   SIM_DECLARATION, SIM_PAYMENT, SIM_AUDIT, ANOMALIES,
-  SIM_TPS_R, SIM_TVQ_R, simR2,
 } from '@/lib/data'
+
+const SIM_TPS_R = 0.05
+const SIM_TVQ_R = 0.09975
+const simR2 = (n: number) => Math.round(n * 100) / 100
 
 // ─── DEMO SCENARIO DATA ────────────────────────────────────────────────────────
 const DRIVER_DEMO = ENT_DRIVERS.find(d => d.id === 'DRV-QC-0004')!
