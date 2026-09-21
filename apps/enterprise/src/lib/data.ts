@@ -232,7 +232,7 @@ export const NAV_SECTIONS = [
     {href:'/validation',       label:'✅ Validation E2E'},
     {href:'/simulation',      label:'🏛️ Simulation Gov.'},
     {href:'/integration-tests', label:'🧪 Tests Intégration'},
-    {href:'/security-report',   label:'🔐 Sécurité Phase 34'},
+    {href:'/security-report',   label:'🔐 Sécurité'},
     {href:'/sync-monitor',      label:'🔄 Synchronisation'},
   ]},
 ]
@@ -1519,7 +1519,7 @@ export const SIM_DEPT_SUMMARY = ['D1','D2','D3','D4','D5','D6'].map(dId=>{
 
 // ── RAPPORT GLOBAL SIMULATION ──
 export const SIM_RAPPORT = {
-  label:          'Simulation Phase 32 · Journée du 2026-09-20',
+  label:          'Simulation · Journée du 2026-09-20',
   enterpriseId:   'ENT-DEMO-001',
   entreprise:     'UBER QUÉBEC / UBER CANADA INC.',
   departments:    6,

@@ -58,7 +58,7 @@ export function Sidebar() {
       { label:'Control Center', href:'/control-center', icon:Gauge },
       { label:'Dashboard', href:'/', icon:LayoutDashboard },
       { label:'Gov Dashboard Ph.36', href:'/gov-dashboard', icon:Building },
-      { label:'Pipeline Center Ph.36.5', href:'/pipeline-center', icon:Layers },
+      { label:'Pipeline Center', href:'/pipeline-center', icon:Layers },
       { label:'Activité en direct', href:'/operations/activity', icon:Activity },
     ]},
     { title:'Chauffeurs & Véhicules', items:[
