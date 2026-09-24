@@ -1,7 +1,12 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { AppShell } from '@/components/layout/AppShell'
-import { kpiData, mockDrivers as drivers, mockTransactions as transactions, mockAlerts as alerts, mockAuditLogs as auditLogs } from '@/data/mock'
+
+// Types minimal pour les données Supabase
+type SbDriver = { id:string; driver_number:string; first_name:string; last_name:string; status:string; email?:string }
+type SbTx     = { id:string; source_type:string; activity_type:string; gross_amount:string; tip_amount:string; tax_amount:string; net_amount:string; activity_date:string; driver_profiles?:{first_name:string;last_name:string} }
+type SbAlert  = { id:string; alert_type?:string; priority?:string; message?:string; created_at?:string }
+type SbAudit  = { id:string; action?:string; actor_id?:string; created_at?:string; resource_type?:string }
 
 const money  = (n: number) => n.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })
 const money2 = (n: number) => n.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD', minimumFractionDigits: 2 })
@@ -48,6 +53,31 @@ const RECON_CASES = [
 type Tab = 'overview'|'entreprise'|'chauffeurs'|'transactions'|'fiscal'|'recon'|'audit'|'sync'|'scenario'|'rapport'
 
 export default function GovDashboardPage() {
+  // ── Données depuis Supabase (source unique de vérité) ──────────────────────
+  const [drivers,      setDrivers]      = useState<SbDriver[]>([])
+  const [transactions, setTransactions] = useState<SbTx[]>([])
+  const [alerts,       setAlerts]       = useState<SbAlert[]>([])
+  const [auditLogs,    setAuditLogs]    = useState<SbAudit[]>([])
+  const [sbSource,     setSbSource]     = useState<string>('loading')
+
+  useEffect(()=>{
+    // Drivers depuis Supabase
+    fetch('/api/drivers')
+      .then(r=>r.json())
+      .then(d=>{ setDrivers(d.drivers??[]); setSbSource(d.source??'DEMO_FALLBACK') })
+      .catch(()=>setSbSource('ERROR'))
+    // Transactions depuis Supabase revenue_ledger
+    fetch('/api/transactions?limit=25')
+      .then(r=>r.json())
+      .then(d=>{ setTransactions(d.transactions??[]) })
+      .catch(()=>{})
+    // Audit depuis Supabase
+    fetch('/api/audit?limit=10')
+      .then(r=>r.json())
+      .then(d=>{ setAuditLogs(d.events??d.logs??[]) })
+      .catch(()=>{})
+  },[])
+
   const [tab, setTab]           = useState<Tab>('overview')
   const [statusFilter, setStatusFilter] = useState('ALL')
 

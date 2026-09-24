@@ -1,224 +1,157 @@
 'use client'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { AppShell } from '@/components/layout/AppShell'
-import Link from 'next/link'
-import { useState } from 'react'
-import { Search } from 'lucide-react'
-import { PILOT, money, fmtDt, ENT_DRIVERS, ENT_ACTIVITIES, ENT_TRANSACTIONS, DRIVER_DETAIL, UBER_DRIVERS_SAMPLE, DRIVERS_SUMMARY, DEPARTMENTS, SYNC_STATUS } from '@/lib/data'
+import { useAuth } from '@/lib/auth/AuthProvider'
+import { PILOT } from '@/lib/data'
 
-const STATUS_CONF: Record<string,{label:string;color:string;bg:string}> = {
-  ACTIVE:    {label:'Actif',      color:'#059669',bg:'rgba(5,150,105,0.12)'},
-  SUSPENDED: {label:'Suspendu',  color:'#DC2626',bg:'rgba(220,38,38,0.10)'},
-  PENDING:   {label:'En attente',color:'#B45309',bg:'rgba(180,83,9,0.10)'},
+type Driver = {
+  id: string; driver_number: string; first_name: string; last_name: string
+  status: string; identity_verification_status: string; phone: string
+  province: string; language: string; created_at: string
+  vehicles?: { make:string; model:string; year:number; license_plate_masked:string; vehicle_type:string; fuel_type:string; vehicle_status:string }[]
+  revenue?: { gross:number; tips:number; fees:number; net:number; taxes:number; count:number }
 }
-const DOC_BADGE: Record<string,{label:string;color:string}> = {
-  OK:      {label:'Docs OK',      color:'#059669'},
-  EXPIRING:{label:'Doc expirant', color:'#B45309'},
-  EXPIRED: {label:'Doc expiré',   color:'#DC2626'},
+
+const STATUS_COLOR: Record<string,string> = {
+  ACTIVE:'bg-green-100 text-green-700', UNDER_REVIEW:'bg-amber-100 text-amber-700',
+  SUSPENDED:'bg-red-100 text-red-700', INACTIVE:'bg-slate-100 text-slate-500',
 }
+const VERIF_COLOR: Record<string,string> = {
+  VERIFIED:'bg-green-100 text-green-700', PENDING:'bg-amber-100 text-amber-700',
+  REJECTED:'bg-red-100 text-red-700',
+}
+const m2 = (n:number) => new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD'}).format(n)
 
 export default function DriversPage() {
-  const [view,   setView]   = useState<'pilote'|'sample'>('pilote')
-  const [deptF,  setDeptF]  = useState('ALL')
-  const [statusF,setStatusF]= useState('ALL')
-  const [search, setSearch] = useState('')
+  const { user } = useAuth()
+  const [drivers, setDrivers] = useState<Driver[]>([])
+  const [loading, setLoading] = useState(true)
+  const [source, setSource]   = useState<string>('')
+  const [search, setSearch]   = useState('')
+  const [selected, setSelected] = useState<Driver|null>(null)
 
-  // Vue pilote: 6 chauffeurs détaillés
-  const filteredPilote = ENT_DRIVERS.filter(d=>{
-    if (statusF==='ACTIVE'    && d.status!=='ACTIVE')    return false
-    if (statusF==='SUSPENDED' && d.status!=='SUSPENDED') return false
-    if (statusF==='DOCS'      && d.docs==='OK')          return false
-    if (search && !`${d.name} ${d.id} ${d.plate??''}`.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  useEffect(() => {
+    fetch('/api/drivers')
+      .then(r => r.json())
+      .then(data => {
+        setDrivers(data.drivers ?? [])
+        setSource(data.source ?? '')
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
 
-  // Vue sample: ~45 chauffeurs synthétiques
-  const filteredSample = UBER_DRIVERS_SAMPLE.filter(d=>{
-    if (deptF!=='ALL'       && d.dept!==deptF)          return false
-    if (statusF==='ACTIVE'  && d.status!=='ACTIVE')      return false
-    if (statusF==='SUSPENDED' && d.status!=='SUSPENDED') return false
-    if (statusF==='DOCS'    && d.docs==='OK')            return false
-    if (search && !`${d.name} ${d.id} ${d.dept}`.toLowerCase().includes(search.toLowerCase())) return false
-    return true
-  })
+  if (!user) return null
 
-  const activeDepts = DEPARTMENTS.filter(d=>d.status==='ACTIVE')
+  const filtered = drivers.filter(d =>
+    !search ||
+    `${d.first_name} ${d.last_name} ${d.driver_number}`.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <AppShell>
-      <div className="px-4 md:px-6 py-6 space-y-5 max-w-4xl mx-auto">
-        <div className="flex items-start justify-between gap-3">
+      <div className="px-4 md:px-6 py-4 space-y-4 max-w-5xl mx-auto">
+
+        {/* Header */}
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Chauffeurs & Livreurs</h1>
-            <p className="text-sm text-slate-500 mt-1">Gestion de la force de travail · Conformité · Synchronisation</p>
+            <h1 className="text-lg font-black text-slate-800 dark:text-white">Chauffeurs</h1>
+            <p className="text-xs text-slate-400">
+              {source === 'SUPABASE' ? '✅ Données Supabase en direct' : '⚠️ Mode DEMO (Supabase indisponible)'}
+              {' · '}{PILOT}
+            </p>
           </div>
-          <button className="px-3 py-2 rounded-xl text-sm font-bold bg-black text-white cursor-pointer hover:bg-slate-800 shrink-0">+ Ajouter</button>
-        </div>
-        <div className="text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
-          ⚠️ {PILOT} · DONNÉES SYNTHÉTIQUES · {DRIVERS_SUMMARY.note}
-        </div>
-
-        {/* KPI consolidés Uber QC (synthétiques) */}
-        <div className="rounded-2xl p-4 shadow-sm" style={{background:'#000'}}>
-          <div className="text-sm font-bold mb-2" style={{color:'rgba(255,255,255,0.45)'}}>
-            FORCE DE TRAVAIL UBER QUÉBEC — DONNÉES SYNTHÉTIQUES DEMO
-          </div>
-          <div className="grid grid-cols-4 gap-3">
-            {[
-              {l:'Total estimé (SYNTH.)',    v:DRIVERS_SUMMARY.totalSynthetic.toLocaleString('fr-CA'), note:'Estimation synthétique tous depts'},
-              {l:'Profils complets (DEMO)',  v:DRIVERS_SUMMARY.totalPilot,   note:'Avec données détaillées'},
-              {l:'Échantillon DEMO',        v:DRIVERS_SUMMARY.totalSample,  note:'Chauffeurs représentatifs'},
-              {l:'Véhicules réf. publique', v:'12 351',                     note:'Source: Travelnet 2024'},
-            ].map(s=>(
-              <div key={s.l}>
-                <div className="text-white font-black text-lg">{s.v}</div>
-                <div className="text-sm" style={{color:'rgba(255,255,255,0.55)'}}>{s.l}</div>
-                <div className="text-xs" style={{color:'rgba(255,255,255,0.3)'}}>{s.note}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-2 pt-2 text-xs" style={{borderTop:'1px solid rgba(255,255,255,0.1)',color:'rgba(255,255,255,0.35)'}}>
-            ⚠️ {DRIVERS_SUMMARY.publicRef} — Nombre de chauffeurs actifs par département: non publié officiellement
-          </div>
+          <div className="text-sm font-bold text-slate-500">{filtered.length} chauffeur{filtered.length!==1?'s':''}</div>
         </div>
 
-        {/* Par département (synthétique) */}
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-          {activeDepts.map(d=>(
-            <div key={d.id} className="rounded-xl p-2.5 text-center border border-slate-200 dark:border-slate-700" style={{background:deptF===d.slug?d.color:undefined}}>
-              <button onClick={()=>setDeptF(deptF===d.slug?'ALL':d.slug)} className="cursor-pointer w-full">
-                <div className="text-lg mb-0.5">{d.emoji}</div>
-                <div className="text-sm font-black" style={{color:deptF===d.slug?'white':d.color}}>{d.drivers.toLocaleString('fr-CA')}</div>
-                <div className="text-xs" style={{color:deptF===d.slug?'rgba(255,255,255,0.7)':'#94a3b8'}}>{d.name.split(' ').slice(-1)[0]}</div>
-                <div className="text-sm italic" style={{color:deptF===d.slug?'rgba(255,255,255,0.5)':'#cbd5e1'}}>SYNTH.</div>
-              </button>
-            </div>
-          ))}
+        {/* PILOT banner */}
+        <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl px-4 py-2 text-xs font-bold text-amber-700 dark:text-amber-400">
+          ⚠️ {PILOT}
         </div>
 
-        {/* Bascule vue */}
-        <div className="flex gap-2 items-center">
-          <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 gap-1">
-            <button onClick={()=>setView('pilote')} className="px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all" style={{background:view==='pilote'?'#000':'transparent',color:view==='pilote'?'white':'#64748B'}}>
-              📋 Profils complets ({ENT_DRIVERS.length})
-            </button>
-            <button onClick={()=>setView('sample')} className="px-3 py-1.5 rounded-lg text-sm font-bold cursor-pointer transition-all" style={{background:view==='sample'?'#000':'transparent',color:view==='sample'?'white':'#64748B'}}>
-              👥 Échantillon DEMO ({UBER_DRIVERS_SAMPLE.length})
-            </button>
-          </div>
-          <span className="text-sm text-slate-400 italic">{view==='pilote'?'Profils avec données détaillées et dossier complet':'Aperçu représentatif — données synthétiques'}</span>
-        </div>
+        {/* Search */}
+        <input
+          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-blue-400"
+          placeholder="Rechercher par nom ou numéro..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
 
-        {/* Filtres */}
-        <div className="space-y-2">
-          <div className="relative">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
-            <input value={search} onChange={(e:React.ChangeEvent<HTMLInputElement>)=>setSearch(e.target.value)}
-              placeholder="Nom, Driver ID, département…"
-              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs pl-9 outline-none text-slate-800 dark:text-white"/>
-          </div>
-          <div className="flex gap-1.5 flex-wrap">
-            {[{v:'ALL',l:'Tous'},{v:'ACTIVE',l:'Actifs'},{v:'SUSPENDED',l:'Suspendus'},{v:'DOCS',l:'Docs ⚠️'}].map(f=>(
-              <button key={f.v} onClick={()=>setStatusF(f.v)} className="px-3 py-1.5 rounded-xl text-sm font-bold border transition-all cursor-pointer" style={{background:statusF===f.v?'#000':'transparent',color:statusF===f.v?'white':'#64748B',borderColor:statusF===f.v?'#000':'rgba(148,163,184,0.30)'}}>
-                {f.l}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── VUE PROFILS COMPLETS ── */}
-        {view==='pilote'&&(
-          <div className="space-y-2">
-            <div className="text-sm font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 px-3 py-2 rounded-xl">
-              📋 Profils complets avec dossier détaillé, historique, activités, revenus et documents
-            </div>
-            {filteredPilote.map(d=>{
-              const sc  = STATUS_CONF[d.status]!
-              const dc  = DOC_BADGE[d.docs]!
-              const det = DRIVER_DETAIL[d.id]
-              const ss  = SYNC_STATUS[det?.syncStatus??'DEMO'] ?? {label:'DEMO',color:'#7C3AED',dot:'bg-purple-400'}
-              const drvActs = ENT_ACTIVITIES.filter(a=>a.driverId===d.id).length
-              const drvRev  = ENT_TRANSACTIONS.filter(t=>t.driverId===d.id).reduce((s,t)=>s+t.gross,0)
+        {/* Liste */}
+        {loading ? (
+          <div className="text-center py-12 text-slate-400">Chargement depuis Supabase...</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-12 text-slate-400">Aucun chauffeur trouvé</div>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map(d => {
+              const veh = d.vehicles?.[0]
+              const rev = d.revenue
               return (
-                <div key={d.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-black flex items-center justify-center text-sm font-black text-white shrink-0">{d.name.split(' ').map((n:string)=>n[0]).join('')}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-sm font-bold text-slate-800 dark:text-white">{d.name}</span>
-                        <span className="text-sm px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
-                        {d.docs!=='OK'&&<span className="text-sm font-bold" style={{color:dc.color}}>⚠️ {dc.label}</span>}
-                        <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded">{d.relation}</span>
+                <div key={d.id}
+                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 cursor-pointer hover:border-blue-300 transition-all"
+                  onClick={() => setSelected(selected?.id===d.id ? null : d)}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm shrink-0">
+                        {d.first_name[0]}{d.last_name[0]}
                       </div>
-                      <div className="text-sm font-mono text-slate-400 mb-1">{d.id}{d.plate?` · ${d.plate}`:''}{d.vehicle?` · ${d.vehicle}`:''}</div>
-                      <div className="flex gap-3 text-sm text-slate-400 flex-wrap">
-                        <span>📍 {drvActs} activités</span>
-                        {drvRev>0&&<span>💰 {money(drvRev)}</span>}
-                        <div className="flex items-center gap-1"><div className={`w-1.5 h-1.5 rounded-full ${ss.dot}`}/><span style={{color:ss.color}}>{ss.label}</span></div>
+                      <div>
+                        <div className="font-black text-slate-800 dark:text-white">{d.first_name} {d.last_name}</div>
+                        <div className="text-xs text-slate-400 font-mono">{d.driver_number}</div>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1.5 shrink-0">
-                      <Link href={`/drivers/${d.id}`} className="px-2.5 py-1.5 rounded-lg text-sm font-bold bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 whitespace-nowrap">→ Profil</Link>
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${STATUS_COLOR[d.status] ?? 'bg-slate-100 text-slate-500'}`}>{d.status}</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${VERIF_COLOR[d.identity_verification_status] ?? 'bg-slate-100 text-slate-500'}`}>{d.identity_verification_status}</span>
                     </div>
                   </div>
+
+                  {/* Véhicule */}
+                  {veh && (
+                    <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                      <span>🚗</span>
+                      <span>{veh.year} {veh.make} {veh.model}</span>
+                      <span className="font-mono">{veh.license_plate_masked}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800">{veh.fuel_type}</span>
+                    </div>
+                  )}
+
+                  {/* Revenue (si dispo) */}
+                  {rev && rev.count > 0 && (
+                    <div className="mt-3 grid grid-cols-4 gap-2">
+                      {[{l:'Gross',v:m2(rev.gross)},{l:'Pourboires',v:m2(rev.tips)},{l:'Taxes',v:m2(rev.taxes)},{l:'Net',v:m2(rev.net)}].map(k=>(
+                        <div key={k.l} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center">
+                          <div className="text-xs font-bold text-slate-700 dark:text-slate-300">{k.v}</div>
+                          <div className="text-xs text-slate-400">{k.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Détail expandé */}
+                  {selected?.id===d.id && (
+                    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
+                      {[
+                        {l:'Téléphone',   v:d.phone},
+                        {l:'Province',    v:d.province},
+                        {l:'Langue',      v:d.language},
+                        {l:'Activités',   v:`${rev?.count ?? 0} ce mois`},
+                        {l:'Source',      v:source},
+                        {l:'ID Supabase', v:d.id?.slice(0,16)+'…'},
+                      ].map(({l,v})=>(
+                        <div key={l} className="bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2">
+                          <div className="text-slate-400 font-bold">{l}</div>
+                          <div className="text-slate-700 dark:text-slate-300 font-mono mt-0.5">{v}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )
             })}
           </div>
         )}
-
-        {/* ── VUE ÉCHANTILLON ── */}
-        {view==='sample'&&(
-          <div className="space-y-2">
-            <div className="text-sm font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2 rounded-xl">
-              ⚠️ DONNÉES SYNTHÉTIQUES · {filteredSample.length} chauffeurs affichés sur ~{DRIVERS_SUMMARY.totalSynthetic.toLocaleString('fr-CA')} estimés (synthétiques) · Profil complet disponible uniquement pour les 6 chauffeurs pilote
-            </div>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <span className="text-xs font-bold text-slate-800 dark:text-white">{filteredSample.length} chauffeur(s) · Échantillon représentatif</span>
-                <span className="text-sm text-amber-600 dark:text-amber-400">SYNTHÉTIQUE</span>
-              </div>
-              {filteredSample.map(d=>{
-                const sc = STATUS_CONF[d.status] ?? STATUS_CONF['ACTIVE']!
-                const dc = DOC_BADGE[d.docs] ?? DOC_BADGE['OK']!
-                const dept = DEPARTMENTS.find(dep=>dep.slug===d.dept)
-                return (
-                  <div key={d.id} className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black text-white shrink-0" style={{background:dept?.color??'#000'}}>
-                      {dept?.emoji??'👤'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{d.name}</span>
-                        <span className="text-sm px-1.5 py-0.5 rounded-full font-bold" style={{color:sc.color,background:sc.bg}}>{sc.label}</span>
-                        {d.docs!=='OK'&&<span className="text-sm font-bold" style={{color:dc.color}}>⚠️ {dc.label}</span>}
-                        <span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{color:dept?.color,background:`${dept?.color}15`}}>{dept?.emoji} {dept?.name}</span>
-                      </div>
-                      <div className="text-sm font-mono text-slate-400">{d.id} · {d.plate} · {d.services.join(', ')}</div>
-                    </div>
-                    <div className="text-right shrink-0 text-sm">
-                      <div className="font-bold text-green-600 dark:text-green-400">{money(d.revQ3)}</div>
-                      <div className="text-slate-400">{d.actQ3} activités</div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="text-sm text-slate-400 italic text-center">
-              Cliquer sur → Profil uniquement disponible pour les 6 chauffeurs pilote · Passer à "Profils complets"
-            </div>
-          </div>
-        )}
-
-        {/* Workflow ajout */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
-          <div className="text-sm font-bold text-slate-400 uppercase mb-2">Workflow ajout chauffeur</div>
-          <div className="flex items-center gap-1 flex-wrap text-sm font-bold">
-            {['IDENTIFICATION','→','INVITATION','→','LIAISON DRIVER GOV','→','VÉRIFICATION','→','DOCUMENTS','→','VÉHICULE','→','DÉPARTEMENT','→','ACTIVATION','→','SYNC TAXIMETER.GOV'].map((s,i)=>(
-              <span key={i} className={s==='→'?'text-slate-300 dark:text-slate-700':'px-2 py-1 rounded-lg'} style={s!=='→'?{background:'#000',color:'white'}:{}}>{s}</span>
-            ))}
-          </div>
-        </div>
       </div>
     </AppShell>
   )
