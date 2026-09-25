@@ -561,10 +561,10 @@ export default function GovDashboardPage() {
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
                       👤 {String(e['actor_id'] ?? '')} · <span className="font-semibold">{String(e['actor_role'] ?? '')}</span>
-                      {e.before&&<span className="ml-2 text-slate-400 italic">{e.before} → {e.after}</span>}
+                      {Boolean(e.before)&&<span className="ml-2 text-slate-400 italic">{String(e.before)} → {String(e.after)}</span>}
                     </div>
                   </div>
-                  <div className="text-xs text-slate-400 shrink-0">{e.timestamp?.split('T')[0]}</div>
+                  <div className="text-xs text-slate-400 shrink-0">{String(e.timestamp ?? '').split('T')[0]}</div>
                 </div>
               ))}
             </div>
