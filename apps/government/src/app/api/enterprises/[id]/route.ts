@@ -19,9 +19,9 @@ async function sbGet(path: string) {
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const orgId = params.id
+  const { id: orgId } = await params
 
   try {
     if (!SB_URL) throw new Error('SUPABASE_URL manquant')
