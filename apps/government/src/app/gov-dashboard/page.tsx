@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 
 // Types minimal pour les données Supabase
-type SbDriver = { id:string; driver_number:string; first_name:string; last_name:string; status:string; email?:string }
-type SbTx     = { id:string; source_type:string; activity_type:string; gross_amount:string; tip_amount:string; tax_amount:string; net_amount:string; net_driver?:string; activity_date:string; driver_profiles?:{first_name:string;last_name:string;driver_number?:string} }
+type SbDriver = { id:string; driver_number?:string; first_name?:string; last_name?:string; status?:string; email?:string; compliance?:string; lastActivity?:string; [key:string]:unknown }
+type SbTx     = { id:string; source_type?:string; activity_type?:string; gross_amount?:string; tip_amount?:string; tax_amount?:string; net_amount?:string; activity_date?:string; tip?:string; tps?:string; tvq?:string; provider?:string; status?:string; driver_profiles?:{first_name:string;last_name:string;driver_number?:string} }
 type SbAlert  = { id:string; alert_type?:string; priority?:string; message?:string; created_at?:string; resolved?:boolean }
 type SbAudit  = { id:string; action?:string; actor_id?:string; actor_role?:string; resource_id?:string; resource_type?:string; created_at?:string; [key:string]:unknown }
 
@@ -298,11 +298,11 @@ export default function GovDashboardPage() {
                       <tr key={tx.id} className="hover:bg-slate-50">
                         <td className="px-4 py-2.5 font-medium text-slate-700">{tx.driver_profiles?.first_name + " " + (tx.driver_profiles?.last_name ?? "")}</td>
                         <td className="px-4 py-2.5 text-slate-500 text-xs">{tx.activity_type}</td>
-                        <td className="px-4 py-2.5 font-bold text-slate-800">{money2(tx.gross_amount)}</td>
-                        <td className="px-4 py-2.5 text-slate-600">{money2(tx.tip)}</td>
-                        <td className="px-4 py-2.5 text-purple-600 font-semibold">{money2(tx.tps)}</td>
-                        <td className="px-4 py-2.5 text-indigo-600 font-semibold">{money2(tx.tvq)}</td>
-                        <td className="px-4 py-2.5 font-bold" style={{color:'#059669'}}>{money2(tx.net_amount)}</td>
+                        <td className="px-4 py-2.5 font-bold text-slate-800">{money2(parseFloat(tx.gross_amount??'0'))}</td>
+                        <td className="px-4 py-2.5 text-slate-600">{money2(parseFloat(tx.tip??'0'))}</td>
+                        <td className="px-4 py-2.5 text-purple-600 font-semibold">{money2(parseFloat(tx.tps??'0'))}</td>
+                        <td className="px-4 py-2.5 text-indigo-600 font-semibold">{money2(parseFloat(tx.tvq??'0'))}</td>
+                        <td className="px-4 py-2.5 font-bold" style={{color:'#059669'}}>{money2(parseFloat(tx.net_amount??'0'))}</td>
                         <td className="px-4 py-2.5">
                           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${tx.status==='completed'||tx.status==='finalized'?'text-green-700 bg-green-50':tx.status==='pending'?'text-amber-600 bg-amber-50':'text-blue-600 bg-blue-50'}`}>
                             {tx.status?.toUpperCase()}
@@ -449,11 +449,11 @@ export default function GovDashboardPage() {
                     <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-3 py-2.5 font-medium text-slate-800">{tx.driver_profiles?.first_name + " " + (tx.driver_profiles?.last_name ?? "")}</td>
                       <td className="px-3 py-2.5 text-slate-500 text-xs capitalize">{tx.activity_type}</td>
-                      <td className="px-3 py-2.5 font-bold text-slate-800">{money2(tx.gross_amount)}</td>
-                      <td className="px-3 py-2.5 text-slate-600">{money2(tx.tip)}</td>
-                      <td className="px-3 py-2.5 text-purple-600 font-semibold">{money2(tx.tps)}</td>
-                      <td className="px-3 py-2.5 text-indigo-600 font-semibold">{money2(tx.tvq)}</td>
-                      <td className="px-3 py-2.5 font-bold" style={{color:'#059669'}}>{money2(tx.net_amount)}</td>
+                      <td className="px-3 py-2.5 font-bold text-slate-800">{money2(parseFloat(tx.gross_amount??'0'))}</td>
+                      <td className="px-3 py-2.5 text-slate-600">{money2(parseFloat(tx.tip??'0'))}</td>
+                      <td className="px-3 py-2.5 text-purple-600 font-semibold">{money2(parseFloat(tx.tps??'0'))}</td>
+                      <td className="px-3 py-2.5 text-indigo-600 font-semibold">{money2(parseFloat(tx.tvq??'0'))}</td>
+                      <td className="px-3 py-2.5 font-bold" style={{color:'#059669'}}>{money2(parseFloat(tx.net_amount??'0'))}</td>
                       <td className="px-3 py-2.5 text-xs text-slate-400 capitalize">{tx.provider}</td>
                       <td className="px-3 py-2.5">
                         <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${tx.status==='completed'||tx.status==='finalized'?'text-green-700 bg-green-50':tx.status==='pending'?'text-amber-600 bg-amber-50':'text-blue-600 bg-blue-50'}`}>
