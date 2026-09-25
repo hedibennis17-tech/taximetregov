@@ -66,7 +66,12 @@ export async function GET(req: NextRequest) {
     }, {})
 
     // Enrichir les orgs
-    let result = (orgs as Array<Record<string,unknown>>).map(org => ({
+    type EnrichedOrg = Record<string,unknown> & {
+      driver_stats: {total:number;active:number}
+      revenue_q3:   {gross:number;taxes:number}
+      dept_count:   number
+    }
+    let result: EnrichedOrg[] = (orgs as Array<Record<string,unknown>>).map(org => ({
       ...org,
       driver_stats: driverCountByOrg[(org['id'] as string)] ?? {total:0, active:0},
       revenue_q3:   revByOrg[(org['id'] as string)] ?? {gross:0, taxes:0},
