@@ -1,122 +1,162 @@
-// GET /api/enterprises/[id] — Dossier complet d'une organisation
-// TAXIMETER.GOV · Government Gov · Source unique : Supabase
-import { NextRequest } from 'next/server'
+// GET /api/enterprises/[id] — Enterprise 360° data depuis Supabase
+// Source unique: providers, driver_provider_accounts, revenue_ledger, taxi_trips,
+//               tax_calculations, tax_filings, audit_logs, notifications, documents, vehicles
 
-const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const KEY = () =>
-  process.env.SUPABASE_SERVICE_ROLE_KEY ??
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? ''
+import { type NextRequest } from 'next/server'
+import { apiSuccess, apiError } from '@/lib/db'
+import { requireAuth, requireGovRole } from '@/lib/auth'
+
+const SB = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
 async function sbGet(path: string) {
-  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
-    headers: { 'apikey': KEY(), 'Authorization': `Bearer ${KEY()}` },
-    cache: 'no-store',
+  const res = await fetch(`${SB}/rest/v1/${path}`, {
+    headers: { apikey: KEY(), Authorization: `Bearer ${KEY()}`, Prefer: 'count=exact' }
   })
-  if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`)
-  return res.json()
+  const data = await res.json() as unknown[]
+  const count = parseInt(res.headers.get('content-range')?.split('/')[1] ?? '0')
+  return { data, count }
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id: orgId } = await params
+// Données DEMO statiques Uber Québec (SYNTHETIC_DEMO)
+// Source impact économique: Uber/Public First, déc. 2025 (PUBLIC_VERIFIED)
+const UBER_DEMO = {
+  enterprise_id: 'ENT-UBER-DEMO',
+  name: 'Uber Canada Inc.',
+  commercial_name: 'Uber Québec',
+  neq: 'NOT_VERIFIED_DEMO',
+  province: 'QC',
+  city: 'Montréal',
+  address: '1 Place Ville Marie, Bureau 3700 (DEMO)',
+  postal_code: 'H3B 4M4 (DEMO)',
+  website: 'https://www.uber.com/ca/fr-ca/',
+  org_type: 'PLATFORM',
+  status: 'DEMO',
+  data_status: 'SYNTHETIC_DEMO',
+  // Impact économique QC 2024 — PUBLIC_VERIFIED (Uber/Public First, déc. 2025)
+  economic_impact_qc_2024: '1.9G$ (PUBLIC_VERIFIED — Uber/Public First, déc. 2025)',
+  // Revenus internes Uber Québec — PRIVATE_NOT_AVAILABLE
+  internal_revenue: 'PRIVATE_NOT_AVAILABLE',
+  departments: [
+    { id:'DEPT-UBER-TAXI',    name:'Uber Taxi',         service:'TAXI',     drivers_demo: 2800, active: true },
+    { id:'DEPT-UBER-RIDES',   name:'Uber Rides',        service:'RIDESHARE',drivers_demo: 6200, active: true },
+    { id:'DEPT-UBER-GREEN',   name:'Uber Green',        service:'GREEN',    drivers_demo: 1100, active: true },
+    { id:'DEPT-UBER-EATS',    name:'Uber Eats',         service:'FOOD',     drivers_demo: 4800, active: true },
+    { id:'DEPT-UBER-GROCERY', name:'Uber Eats Grocery', service:'GROCERY',  drivers_demo: 980,  active: true },
+    { id:'DEPT-UBER-COURIER', name:'Uber Courier',      service:'DELIVERY', drivers_demo: 1520, active: true },
+  ],
+}
+
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params
+  const ctx = await requireAuth(req)
+  if (ctx instanceof Response) return ctx
+  const denied = requireGovRole(ctx)
+  if (denied) return denied
+
+  const enterpriseId = params.id
+  if (enterpriseId !== 'ENT-UBER-DEMO') {
+    // Pour les autres entreprises — données minimales DEMO
+    return apiSuccess({
+      enterprise_id: enterpriseId,
+      data_status: 'SYNTHETIC_DEMO',
+      message: 'Dossier complet disponible pour ENT-UBER-DEMO uniquement en mode DEMO',
+    })
+  }
 
   try {
-    if (!SB_URL) throw new Error('SUPABASE_URL manquant')
+    // 1. Providers (code UBER)
+    const providers = await sbGet(`providers?code=eq.UBER&select=id,code,name,status,api_enabled,webhook_enabled`)
 
-    // Organisation
-    const orgs = await sbGet(
-      `organizations?select=*,departments(id,public_dept_id,name,service_type,status,emoji)&public_org_id=eq.${orgId}&limit=1`
-    ) as unknown[]
-    const org = (orgs as Record<string,unknown>[])[0]
-    if (!org) throw new Error(`Organisation ${orgId} non trouvée`)
+    // 2. Driver provider accounts (chauffeurs Uber)
+    const driverAccounts = await sbGet(`driver_provider_accounts?provider_code=eq.UBER&select=id,driver_id,account_status,services&limit=50`)
 
-    const dbOrgId = org['id'] as string
+    // 3. Revenue ledger Uber
+    const revenueUber = await sbGet(`revenue_ledger?source_type=eq.UBER&select=id,gross_amount,net_amount,fee_amount,tip_amount,activity_date&limit=100`)
 
-    // Chauffeurs de l'organisation
-    const drivers = await sbGet(
-      `driver_profiles?select=id,driver_number,first_name,last_name,status,identity_verification_status,phone,language,vehicles(id,vehicle_number,make,model,year,license_plate_masked,vehicle_type,fuel_type,vehicle_status)&organization_id=eq.${dbOrgId}&order=first_name.asc`
-    ) as unknown[]
+    // 4. Taxi trips Uber
+    const trips = await sbGet(`taxi_trips?select=id,trip_status,final_amount,distance_meters,started_at&limit=50`)
 
-    // Activités récentes
-    const activities = await sbGet(
-      `driver_activities?select=id,public_id,activity_type_code,status,source_type,gross_amount,tip_amount,fee_amount,tax_amount,net_amount,reconciliation_status,started_at,location_start_reference,location_end_reference,driver_profiles(first_name,last_name,driver_number)&organization_id=eq.${dbOrgId}&order=started_at.desc&limit=25`
-    ) as unknown[]
+    // 5. Tax accounts
+    const taxAccounts = await sbGet(`tax_accounts?select=id,driver_id,tps_status,tvq_status,tax_account_status&limit=20`)
 
-    // Revenue
-    const revenue = await sbGet(
-      `revenue_ledger?select=id,source_type,activity_type,gross_amount,tip_amount,fee_amount,tax_amount,net_amount,activity_date,is_settled,driver_id&driver_id=in.(${(drivers as Record<string,unknown>[]).map(d=>d['id']).join(',') || 'null'})&order=activity_date.desc&limit=50`
-    ) as unknown[]
+    // 6. Tax filings
+    const taxFilings = await sbGet(`tax_filings?select=id,filing_status,filing_type,gateway_mode&limit=20`)
 
-    // Totaux
-    const revTotals = (revenue as Record<string,string>[]).reduce((acc, r) => ({
-      gross: acc.gross + parseFloat(r['gross_amount']??'0'),
-      tips:  acc.tips  + parseFloat(r['tip_amount']??'0'),
-      taxes: acc.taxes + parseFloat(r['tax_amount']??'0'),
-      net:   acc.net   + parseFloat(r['net_amount']??'0'),
-      count: acc.count + 1,
-    }), {gross:0,tips:0,taxes:0,net:0,count:0})
+    // 7. Audit logs Uber
+    const auditLogs = await sbGet(`audit_logs?action=like.*UBER*&select=id,action,created_at&limit=20`)
 
-    return Response.json({
-      organization: org,
-      drivers,
-      activities,
-      revenue: {
-        entries: revenue,
-        totals: revTotals,
-        tps:    Math.round(revTotals.gross * 0.05 * 100) / 100,
-        tvq:    Math.round(revTotals.gross * 0.09975 * 100) / 100,
+    // 8. Notifications
+    const notifications = await sbGet(`notifications?select=id,notification_type,status,created_at&limit=10`)
+
+    // 9. Documents
+    const documents = await sbGet(`documents?select=id,status,issued_at&limit=20`)
+
+    // 10. Vehicles
+    const vehicles = await sbGet(`vehicles?select=id,make,model,year,vehicle_status&limit=20`)
+
+    // Calculs depuis revenue_ledger
+    const r2 = (n: number) => Math.round(n * 100) / 100
+    const ledgerData = revenueUber.data as Array<Record<string,string>>
+    const totalGross = ledgerData.reduce((s, r) => s + parseFloat(r['gross_amount'] ?? '0'), 0)
+    const totalNet   = ledgerData.reduce((s, r) => s + parseFloat(r['net_amount'] ?? '0'), 0)
+    const totalFees  = ledgerData.reduce((s, r) => s + parseFloat(r['fee_amount'] ?? '0'), 0)
+    const totalTips  = ledgerData.reduce((s, r) => s + parseFloat(r['tip_amount'] ?? '0'), 0)
+    const tpsDemo    = r2(totalGross * 0.05)
+    const tvqDemo    = r2(totalGross * 0.09975)
+
+    return apiSuccess({
+      ...UBER_DEMO,
+      kpis: {
+        // Source: driver_provider_accounts (DB réelle)
+        drivers_db:        driverAccounts.count,
+        // Source: SYNTHETIC_DEMO
+        drivers_demo:      UBER_DEMO.departments.reduce((s,d) => s + d.drivers_demo, 0),
+        vehicles_db:       vehicles.count,
+        departments:       UBER_DEMO.departments.length,
+        // Source: revenue_ledger (DB réelle)
+        activities_db:     revenueUber.count,
+        trips_db:          trips.count,
+        // Source: revenue_ledger calculé
+        gross_revenue:     r2(totalGross),
+        net_revenue:       r2(totalNet),
+        fees:              r2(totalFees),
+        tips:              r2(totalTips),
+        tps_demo:          tpsDemo,
+        tvq_demo:          tvqDemo,
+        // Source: tax_filings (DB réelle)
+        declarations_db:   taxFilings.count,
+        payments_demo:     0,
+        // Source: audit_logs (DB réelle)
+        audits_db:         auditLogs.count,
+        documents_db:      documents.count,
+        alerts_db:         notifications.count,
+        compliance_score:  85, // SYNTHETIC_DEMO
+        api_connected:     providers.data.length > 0,
+        webhook_active:    false,
       },
-      source: 'SUPABASE',
-      pilot: true,
+      supabase: {
+        providers:             providers.data,
+        driver_accounts_count: driverAccounts.count,
+        revenue_entries_count: revenueUber.count,
+        trips_count:           trips.count,
+        tax_accounts_count:    taxAccounts.count,
+        tax_filings_count:     taxFilings.count,
+        audit_logs_count:      auditLogs.count,
+        documents_count:       documents.count,
+        vehicles_count:        vehicles.count,
+        notifications_count:   notifications.count,
+      },
+      data_sources: {
+        economic_impact_1_9B: 'PUBLIC_VERIFIED — Uber/Public First, déc. 2025',
+        internal_revenues:    'PRIVATE_NOT_AVAILABLE',
+        driver_list:          'SYNTHETIC_DEMO',
+        transactions:         'SYNTHETIC_DEMO + revenue_ledger DB',
+        tax_data:             'SYNTHETIC_DEMO — Estimation TPS 5% / TVQ 9.975%',
+        fiscal_status:        'PUBLIC_VERIFIED — Revenu Québec: chauffeurs = travailleurs autonomes',
+      },
     })
-
   } catch (err) {
-    // Fallback DEMO complet pour ORG-UBER-QC-DEMO
-    if (orgId === 'ORG-UBER-QC-DEMO') {
-      return Response.json({ ...DEMO_UBER, source: 'DEMO_FALLBACK', error: String(err), pilot: true })
-    }
-    return Response.json({ error: String(err), pilot: true }, { status: 404 })
+    return apiError('Erreur Enterprise 360°: ' + String(err), 500)
   }
-}
-
-const DEMO_UBER = {
-  organization: {
-    id: 'ORG-UBER-QC-DEMO', public_org_id: 'ORG-UBER-QC-DEMO',
-    legal_name: 'Uber Canada Inc. (DEMO)', trade_name: 'Uber Québec',
-    neq: '1234567890', org_type: 'ENTERPRISE', sector: 'TRANSPORT', status: 'ACTIVE',
-    tps_registered: true, tvq_registered: true, tps_number: 'TPS-DEMO-UBER-001', tvq_number: 'TVQ-DEMO-UBER-001',
-    address_line1: '720 rue King Ouest, Bureau 4200', address_city: 'Montréal', address_province: 'QC', address_postal: 'H3C 2M7',
-    contact_email: 'demo.uber@pilot.taximetregov.invalid', is_demo: true,
-    departments: [
-      {public_dept_id:'DEPT-UBER-RIDES',   name:'Uber Rides',   service_type:'RIDESHARE',       status:'ACTIVE', emoji:'🚗'},
-      {public_dept_id:'DEPT-UBER-GREEN',   name:'Uber Green',   service_type:'RIDESHARE',       status:'ACTIVE', emoji:'🌱'},
-      {public_dept_id:'DEPT-UBER-TAXI',    name:'Uber Taxi',    service_type:'TAXI',            status:'ACTIVE', emoji:'🚕'},
-      {public_dept_id:'DEPT-UBER-EATS',    name:'Uber Eats',    service_type:'FOOD_DELIVERY',   status:'ACTIVE', emoji:'🍔'},
-      {public_dept_id:'DEPT-UBER-GROCERY', name:'Uber Grocery', service_type:'GROCERY_DELIVERY',status:'ACTIVE', emoji:'🛒'},
-      {public_dept_id:'DEPT-UBER-COURIER', name:'Uber Courier', service_type:'PARCEL_DELIVERY', status:'ACTIVE', emoji:'📦'},
-    ],
-  },
-  drivers: [
-    { id:'HEDI-DRV-ID', driver_number:'HEDI-DRV-0001', first_name:'Hedi',   last_name:'Bennis',  status:'ACTIVE', identity_verification_status:'VERIFIED', phone:'514-555-7070', vehicles:[{make:'Toyota', model:'Prius Prime',  year:2024, license_plate_masked:'••• 7070', vehicle_type:'SEDAN', fuel_type:'PLUG_IN_HYBRID'}] },
-    { id:'DRV-ID-0001', driver_number:'DEMO-DRV-0001', first_name:'Ahmed',  last_name:'Benali',  status:'ACTIVE', identity_verification_status:'VERIFIED', phone:'514-555-0101', vehicles:[{make:'Toyota', model:'Camry Hybrid', year:2023, license_plate_masked:'••• 4821', vehicle_type:'SEDAN', fuel_type:'HYBRID'}] },
-    { id:'DRV-ID-0002', driver_number:'DEMO-DRV-0002', first_name:'Sophie', last_name:'Tremblay',status:'ACTIVE', identity_verification_status:'VERIFIED', phone:'438-555-0102', vehicles:[{make:'Hyundai',model:'Ioniq 5',      year:2024, license_plate_masked:'••• 7634', vehicle_type:'ELECTRIC',fuel_type:'ELECTRIC'}] },
-    { id:'DRV-ID-0003', driver_number:'DEMO-DRV-0003', first_name:'Marco',  last_name:'Lépine',  status:'UNDER_REVIEW', identity_verification_status:'PENDING', phone:'450-555-0103', vehicles:[{make:'Honda',model:'Odyssey',year:2022,license_plate_masked:'••• 1058',vehicle_type:'MINIVAN',fuel_type:'GASOLINE'}] },
-  ],
-  activities: [
-    { id:'HEDI-ACT-001', public_id:'HEDI-ACT-001', activity_type_code:'TAXI_TRIP',      status:'FINALIZED', source_type:'TAXIMETER',   gross_amount:'32.50', tip_amount:'4.50', tax_amount:'4.87', net_amount:'27.63', reconciliation_status:'MATCHED',       started_at:new Date(Date.now()-2*3600000).toISOString(),  location_start_reference:'Plateau-Mont-Royal', location_end_reference:'Centre-Ville',  driver_profiles:{first_name:'Hedi',  last_name:'Bennis',  driver_number:'HEDI-DRV-0001'} },
-    { id:'HEDI-ACT-002', public_id:'HEDI-ACT-002', activity_type_code:'RIDESHARE_TRIP', status:'FINALIZED', source_type:'PROVIDER_API', gross_amount:'24.00', tip_amount:'2.00', tax_amount:'3.59', net_amount:'20.41', reconciliation_status:'MATCHED',       started_at:new Date(Date.now()-26*3600000).toISOString(), location_start_reference:'Mile-Ex',            location_end_reference:'Rosemont',      driver_profiles:{first_name:'Hedi',  last_name:'Bennis',  driver_number:'HEDI-DRV-0001'} },
-    { id:'DEMO-ACT-001', public_id:'DEMO-ACT-001', activity_type_code:'TAXI_TRIP',      status:'FINALIZED', source_type:'TAXIMETER',   gross_amount:'28.75', tip_amount:'4.00', tax_amount:'4.30', net_amount:'24.45', reconciliation_status:'MATCHED',       started_at:new Date(Date.now()-5*3600000).toISOString(),  location_start_reference:'Vieux-Montréal',     location_end_reference:'Plateau',       driver_profiles:{first_name:'Ahmed', last_name:'Benali',  driver_number:'DEMO-DRV-0001'} },
-    { id:'DEMO-ACT-002', public_id:'DEMO-ACT-002', activity_type_code:'RIDESHARE_TRIP', status:'FINALIZED', source_type:'PROVIDER_API', gross_amount:'42.00', tip_amount:'5.00', tax_amount:'6.29', net_amount:'33.60', reconciliation_status:'MATCHED',       started_at:new Date(Date.now()-10*3600000).toISOString(), location_start_reference:'Centre-ville',        location_end_reference:'Rosemont',      driver_profiles:{first_name:'Ahmed', last_name:'Benali',  driver_number:'DEMO-DRV-0001'} },
-    { id:'DEMO-ACT-004', public_id:'DEMO-ACT-004', activity_type_code:'TAXI_TRIP',      status:'FINALIZED', source_type:'TAXIMETER',   gross_amount:'24.25', tip_amount:'2.50', tax_amount:'3.63', net_amount:'20.62', reconciliation_status:'MATCHED',       started_at:new Date(Date.now()-51*3600000).toISOString(), location_start_reference:'Laval-des-Rapides',  location_end_reference:'Chomedey',      driver_profiles:{first_name:'Sophie',last_name:'Tremblay',driver_number:'DEMO-DRV-0002'} },
-    { id:'DEMO-ACT-005', public_id:'DEMO-ACT-005', activity_type_code:'RIDESHARE_TRIP', status:'FINALIZED', source_type:'PROVIDER_API', gross_amount:'55.00', tip_amount:'6.00', tax_amount:'8.24', net_amount:'44.00', reconciliation_status:'MISMATCH',      started_at:new Date(Date.now()-32*3600000).toISOString(), location_start_reference:'Mile End',            location_end_reference:'YUL',           driver_profiles:{first_name:'Sophie',last_name:'Tremblay',driver_number:'DEMO-DRV-0002'} },
-  ],
-  revenue: {
-    totals: { gross: 353.25, tips: 27.00, taxes: 52.90, net: 270.71, count: 10 },
-    tps: Math.round(353.25 * 0.05 * 100) / 100,
-    tvq: Math.round(353.25 * 0.09975 * 100) / 100,
-    entries: [],
-  },
 }
