@@ -556,11 +556,11 @@ export default function GovDashboardPage() {
                   <div className="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0" style={{background:'#003DA5'}}/>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-bold text-slate-800">{e.action}</span>
-                      <span className="text-xs font-mono text-slate-400">{e.resource}/{(e['resource_id'] ?? '')}</span>
+                      <span className="text-sm font-bold text-slate-800">{String(e.action ?? '')}</span>
+                      <span className="text-xs font-mono text-slate-400">{String(e.resource ?? '')}/{String(e['resource_id'] ?? '')}</span>
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      👤 {(e['actor_id'] ?? '')} · <span className="font-semibold">{(e['actor_role'] ?? '')}</span>
+                      👤 {String(e['actor_id'] ?? '')} · <span className="font-semibold">{String(e['actor_role'] ?? '')}</span>
                       {e.before&&<span className="ml-2 text-slate-400 italic">{e.before} → {e.after}</span>}
                     </div>
                   </div>
