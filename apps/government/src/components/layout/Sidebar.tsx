@@ -8,7 +8,7 @@ import {
   Bell, AlertTriangle, Shield, BarChart2, Settings, Webhook,
   ChevronDown, ChevronRight, Activity, Server, CalendarDays,
   CheckSquare, Workflow, Database, Building, UserCog, Gauge,
-  Brain, Clock, Truck, Lock, Eye, Flag, Code, TestTube, ClipboardCheck, Layers, Building2,
+  Brain, Clock, Truck, Lock, Eye, Flag, Code, TestTube, ClipboardCheck, Layers,
 } from 'lucide-react'
 import { useState } from 'react'
 import { kpiData } from '@/data/mock'
@@ -55,11 +55,8 @@ export function Sidebar() {
   const alerts = kpiData.alerts
   const sections = [
     { title:'Vue d\'ensemble', items:[
-      { label:'Registre Entreprises', href:'/enterprises', icon:Building2 },
       { label:'Control Center', href:'/control-center', icon:Gauge },
       { label:'Dashboard', href:'/', icon:LayoutDashboard },
-      { label:'Gov Dashboard Ph.36', href:'/gov-dashboard', icon:Building },
-      { label:'Pipeline Center', href:'/pipeline-center', icon:Layers },
       { label:'Activité en direct', href:'/operations/activity', icon:Activity },
     ]},
     { title:'Chauffeurs & Véhicules', items:[
@@ -125,37 +122,21 @@ export function Sidebar() {
       { label:'E2E Test Suite', href:'/e2e-tests', icon:TestTube },
       { label:'API Contract', href:'/api-contract', icon:Code },
     ]},
-    { title:'🏢 Enterprise Center', items:[
-      { label:'Vue globale',     href:'/admin/enterprises/overview',       icon:Building },
-      { label:'Registre',        href:'/admin/enterprises',                icon:Building },
-      { label:'Command Center',  href:'/admin/enterprises/command',        icon:Building },
-      { label:'Ent ↔ Driver',    href:'/admin/enterprises/drivers',        icon:UserCog  },
-      { label:'Taximètre',       href:'/admin/enterprises/taximeter',      icon:Building },
-      { label:'Activités',       href:'/admin/enterprises/activities',     icon:Building },
-      { label:'Financial',       href:'/admin/enterprises/financial',      icon:Building },
-      { label:'Fiscal',          href:'/admin/enterprises/fiscal',         icon:Building },
-      { label:'Déclarations',    href:'/admin/enterprises/declarations',   icon:Building },
-      { label:'Paiements',       href:'/admin/enterprises/payments',       icon:Building },
-      { label:'Connexions',      href:'/admin/enterprises/connections',    icon:Building },
-      { label:'Réconciliation',  href:'/admin/enterprises/reconciliation', icon:Building },
-      { label:'Conformité',      href:'/admin/enterprises/compliance',     icon:Building },
-      { label:'Alertes',         href:'/admin/enterprises/alerts',         icon:Building },
-      { label:'Intelligence',    href:'/admin/enterprises/intelligence',   icon:Building },
-      { label:'Analytics',       href:'/admin/enterprises/analytics',      icon:Building },
-      { label:'Audit Trail',     href:'/admin/enterprises/audit',          icon:Building },
+    { title:'Listing', items:[
+      { label:'Entreprises', href:'/listing/enterprises', icon:Building },
     ]},
     { title:'Administration', items:[
-      { label:'Utilisateurs gov.', href:'/admin/users',          icon:UserCog },
-      { label:'Organisations',     href:'/admin/organizations',  icon:Building },
-      { label:'Santé système',     href:'/system/health',        icon:Server },
-      { label:'Paramètres',        href:'/system/settings',      icon:Settings },
+      { label:'Utilisateurs gov.', href:'/admin/users', icon:UserCog },
+      { label:'Organisations', href:'/admin/organizations', icon:Building },
+      { label:'Santé système', href:'/system/health', icon:Server },
+      { label:'Paramètres', href:'/system/settings', icon:Settings },
     ]},
   ]
   return (
     <aside className="fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col z-30" style={{width:'var(--sidebar-w)'}}>
       <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="TAXIMETER.GOV" width={32} height={32} style={{objectFit:'contain',borderRadius:8}} />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-lg font-bold" style={{background:'var(--qc-blue)'}}>⚜</div>
           <div>
             <div className="text-xs font-bold tracking-widest text-qc-blue">TAXIMÈTRE.GOV</div>
             <div className="text-[9px] text-slate-400 tracking-wide">Gouvernement du Québec</div>
