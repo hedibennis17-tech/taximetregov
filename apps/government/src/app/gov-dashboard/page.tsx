@@ -5,7 +5,7 @@ import { AppShell } from '@/components/layout/AppShell'
 // Types minimal pour les données Supabase
 type SbDriver = { id:string; driver_number:string; first_name:string; last_name:string; status:string; email?:string }
 type SbTx     = { id:string; source_type:string; activity_type:string; gross_amount:string; tip_amount:string; tax_amount:string; net_amount:string; activity_date:string; driver_profiles?:{first_name:string;last_name:string} }
-type SbAlert  = { id:string; alert_type?:string; priority?:string; message?:string; created_at?:string }
+type SbAlert  = { id:string; alert_type?:string; priority?:string; message?:string; created_at?:string; resolved?:boolean }
 type SbAudit  = { id:string; action?:string; actor_id?:string; created_at?:string; resource_type?:string }
 
 const money  = (n: number) => n.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })
@@ -81,8 +81,8 @@ export default function GovDashboardPage() {
   const [tab, setTab]           = useState<Tab>('overview')
   const [statusFilter, setStatusFilter] = useState('ALL')
 
-  const critAlerts  = alerts.filter((a: {priority:string;resolved:boolean})=>a.priority==='critical'&&!a.resolved).length
-  const pendAlerts  = alerts.filter((a: {resolved:boolean})=>!a.resolved).length
+  const critAlerts  = alerts.filter(a=>a.priority==='critical'&&!a.resolved).length
+  const pendAlerts  = alerts.filter(a=>!a.resolved).length
   const recentTx    = transactions.slice(0,8)
   const recentAudit = auditLogs.slice(0,10)
 
