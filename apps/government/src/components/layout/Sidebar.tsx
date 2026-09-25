@@ -8,7 +8,7 @@ import {
   Bell, AlertTriangle, Shield, BarChart2, Settings, Webhook,
   ChevronDown, ChevronRight, Activity, Server, CalendarDays,
   CheckSquare, Workflow, Database, Building, UserCog, Gauge,
-  Brain, Clock, Truck, Lock, Eye, Flag, Code, TestTube, ClipboardCheck, Layers,
+  Brain, Clock, Truck, Lock, Eye, Flag, Code, TestTube, ClipboardCheck, Layers, Building2,
 } from 'lucide-react'
 import { useState } from 'react'
 import { kpiData } from '@/data/mock'
@@ -55,6 +55,7 @@ export function Sidebar() {
   const alerts = kpiData.alerts
   const sections = [
     { title:'Vue d\'ensemble', items:[
+      { label:'Registre Entreprises', href:'/enterprises', icon:Building2 },
       { label:'Control Center', href:'/control-center', icon:Gauge },
       { label:'Dashboard', href:'/', icon:LayoutDashboard },
       { label:'Gov Dashboard Ph.36', href:'/gov-dashboard', icon:Building },
