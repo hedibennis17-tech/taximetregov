@@ -168,7 +168,7 @@ export default function NotificationsPage() {
                   ))}
                   {selN.action&&(
                     <div className="pt-2">
-                      <button className="w-full py-2 rounded-xl text-sm font-bold bg-black text-white cursor-pointer">{selN.action}</button>
+                      <button className="w-full py-2 rounded-xl text-sm font-bold bg-blue-700 text-white cursor-pointer">{selN.action}</button>
                     </div>
                   )}
                 </div>

@@ -32,7 +32,7 @@ export default function ControlCenterPage() {
       <div className="px-4 md:px-6 py-4 space-y-4 max-w-6xl mx-auto">
 
         {/* Header Uber */}
-        <div className="rounded-2xl p-5 shadow-sm" style={{background:'#000'}}>
+        <div className="rounded-2xl p-5 shadow-sm" style={{background:'linear-gradient(135deg, #002B7A 0%, #003DA5 60%, #0047C0 100%)'}}>
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
@@ -115,7 +115,7 @@ export default function ControlCenterPage() {
               <div className="text-xs font-bold text-slate-800 dark:text-white mb-1">Revenus 12 mois (DEMO)</div>
               <div className="flex items-end gap-0.5 h-16">
                 {ANALYTICS_MONTHLY.map(m=>(
-                  <div key={m.m} className="flex-1 rounded-t-sm" style={{height:`${(m.gross/maxMonth)*100}%`,background:'#000'}}/>
+                  <div key={m.m} className="flex-1 rounded-t-sm" style={{height:`${(m.gross/maxMonth)*100}%`,background:'#003DA5'}}/>
                 ))}
               </div>
               <Link href="/analytics" className="mt-2 block text-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline">→ Analytics complet</Link>
@@ -209,7 +209,7 @@ export default function ControlCenterPage() {
             </div>
 
             {/* Gouvernement */}
-            <div className="rounded-2xl p-4 shadow-sm" style={{background:'#000'}}>
+            <div className="rounded-2xl p-4 shadow-sm" style={{background:'linear-gradient(135deg, #002B7A, #003DA5)'}}>
               <div className="text-sm font-bold mb-2" style={{color:'rgba(255,255,255,0.5)'}}>🏛️ TAXIMETER.GOV · PILOTE</div>
               {[
                 {l:'Messages gouvernementaux', v:GOV_MESSAGES.length,   c:'rgba(255,255,255,0.9)'},

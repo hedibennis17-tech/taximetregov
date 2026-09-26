@@ -26,7 +26,7 @@ export default function ProfilePage() {
       <div className="px-4 md:px-6 py-4 space-y-4 max-w-4xl mx-auto">
 
         {/* Header */}
-        <div className="rounded-2xl p-5 shadow-sm" style={{background:'#000'}}>
+        <div className="rounded-2xl p-5 shadow-sm" style={{background:'linear-gradient(135deg, #002B7A 0%, #003DA5 60%, #0047C0 100%)'}}>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-lg font-black shrink-0" style={{background:color}}>
               {user.name.split(' ').map((n:string)=>n[0]).join('').slice(0,2)}

@@ -119,7 +119,7 @@ export default function IntelligencePage() {
               <div className="text-sm font-bold text-slate-800 dark:text-white mb-3">Flux transactionnel</div>
               <div className="flex flex-wrap gap-1 items-center">
                 {FLUX.map((s,i)=>(
-                  <span key={i} className={s==='↓'?'text-slate-300 dark:text-slate-700 font-bold':'text-sm font-bold px-2 py-1 rounded-lg'} style={s!=='↓'?{background:'#000',color:'white'}:{}}>{s}</span>
+                  <span key={i} className={s==='↓'?'text-slate-300 dark:text-slate-700 font-bold':'text-sm font-bold px-2 py-1 rounded-lg'} style={s!=='↓'?{background:'#003DA5',color:'white'}:{}}>{s}</span>
                 ))}
               </div>
             </div>
@@ -277,7 +277,7 @@ export default function IntelligencePage() {
                 {ANALYTICS_MONTHLY.map(m=>(
                   <div key={m.m} className="flex-1 flex flex-col items-center gap-0.5 group relative">
                     <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">{(m.gross/1000).toFixed(0)}k$</div>
-                    <div className="w-full rounded-t-sm" style={{height:`${(m.gross/maxMonth)*100}%`,background:'#000'}}/>
+                    <div className="w-full rounded-t-sm" style={{height:`${(m.gross/maxMonth)*100}%`,background:'#003DA5'}}/>
                     <div className="text-sm text-slate-400 rotate-45 origin-left">{m.m.split(' ')[0]}</div>
                   </div>
                 ))}

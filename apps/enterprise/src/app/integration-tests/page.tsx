@@ -284,7 +284,7 @@ export default function IntegrationTestsPage() {
       <div className="px-4 md:px-6 py-4 space-y-4 max-w-5xl mx-auto">
 
         {/* Header */}
-        <div className="rounded-2xl p-5 shadow-sm" style={{background:'#000'}}>
+        <div className="rounded-2xl p-5 shadow-sm" style={{background:'linear-gradient(135deg, #002B7A 0%, #003DA5 60%, #0047C0 100%)'}}>
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-white font-black text-base">Tests d'intégration — Phase 33</div>

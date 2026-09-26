@@ -38,7 +38,7 @@ export default function ServicesPage() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 shadow-sm">
           <div className="flex items-center gap-1 flex-wrap text-sm font-bold">
             {WORKFLOW.map((s,i)=>(
-              <span key={i} className={s==='→'?'text-slate-300 dark:text-slate-700':'px-2 py-1 rounded-lg'} style={s!=='→'?{background:'#000',color:'white'}:{}}>{s}</span>
+              <span key={i} className={s==='→'?'text-slate-300 dark:text-slate-700':'px-2 py-1 rounded-lg'} style={s!=='→'?{background:'#003DA5',color:'white'}:{}}>{s}</span>
             ))}
           </div>
         </div>

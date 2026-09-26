@@ -37,7 +37,7 @@ export default function Dashboard() {
         </div>
 
         {/* Header Uber */}
-        <div className="rounded-2xl p-5 shadow-sm" style={{background:'#000'}}>
+        <div className="rounded-2xl p-5 shadow-sm" style={{background:'linear-gradient(135deg, #002B7A 0%, #003DA5 60%, #0047C0 100%)'}}>
           <div className="flex items-center gap-4 mb-4">
             <div className="shrink-0">
               <div className="text-white font-black tracking-tighter" style={{fontSize:'2.8rem',fontFamily:'system-ui',letterSpacing:'-0.04em',lineHeight:1}}>uber</div>
@@ -153,7 +153,7 @@ export default function Dashboard() {
 
         {/* Prochaine obligation */}
         {nextObl&&(
-          <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{background:'#000'}}>
+          <div className="rounded-2xl p-4 flex items-center justify-between gap-3" style={{background:'linear-gradient(135deg, #002B7A 0%, #003DA5 60%, #0047C0 100%)'}}>
             <div>
               <div className="text-sm font-bold mb-0.5" style={{color:'rgba(255,255,255,0.5)'}}>📅 PROCHAINE OBLIGATION</div>
               <div className="text-sm font-black text-white">{nextObl.type} — {nextObl.period}</div>
