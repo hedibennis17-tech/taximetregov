@@ -52,17 +52,17 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{background:'#f1f5f9'}}>
       <div className="w-full max-w-sm">
 
-        {/* Logo */}
+        {/* 4. Logo officiel TAXIMETER.GOV */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2.5 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center shadow-sm">
-              <span className="text-white font-black text-xl" style={{fontFamily:'system-ui',letterSpacing:'-0.02em'}}>T</span>
-            </div>
-            <div className="text-left">
+          <div className="inline-flex flex-col items-center gap-3 mb-3">
+            <img src="/taximetregov-logo.png" alt="TAXIMETER.GOV"
+              className="w-20 h-20 rounded-2xl object-cover"
+              style={{boxShadow:"0 4px 20px rgba(0,61,165,0.25)"}}
+            />
+            <div className="text-center">
               <div className="text-lg font-black text-slate-900" style={{letterSpacing:'-0.02em'}}>TAXIMETER.GOV</div>
-              <div className="text-sm font-bold text-slate-500">Enterprise Gov</div>
+              <div className="text-sm font-bold" style={{color:'#06C167'}}>Enterprise Gov · Québec 🍁</div>
             </div>
-          </div>
           <div className="inline-block text-sm font-bold text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full">
             ⚠️ MODE DÉMO · DONNÉES SYNTHÉTIQUES · PILOTE
           </div>
@@ -165,5 +165,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  </div>
   )
 }
