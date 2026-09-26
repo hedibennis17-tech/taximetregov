@@ -1,638 +1,611 @@
 'use client'
 // ================================================================
 // TAXIMETER.GOV — ENTERPRISE 360° CONTROL CENTER
-// Source unique: /api/enterprises/[id] → Supabase
-// Règles: PUBLIC_VERIFIED / SYNTHETIC_DEMO / PRIVATE_NOT_AVAILABLE
+// Source: /api/enterprises/[id] → pilot-demo (même données que Control Center)
 // ================================================================
 
 import { AppShell } from '@/components/layout/AppShell'
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, RefreshCw, Building, Users, Truck, Activity, DollarSign, Shield, Zap, Bell, FileText, BarChart2, Globe, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
+import { ArrowLeft, RefreshCw, ExternalLink } from 'lucide-react'
 import { ENTERPRISES, CATEGORY_LABELS } from '../data'
-import { govFetch, money } from '@/lib/api-client'
+import { govFetch } from '@/lib/api-client'
 
-// ─── Types ─────────────────────────────────────────────────────
-
-interface Dept { id:string; name:string; service:string; drivers_demo:number; active:boolean }
-
-interface EnterpriseData {
-  enterprise_id: string
-  name: string
-  commercial_name: string
-  neq: string
-  province: string
-  city: string
-  address: string
-  postal_code: string
-  website: string
-  org_type: string
-  status: string
-  data_status: string
-  economic_impact_qc_2024: string
-  internal_revenue: string
-  departments: Dept[]
-  kpis: {
-    drivers_db: number; drivers_demo: number; vehicles_db: number
-    departments: number; activities_db: number; trips_db: number
-    gross_revenue: number; net_revenue: number; fees: number; tips: number
-    tps_demo: number; tvq_demo: number; declarations_db: number
-    payments_demo: number; audits_db: number; documents_db: number
-    alerts_db: number; compliance_score: number
-    api_connected: boolean; webhook_active: boolean
-  }
-  supabase: Record<string, unknown>
-  data_sources: Record<string, string>
+function money(n: number) {
+  return new Intl.NumberFormat('fr-CA', { style:'currency', currency:'CAD' }).format(n)
 }
-
-// ─── Config tabs ───────────────────────────────────────────────
+function clean(s: string) { return s.replace(/^DEMO[-_]/, '').replaceAll('_', ' ') }
 
 const TABS = [
-  { key:'overview',     label:'Overview',        icon: BarChart2 },
-  { key:'profile',      label:'Profil',           icon: Building },
-  { key:'departments',  label:'Départements',     icon: Building },
-  { key:'drivers',      label:'Chauffeurs',        icon: Users },
-  { key:'vehicles',     label:'Véhicules',         icon: Truck },
-  { key:'taximeter',    label:'Taximètre',         icon: Activity },
-  { key:'activities',   label:'Activités',         icon: Activity },
-  { key:'transactions', label:'Transactions',      icon: DollarSign },
-  { key:'revenue',      label:'Revenus',           icon: DollarSign },
-  { key:'taxes',        label:'TPS/TVQ',           icon: FileText },
-  { key:'declarations', label:'Déclarations',      icon: FileText },
-  { key:'payments',     label:'Paiements',         icon: DollarSign },
-  { key:'documents',    label:'Documents',         icon: FileText },
-  { key:'gov_connect',  label:'Connexions Gov',    icon: Globe },
-  { key:'api',          label:'API',               icon: Zap },
-  { key:'webhooks',     label:'Webhooks',          icon: Zap },
-  { key:'reconcile',    label:'Réconciliation',    icon: RefreshCw },
-  { key:'analytics',    label:'Analytics',         icon: BarChart2 },
-  { key:'reports',      label:'Rapports',          icon: FileText },
-  { key:'compliance',   label:'Conformité',        icon: Shield },
-  { key:'audit',        label:'Audit',             icon: Shield },
-  { key:'security',     label:'Sécurité',          icon: Shield },
-  { key:'notifications',label:'Notifications',     icon: Bell },
-  { key:'intelligence', label:'Intelligence',      icon: BarChart2 },
-  { key:'gov_comm',     label:'Communication Gov', icon: Globe },
+  'Overview','Profil','Départements','Chauffeurs','Véhicules','Activités',
+  'Transactions','Revenus','TPS/TVQ','Déclarations','Paiements','Relevés',
+  'Cas','Alertes','Documents','Connexions Gov','API','Webhooks',
+  'Réconciliation','Analytics','Rapports','Conformité','Audit','Notifications','Intelligence','Communication Gov',
 ]
 
-const DEPT_COLORS: Record<string,string> = {
-  TAXI:     '#F59E0B',
-  RIDESHARE:'#3B82F6',
-  GREEN:    '#10B981',
-  FOOD:     '#EF4444',
-  GROCERY:  '#8B5CF6',
-  DELIVERY: '#F97316',
+function Badge({ t }: { t:'verified'|'demo'|'private' }) {
+  const c = t==='verified' ? 'bg-green-500/15 text-green-400' : t==='demo' ? 'bg-amber-500/15 text-amber-400' : 'bg-red-500/15 text-red-400'
+  return <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${c}`}>{t==='verified'?'✓ VÉRIFIÉ':t==='demo'?'⚠ DEMO':'🔒 PRIVÉ'}</span>
 }
 
-function Badge({ label, type }: { label: string; type: 'verified'|'demo'|'private' }) {
-  const styles = {
-    verified: 'bg-green-500/15 text-green-400 border-green-500/30',
-    demo:     'bg-amber-500/15 text-amber-400 border-amber-500/30',
-    private:  'bg-red-500/15 text-red-400 border-red-500/30',
-  }
-  const icons = { verified:'✓', demo:'⚠', private:'🔒' }
+function Row({ label, value, badge }: { label:string; value:string|number; badge?:'verified'|'demo'|'private' }) {
   return (
-    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md border ${styles[type]}`}>
-      {icons[type]} {label}
-    </span>
-  )
-}
-
-function KpiCard({ label, value, sub, color = 'text-white' }: { label:string; value:string|number; sub?:string; color?:string }) {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center">
-      <div className={`text-lg font-black ${color}`}>{value}</div>
-      <div className="text-[9px] text-slate-400 leading-tight mt-0.5">{label}</div>
-      {sub && <div className="text-[8px] text-slate-600 mt-0.5">{sub}</div>}
-    </div>
-  )
-}
-
-function InfoRow({ label, value, badge }: { label:string; value:string; badge?: 'verified'|'demo'|'private' }) {
-  return (
-    <div className="flex justify-between items-center py-2.5 border-b border-slate-800 last:border-0">
-      <span className="text-xs text-slate-400">{label}</span>
-      <div className="flex items-center gap-2 text-right max-w-[60%]">
-        <span className="text-xs text-white font-medium">{value}</span>
-        {badge && <Badge label={badge === 'verified' ? 'VERIFIED' : badge === 'demo' ? 'DEMO' : 'PRIVATE'} type={badge} />}
+    <div className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0 gap-2">
+      <span className="text-xs text-slate-400 shrink-0">{label}</span>
+      <div className="flex items-center gap-1.5 text-right">
+        <span className="text-xs text-white">{value}</span>
+        {badge && <Badge t={badge} />}
       </div>
     </div>
   )
 }
 
-function Section({ title, children }: { title:string; children: React.ReactNode }) {
+function Card({ title, children }: { title:string; children:React.ReactNode }) {
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden mb-3">
-      <div className="px-4 py-2.5 bg-slate-800/60 border-b border-slate-800">
-        <span className="text-xs font-bold text-white">{title}</span>
-      </div>
+      <div className="px-4 py-2 bg-slate-800/60 border-b border-slate-800 text-xs font-bold text-white">{title}</div>
       <div className="px-4 py-1">{children}</div>
     </div>
   )
 }
 
-// ─── COMPOSANT PRINCIPAL ───────────────────────────────────────
+function Kpi({ label, value, color='text-white', sub }: { label:string; value:string|number; color?:string; sub?:string }) {
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center">
+      <div className={`text-lg font-black ${color}`}>{value}</div>
+      <div className="text-[8px] text-slate-400 mt-0.5 leading-tight">{label}</div>
+      {sub && <div className="text-[7px] text-slate-600">{sub}</div>}
+    </div>
+  )
+}
+
+function StatusChip({ v }: { v:string }) {
+  const c = /MATCHED|READY|COMPLETED|ACTIVE|ONLINE|VALID|RECEIVED|PAID|SETTLED|RECONCILED/.test(v)
+    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/25'
+    : /REVIEW|PARTIAL|PENDING|WARNING|MISMATCH|OPEN|MONITORING/.test(v)
+    ? 'bg-amber-500/15 text-amber-200 border-amber-400/25'
+    : 'bg-slate-700 text-slate-300 border-slate-600'
+  return <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${c}`}>{clean(v)}</span>
+}
+
+interface EntData {
+  kpis: Record<string, number>
+  departments: Array<{ id:string; name:string; service:string; color:string }>
+  drivers: Array<Record<string, string>>
+  activities: Array<Record<string, string|number>>
+  transactions: Array<Record<string, string|number>>
+  tax_records: Array<Record<string, string|number>>
+  tips: Array<Record<string, string|number>>
+  settlements: Array<Record<string, string|number>>
+  cases: Array<Record<string, string|number>>
+  alerts: Array<Record<string, string|number>>
+  reports: Array<Record<string, string|number>>
+  statements: Array<Record<string, string|number>>
+  accounts: Array<Record<string, string>>
+  by_provider: Array<{ provider:string; gross:number; net:number; activities:number }>
+  data_sources: Record<string, string>
+  economic_impact: string
+  supabase_db: Record<string, number>
+}
 
 export default function Enterprise360Page() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams<{ id:string }>()
   const router = useRouter()
-  const [tab, setTab] = useState('overview')
+  const [tab, setTab] = useState('Overview')
   const [dept, setDept] = useState('ALL')
-  const [data, setData] = useState<EnterpriseData | null>(null)
+  const [data, setData] = useState<EntData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string|null>(null)
+  const [err, setErr] = useState<string|null>(null)
 
-  // Données statiques du listing
   const staticEnt = ENTERPRISES.find(e => e.id === id)
 
   const load = useCallback(async () => {
-    try {
-      setLoading(true); setError(null)
-      const result = await govFetch<EnterpriseData>(`/api/enterprises/${id}`)
-      setData(result)
-    } catch (e) { setError((e as Error).message) }
+    try { setLoading(true); setErr(null)
+      const r = await govFetch<EntData>(`/api/enterprises/${id}`)
+      setData(r)
+    } catch (e) { setErr((e as Error).message) }
     finally { setLoading(false) }
   }, [id])
 
   useEffect(() => { void load() }, [load])
 
-  const k = data?.kpis
+  const k = data?.kpis ?? {}
   const depts = data?.departments ?? []
-  const activeDepts = dept === 'ALL' ? depts : depts.filter(d => d.id === dept)
 
   return (
     <AppShell>
-      {/* Back + titre */}
-      <div className="px-4 pt-4 pb-2 flex items-center gap-3 border-b border-slate-800">
+      {/* Header */}
+      <div className="px-4 pt-3 pb-2 flex items-center gap-3 border-b border-slate-800">
         <button onClick={() => router.back()} className="p-2 rounded-xl bg-slate-900 border border-slate-800">
-          <ArrowLeft size={15} className="text-slate-400" />
+          <ArrowLeft size={14} className="text-slate-400" />
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-black text-white text-base">
-              {data?.commercial_name ?? staticEnt?.name ?? id}
-            </span>
-            <Badge label="DEMO" type="demo" />
-            <Badge label="SYNTHETIC" type="demo" />
+            <span className="font-black text-white">{staticEnt?.name ?? id}</span>
+            <Badge t="demo" />
+            <span className="text-[8px] text-slate-600">{id}</span>
           </div>
-          <div className="text-[9px] text-slate-500 mt-0.5">{id} · Enterprise 360° Control Center</div>
+          <div className="text-[8px] text-slate-500">Enterprise 360° · Source: pilot-demo + Supabase DB</div>
         </div>
         <button onClick={() => void load()} className="p-2 rounded-xl bg-slate-900 border border-slate-800">
           <RefreshCw size={13} className={loading ? 'animate-spin text-qc-blue' : 'text-slate-400'} />
         </button>
       </div>
 
-      {/* Status bar */}
-      {data && (
-        <div className="px-4 py-2 flex items-center gap-2 flex-wrap border-b border-slate-800 bg-slate-900/50">
-          <div className="flex items-center gap-1.5 text-[9px]">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-amber-400 font-bold">MODE PILOTE</span>
+      {loading && <div className="py-12 text-center"><RefreshCw className="mx-auto animate-spin text-qc-blue" size={20} /><p className="text-xs text-slate-400 mt-2">Chargement Enterprise 360°…</p></div>}
+      {err && <div className="m-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-center"><p className="text-sm text-red-400 mb-2">{err}</p><button onClick={() => void load()} className="px-4 py-1.5 bg-qc-blue text-white rounded-lg text-xs">Réessayer</button></div>}
+
+      {data && !loading && (<>
+
+        {/* KPI Bar — même données que Control Center */}
+        <div className="border-b border-slate-800 px-4 py-2 overflow-x-auto">
+          <div className="text-[8px] text-slate-600 mb-1.5">Source: QC-PILOT-2026-Q3 + Supabase DB</div>
+          <div className="flex gap-2" style={{ minWidth:'max-content' }}>
+            {[
+              { l:'Chauffeurs',   v: k['drivers']??0,           c:'text-blue-400',   s:'pilot-demo' },
+              { l:'En ligne',     v: k['drivers_online']??0,     c:'text-emerald-400',s:'pilot-demo' },
+              { l:'Activités',    v: k['activities']??0,         c:'text-sky-400',    s:'pilot-demo' },
+              { l:'Rev. bruts',   v: money(k['gross_revenue']??0),c:'text-amber-400', s:'pilot-demo' },
+              { l:'Rev. nets',    v: money(k['net_revenue']??0),  c:'text-emerald-400',s:'pilot-demo' },
+              { l:'Taxes calc.',  v: money(k['tax_calculated']??0),c:'text-orange-400',s:'pilot-demo'},
+              { l:'TPS (5%)',     v: money(k['tps_only']??0),    c:'text-purple-400', s:'DEMO' },
+              { l:'TVQ (9.975%)', v: money(k['tvq_only']??0),    c:'text-purple-400', s:'DEMO' },
+              { l:'Décl. (DB)',   v: k['declarations_db']??0,    c:'text-amber-300',  s:'Supabase' },
+              { l:'Alertes',      v: k['alerts']??0,             c:'text-red-400',    s:'pilot-demo' },
+              { l:'Cas ouverts',  v: k['open_cases']??0,         c:'text-amber-400',  s:'pilot-demo' },
+              { l:'Relevés',      v: k['settlements']??0,        c:'text-cyan-400',   s:'pilot-demo' },
+              { l:'Véhicules (DB)',v: k['vehicles_db']??0,       c:'text-slate-300',  s:'Supabase' },
+              { l:'Docs (DB)',    v: k['documents_db']??0,       c:'text-slate-300',  s:'Supabase' },
+            ].map(kpi => (
+              <div key={kpi.l} className="text-center px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl flex-shrink-0 min-w-[68px]">
+                <div className={`text-sm font-black ${kpi.c}`}>{kpi.v}</div>
+                <div className="text-[8px] text-slate-400">{kpi.l}</div>
+                <div className="text-[7px] text-slate-600">{kpi.s}</div>
+              </div>
+            ))}
           </div>
-          <span className="text-slate-600">·</span>
-          <span className="text-[9px] text-slate-500">API: {k?.api_connected ? '✅ Configurée' : '❌ Demo'}</span>
-          <span className="text-slate-600">·</span>
-          <span className="text-[9px] text-slate-500">Webhook: {k?.webhook_active ? '✅ Actif' : '❌ Demo'}</span>
-          <span className="text-slate-600">·</span>
-          <span className="text-[9px] text-slate-500">Conformité: {k?.compliance_score ?? '—'}% DEMO</span>
         </div>
-      )}
 
-      {loading && (
-        <div className="py-16 text-center">
-          <RefreshCw className="mx-auto animate-spin text-qc-blue mb-2" size={20} />
-          <p className="text-xs text-slate-400">Chargement Enterprise 360°…</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="m-4 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-center">
-          <p className="text-sm text-red-400 mb-2">{error}</p>
-          <button onClick={() => void load()} className="px-4 py-1.5 rounded-lg bg-qc-blue text-white text-xs">Réessayer</button>
-        </div>
-      )}
-
-      {data && !loading && (
-        <>
-          {/* ── KPI BAR ─────────────────────────────────────── */}
-          <div className="px-4 py-3 border-b border-slate-800 overflow-x-auto">
-            <div className="flex gap-2" style={{ minWidth: 'max-content' }}>
-              {[
-                { label:'Chauffeurs', value: k?.drivers_db || k?.drivers_demo || 0, sub:'DB+DEMO', color:'text-blue-400' },
-                { label:'Véhicules',  value: k?.vehicles_db || 0,                   sub:'DB',      color:'text-purple-400' },
-                { label:'Depts',      value: k?.departments ?? 0,                   sub:'DEMO',    color:'text-amber-400' },
-                { label:'Activités',  value: k?.activities_db ?? 0,                 sub:'DB',      color:'text-green-400' },
-                { label:'Courses',    value: k?.trips_db ?? 0,                      sub:'DB',      color:'text-cyan-400' },
-                { label:'Revenus',    value: money(k?.gross_revenue ?? 0),          sub:'DB+DEMO', color:'text-green-400' },
-                { label:'TPS est.',   value: money(k?.tps_demo ?? 0),              sub:'DEMO',    color:'text-purple-400' },
-                { label:'TVQ est.',   value: money(k?.tvq_demo ?? 0),              sub:'DEMO',    color:'text-purple-400' },
-                { label:'Décl.',      value: k?.declarations_db ?? 0,              sub:'DB',      color:'text-amber-400' },
-                { label:'Documents',  value: k?.documents_db ?? 0,                 sub:'DB',      color:'text-slate-300' },
-                { label:'Alertes',    value: k?.alerts_db ?? 0,                    sub:'DB',      color:'text-red-400' },
-                { label:'Audits',     value: k?.audits_db ?? 0,                    sub:'DB',      color:'text-orange-400' },
-                { label:'Conformité', value: `${k?.compliance_score ?? 0}%`,       sub:'DEMO',    color:'text-teal-400' },
-              ].map(kpi => (
-                <div key={kpi.label} className="text-center px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl flex-shrink-0 min-w-[72px]">
-                  <div className={`text-sm font-black ${kpi.color}`}>{kpi.value}</div>
-                  <div className="text-[8px] text-slate-400">{kpi.label}</div>
-                  <div className="text-[7px] text-slate-600">{kpi.sub}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── DEPARTMENT SWITCHER ─────────────────────────── */}
-          <div className="px-4 py-2 border-b border-slate-800 overflow-x-auto">
-            <div className="flex gap-1.5" style={{ minWidth:'max-content' }}>
-              <button onClick={() => setDept('ALL')}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex-shrink-0 ${dept==='ALL' ? 'bg-slate-700 text-white border border-slate-600' : 'text-slate-500 border border-slate-800'}`}>
-                ALL
+        {/* Department Switcher */}
+        <div className="px-4 py-2 border-b border-slate-800 overflow-x-auto">
+          <div className="flex gap-1.5" style={{ minWidth:'max-content' }}>
+            <button onClick={() => setDept('ALL')}
+              className={`px-3 py-1 rounded-lg text-[10px] font-bold border ${dept==='ALL'?'bg-slate-700 text-white border-slate-600':'text-slate-500 border-slate-800'}`}>
+              ALL
+            </button>
+            {depts.map(d => (
+              <button key={d.id} onClick={() => setDept(d.id)}
+                style={{ borderColor: dept===d.id ? d.color : undefined, color: dept===d.id ? d.color : undefined }}
+                className={`px-3 py-1 rounded-lg text-[10px] font-bold border ${dept===d.id?'':'border-slate-800 text-slate-500'}`}>
+                ● {d.name}
               </button>
-              {depts.map(d => (
-                <button key={d.id} onClick={() => setDept(d.id)}
-                  style={{ borderColor: dept===d.id ? (DEPT_COLORS[d.service] ?? '#3B82F6') : undefined }}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex-shrink-0 border ${dept===d.id ? 'text-white' : 'text-slate-500 border-slate-800'}`}>
-                  <span style={{ color: DEPT_COLORS[d.service] }}>●</span> {d.name}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
+        </div>
 
-          {/* ── TABS ────────────────────────────────────────── */}
-          <div className="px-4 py-2 border-b border-slate-800 overflow-x-auto">
-            <div className="flex gap-1" style={{ minWidth:'max-content' }}>
-              {TABS.map(t => (
-                <button key={t.key} onClick={() => setTab(t.key)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all flex-shrink-0 ${tab===t.key ? 'bg-qc-blue text-white' : 'text-slate-400 border border-slate-800 hover:text-white'}`}>
-                  {t.label}
-                </button>
-              ))}
-            </div>
+        {/* Tabs */}
+        <div className="px-4 py-1.5 border-b border-slate-800 overflow-x-auto">
+          <div className="flex gap-1" style={{ minWidth:'max-content' }}>
+            {TABS.map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                className={`px-2.5 py-1 rounded-lg text-[9px] font-bold flex-shrink-0 ${tab===t?'bg-qc-blue text-white':'text-slate-400 border border-slate-800 hover:text-white'}`}>
+                {t}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* ── CONTENU TABS ───────────────────────────────── */}
-          <div className="px-4 py-4 pb-8 space-y-3">
+        {/* Contenu */}
+        <div className="px-4 py-3 pb-8">
 
-            {/* OVERVIEW */}
-            {tab === 'overview' && (
-              <>
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                  <p className="text-[9px] text-amber-400">
-                    ⚠️ Données synthétiques DEMO. Impact économique 1,9G$ QC 2024 = PUBLIC_VERIFIED (Uber/Public First, déc. 2025).
-                    Revenus internes Uber = PRIVATE_NOT_AVAILABLE.
-                  </p>
+          {/* ── OVERVIEW ── */}
+          {tab === 'Overview' && (<>
+            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-3">
+              <p className="text-[9px] text-amber-400">⚠️ Source: QC-PILOT-2026-Q3 (même données que Control Center). Impact 1,9G$ = PUBLIC_VERIFIED. Revenus internes = PRIVATE_NOT_AVAILABLE.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <Kpi label="Rev. bruts" value={money(k['gross_revenue']??0)} color="text-amber-400" sub="pilot-demo" />
+              <Kpi label="Rev. nets" value={money(k['net_revenue']??0)} color="text-emerald-400" sub="pilot-demo" />
+              <Kpi label="Taxes calc." value={money(k['tax_calculated']??0)} color="text-orange-400" sub="pilot-demo" />
+              <Kpi label="Pourboires" value={money(k['tips']??0)} color="text-amber-300" sub="pilot-demo" />
+            </div>
+            <Card title="Revenus par fournisseur (pilot-demo)">
+              {data.by_provider.map(p => (
+                <div key={p.provider} className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0">
+                  <div><span className="text-xs font-bold text-white">{p.provider}</span><span className="text-[9px] text-slate-500 ml-2">{p.activities} activités</span></div>
+                  <div className="text-right"><div className="text-xs font-bold text-amber-400">{money(p.gross)}</div><div className="text-[9px] text-slate-400">net {money(p.net)}</div></div>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <KpiCard label="Revenus bruts (DB+DEMO)" value={money(k?.gross_revenue ?? 0)} color="text-green-400" sub="revenue_ledger" />
-                  <KpiCard label="Revenus nets" value={money(k?.net_revenue ?? 0)} color="text-green-300" sub="revenue_ledger" />
-                  <KpiCard label="TPS estimée 5%" value={money(k?.tps_demo ?? 0)} color="text-purple-400" sub="SYNTHETIC_DEMO" />
-                  <KpiCard label="TVQ estimée 9,975%" value={money(k?.tvq_demo ?? 0)} color="text-purple-400" sub="SYNTHETIC_DEMO" />
-                  <KpiCard label="Frais plateforme" value={money(k?.fees ?? 0)} color="text-amber-400" sub="revenue_ledger" />
-                  <KpiCard label="Pourboires" value={money(k?.tips ?? 0)} color="text-amber-300" sub="revenue_ledger" />
+              ))}
+            </Card>
+            <Card title="Impact économique PUBLIC_VERIFIED">
+              <Row label="Impact QC 2024" value="1,9 milliard $" badge="verified" />
+              <Row label="Source" value="Uber/Public First, déc. 2025" badge="verified" />
+              <Row label="Revenus internes" value="PRIVATE_NOT_AVAILABLE" badge="private" />
+              <Row label="Statut fiscal chauffeurs" value="Travailleurs autonomes — Revenu Québec" badge="verified" />
+            </Card>
+          </>)}
+
+          {/* ── PROFIL ── */}
+          {tab === 'Profil' && (
+            <Card title="Profil légal">
+              <Row label="Nom légal" value="Uber Canada Inc." badge="demo" />
+              <Row label="Commercial" value="Uber Québec" badge="demo" />
+              <Row label="Enterprise ID" value="ENT-UBER-DEMO" />
+              <Row label="NEQ" value="NOT_VERIFIED_DEMO" badge="private" />
+              <Row label="Province" value="QC" />
+              <Row label="Site web" value="uber.com" badge="verified" />
+              <Row label="Type" value="PLATFORM" />
+              <Row label="Statut" value="DEMO / PILOT" badge="demo" />
+            </Card>
+          )}
+
+          {/* ── DÉPARTEMENTS ── */}
+          {tab === 'Départements' && (
+            <>{depts.map(d => (
+              <div key={d.id} style={{ borderColor: d.color + '40' }} className="bg-slate-900 border rounded-xl p-4 mb-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <div style={{ width:10, height:10, borderRadius:'50%', background:d.color }} />
+                  <span className="font-bold text-white text-sm">{d.name}</span>
+                  <Badge t="demo" />
                 </div>
-                <Section title="Impact économique PUBLIC_VERIFIED">
-                  <InfoRow label="Impact QC 2024" value="1,9 milliard $" badge="verified" />
-                  <InfoRow label="Source" value="Uber/Public First, déc. 2025" badge="verified" />
-                  <InfoRow label="Revenus internes Uber" value="PRIVATE_NOT_AVAILABLE" badge="private" />
-                  <InfoRow label="Statut fiscal chauffeurs" value="Travailleurs autonomes — Revenu Québec" badge="verified" />
-                </Section>
-                <Section title="Départements actifs">
-                  {(dept === 'ALL' ? depts : activeDepts).map(d => (
-                    <div key={d.id} className="flex items-center justify-between py-2 border-b border-slate-800 last:border-0">
-                      <div className="flex items-center gap-2">
-                        <div style={{ width:8, height:8, borderRadius:'50%', background: DEPT_COLORS[d.service] }} />
-                        <span className="text-xs text-white">{d.name}</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs font-bold text-blue-400">{d.drivers_demo.toLocaleString()}</div>
-                        <div className="text-[8px] text-slate-500">chauffeurs DEMO</div>
-                      </div>
-                    </div>
-                  ))}
-                </Section>
-                <Section title="Sources de données">
-                  {Object.entries(data.data_sources).map(([k2, v]) => (
-                    <InfoRow key={k2} label={k2} value={v}
-                      badge={v.startsWith('PUBLIC_VERIFIED') ? 'verified' : v.startsWith('PRIVATE') ? 'private' : 'demo'} />
-                  ))}
-                </Section>
-              </>
-            )}
+                <div className="text-[9px] text-slate-500">
+                  Service: {d.service} · Activités: {data.by_provider.find(p => p.provider === d.service || p.provider === 'UBER' || p.provider === 'TAXI')?.activities ?? 0} DEMO
+                </div>
+              </div>
+            ))}</>
+          )}
 
-            {/* PROFIL */}
-            {tab === 'profile' && (
-              <Section title="Profil légal — Uber Canada Inc.">
-                <InfoRow label="Nom légal"        value={data.name}             badge="demo" />
-                <InfoRow label="Nom commercial"   value={data.commercial_name}  badge="demo" />
-                <InfoRow label="Enterprise ID"    value={data.enterprise_id}    />
-                <InfoRow label="NEQ"              value={data.neq}              badge="private" />
-                <InfoRow label="Province"         value={data.province}         />
-                <InfoRow label="Ville"            value={data.city}             badge="demo" />
-                <InfoRow label="Adresse"          value={data.address}          badge="demo" />
-                <InfoRow label="Code postal"      value={data.postal_code}      badge="demo" />
-                <InfoRow label="Site web"         value={data.website}          badge="verified" />
-                <InfoRow label="Type"             value={data.org_type}         />
-                <InfoRow label="Statut"           value={data.status}           badge="demo" />
-                <InfoRow label="Data status"      value={data.data_status}      />
-              </Section>
-            )}
+          {/* ── CHAUFFEURS ── */}
+          {tab === 'Chauffeurs' && (
+            <Card title={`Chauffeurs — ${data.drivers.length} pilot-demo`}>
+              {data.drivers.map(d => (
+                <div key={d['id']} className="flex items-center gap-3 py-2.5 border-b border-slate-800 last:border-0">
+                  <div className="w-8 h-8 rounded-lg bg-qc-blue flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {(d['name'] as string).split(' ').map(n => n[0]).join('').slice(0,2)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold text-white">{d['name']}</div>
+                    <div className="text-[9px] text-slate-500">{d['number']} · {d['location']}</div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <StatusChip v={String(d['status'])} />
+                    <StatusChip v={String(d['presence'])} />
+                  </div>
+                </div>
+              ))}
+              <div className="py-2 text-[8px] text-slate-600">SYNTHETIC_DEMO — Pas de liste réelle Uber</div>
+            </Card>
+          )}
 
-            {/* DÉPARTEMENTS */}
-            {tab === 'departments' && (
-              <>
-                <div className="text-[9px] text-slate-500 mb-2">1 organisation · {depts.length} départements — SYNTHETIC_DEMO</div>
-                {depts.map(d => (
-                  <div key={d.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-2">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div style={{ width:10, height:10, borderRadius:'50%', background: DEPT_COLORS[d.service] }} />
-                        <span className="font-bold text-white text-sm">{d.name}</span>
-                      </div>
-                      <Badge label="DEMO" type="demo" />
+          {/* ── ACTIVITÉS ── */}
+          {tab === 'Activités' && (
+            <Card title={`Activités — ${data.activities.length} pilot-demo`}>
+              {data.activities.slice(0,10).map(a => (
+                <div key={String(a['id'])} className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0 gap-2">
+                  <div className="min-w-0">
+                    <div className="text-xs text-white truncate">{String(a['driver'])} · {clean(String(a['type']))}</div>
+                    <div className="text-[9px] text-slate-500">{String(a['provider'])} · {String(a['id'])}</div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs font-bold text-emerald-400">{money(parseFloat(String(a['net'])))}</span>
+                    <StatusChip v={String(a['reconciliation'])} />
+                  </div>
+                </div>
+              ))}
+              {data.activities.length > 10 && <div className="py-2 text-[9px] text-slate-500">+{data.activities.length-10} autres activités</div>}
+            </Card>
+          )}
+
+          {/* ── TRANSACTIONS ── */}
+          {tab === 'Transactions' && (
+            <Card title={`Transactions — ${data.transactions.length} pilot-demo`}>
+              {data.transactions.map(t => (
+                <div key={String(t['id'])} className="flex justify-between items-center py-2 border-b border-slate-800 last:border-0 gap-2">
+                  <div>
+                    <div className="text-xs text-white">{String(t['driver'])} · {String(t['provider'])}</div>
+                    <div className="text-[9px] text-slate-500">{String(t['id'])}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-amber-400">{money(parseFloat(String(t['total'])))}</span>
+                    <StatusChip v={String(t['status'])} />
+                  </div>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* ── REVENUS ── */}
+          {tab === 'Revenus' && (<>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <Kpi label="Revenus bruts" value={money(k['gross_revenue']??0)} color="text-amber-400" sub="pilot-demo" />
+              <Kpi label="Revenus nets" value={money(k['net_revenue']??0)} color="text-emerald-400" sub="pilot-demo" />
+              <Kpi label="Frais plateforme" value={money(k['fees']??0)} color="text-red-400" sub="pilot-demo" />
+              <Kpi label="Pourboires" value={money(k['tips']??0)} color="text-amber-300" sub="pilot-demo" />
+            </div>
+            <Card title="Revenus internes Uber">
+              <Row label="Chiffre d'affaires Uber QC 2024" value="PRIVATE_NOT_AVAILABLE" badge="private" />
+              <Row label="Impact économique QC 2024" value="1,9G$ — Uber/Public First" badge="verified" />
+            </Card>
+            <Card title="Relevés de règlement (pilot-demo)">
+              {data.settlements.map(s => (
+                <div key={String(s['id'])} className="py-2 border-b border-slate-800 last:border-0">
+                  <div className="flex justify-between">
+                    <span className="text-xs text-white">{String(s['driver'])} · {String(s['provider'])}</span>
+                    <StatusChip v={String(s['status'])} />
+                  </div>
+                  <div className="text-[9px] text-slate-400 mt-0.5">
+                    Brut: {money(parseFloat(String(s['gross'])))} · Payé: {money(parseFloat(String(s['paid'])))}
+                  </div>
+                </div>
+              ))}
+            </Card>
+          </>)}
+
+          {/* ── TPS/TVQ ── */}
+          {tab === 'TPS/TVQ' && (<>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <Kpi label="TPS (5%)" value={money(k['tps_only']??0)} color="text-purple-400" sub="DEMO estimé" />
+              <Kpi label="TVQ (9.975%)" value={money(k['tvq_only']??0)} color="text-purple-400" sub="DEMO estimé" />
+              <Kpi label="Total taxes" value={money(k['tax_calculated']??0)} color="text-orange-400" sub="pilot-demo" />
+            </div>
+            <Card title="Registres fiscaux (pilot-demo)">
+              {data.tax_records.map(r => (
+                <div key={String(r['id'])} className="py-2 border-b border-slate-800 last:border-0">
+                  <div className="flex justify-between">
+                    <span className="text-xs text-white">{String(r['driver'])} · {String(r['provider'])}</span>
+                    <StatusChip v={String(r['status'])} />
+                  </div>
+                  <div className="text-[9px] text-slate-400 mt-0.5">
+                    Taxable: {money(parseFloat(String(r['taxable'])))} · Δ variance: {money(parseFloat(String(r['variance'])))}
+                  </div>
+                </div>
+              ))}
+            </Card>
+            <Card title="Sources fiscales">
+              <Row label="Mécanisme Uber" value="Répondant fiscal — Revenu Québec" badge="verified" />
+              <Row label="Données réelles Uber" value="PRIVATE_NOT_AVAILABLE" badge="private" />
+              <Row label="SEV 2e génération" value="Requis depuis jan. 2026 — CTQ" badge="verified" />
+            </Card>
+          </>)}
+
+          {/* ── DÉCLARATIONS ── */}
+          {tab === 'Déclarations' && (
+            <Card title={`Déclarations (Supabase DB: ${k['declarations_db']??0})`}>
+              <Row label="Enregistrements DB" value={String(k['declarations_db']??0)} />
+              <Row label="Mode" value="SIMULATION — Aucune transmission officielle" badge="demo" />
+            </Card>
+          )}
+
+          {/* ── PAIEMENTS ── */}
+          {tab === 'Paiements' && (
+            <Card title="Paiements — pilot-demo">
+              {data.settlements.map(s => (
+                <div key={String(s['id'])} className="py-2 border-b border-slate-800 last:border-0 flex justify-between">
+                  <div>
+                    <div className="text-xs text-white">{String(s['id'])} · {String(s['provider'])}</div>
+                    <div className="text-[9px] text-slate-500">{String(s['start'])} → {String(s['end'])}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-bold text-emerald-400">{money(parseFloat(String(s['paid'])))}</div>
+                    <StatusChip v={String(s['status'])} />
+                  </div>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* ── RELEVÉS ── */}
+          {tab === 'Relevés' && (
+            <Card title={`Relevés — ${data.statements.length} pilot-demo`}>
+              {data.statements.map(s => (
+                <div key={String(s['id'])} className="py-2 border-b border-slate-800 last:border-0 flex justify-between">
+                  <div>
+                    <div className="text-xs text-white">{String(s['driver'])} · {clean(String(s['type']))}</div>
+                    <div className="text-[9px] text-slate-500">{String(s['reference'])}</div>
+                  </div>
+                  <StatusChip v={String(s['status'])} />
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* ── CAS ── */}
+          {tab === 'Cas' && (
+            <Card title={`Cas de réconciliation — ${data.cases.length} pilot-demo`}>
+              {data.cases.map(c => (
+                <div key={String(c['id'])} className="py-3 border-b border-slate-800 last:border-0">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="text-xs font-bold text-white">{clean(String(c['type']))} · {String(c['provider'])}</div>
+                      <div className="text-[9px] text-slate-400 mt-0.5">{String(c['note'])}</div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="bg-slate-800 rounded-lg p-2">
-                        <div className="text-sm font-bold text-blue-400">{d.drivers_demo.toLocaleString()}</div>
-                        <div className="text-[8px] text-slate-500">Chauffeurs</div>
-                      </div>
-                      <div className="bg-slate-800 rounded-lg p-2">
-                        <div className="text-sm font-bold text-amber-400">{d.service}</div>
-                        <div className="text-[8px] text-slate-500">Service</div>
-                      </div>
-                      <div className="bg-slate-800 rounded-lg p-2">
-                        <div className="text-sm font-bold text-green-400">{d.active ? '✅' : '❌'}</div>
-                        <div className="text-[8px] text-slate-500">Actif</div>
-                      </div>
+                    <StatusChip v={String(c['status'])} />
+                  </div>
+                  {parseFloat(String(c['difference'])) > 0 && (
+                    <div className="text-[9px] text-amber-400 mt-1">Δ {money(parseFloat(String(c['difference'])))}</div>
+                  )}
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* ── ALERTES ── */}
+          {tab === 'Alertes' && (
+            <Card title={`Alertes — ${data.alerts.length} pilot-demo`}>
+              {data.alerts.map(a => (
+                <div key={String(a['id'])} className="py-3 border-b border-slate-800 last:border-0">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="text-xs font-bold text-white">{String(a['title'])}</div>
+                      <div className="text-[9px] text-slate-400 mt-0.5">{String(a['message'])}</div>
+                      <div className="text-[8px] text-slate-600 mt-0.5">{String(a['service'])}</div>
                     </div>
+                    <StatusChip v={String(a['status'])} />
+                  </div>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* ── RAPPORTS ── */}
+          {tab === 'Rapports' && (
+            <Card title={`Rapports — ${data.reports.length} pilot-demo`}>
+              {data.reports.map(r => (
+                <div key={String(r['id'])} className="py-2 border-b border-slate-800 last:border-0 flex justify-between">
+                  <div>
+                    <div className="text-xs text-white">{clean(String(r['type']))}</div>
+                    <div className="text-[9px] text-slate-500">{String(r['id'])} · {String(r['records'])} lignes · {String(r['format'])}</div>
+                  </div>
+                  <StatusChip v={String(r['status'])} />
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* ── CONFORMITÉ ── */}
+          {tab === 'Conformité' && (<>
+            <Kpi label="Score conformité" value={`${k['compliance_demo']??85}%`} color="text-teal-400" sub="SYNTHETIC_DEMO" />
+            <div className="mt-3">
+              <Card title="Comptes plateforme (pilot-demo)">
+                {data.accounts.filter(a => a['provider']==='UBER' || a['provider']==='TAXI').map(a => (
+                  <div key={a['id']} className="py-2 border-b border-slate-800 last:border-0 flex justify-between">
+                    <div>
+                      <div className="text-xs text-white">{a['name']} · {a['provider']}</div>
+                      <div className="text-[9px] text-slate-500">{a['idPublic']}</div>
+                    </div>
+                    <StatusChip v={String(a['status'])} />
                   </div>
                 ))}
-              </>
-            )}
+              </Card>
+            </div>
+          </>)}
 
-            {/* CHAUFFEURS */}
-            {tab === 'drivers' && (
-              <>
-                <Section title="Chauffeurs enregistrés (DB)">
-                  <InfoRow label="Total (driver_provider_accounts DB)" value={String(k?.drivers_db ?? 0)} />
-                  <InfoRow label="Total SYNTHETIC_DEMO" value={String(k?.drivers_demo ?? 0)} badge="demo" />
-                  <InfoRow label="Hedi Bennis" value="driver_id: 4c4a0130 — DEMO" badge="demo" />
-                </Section>
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-700">
-                  <p className="text-[9px] text-slate-500">
-                    Les données nominatives sont SYNTHETIC_DEMO.
-                    Jamais présentées comme liste réelle fournie par Uber.
-                    driver_id: 4c4a0130 (Hedi Bennis) apparaît dans ENT-UBER-DEMO.
-                  </p>
+          {/* ── AUDIT ── */}
+          {tab === 'Audit' && (
+            <Card title={`Audit log (Supabase DB: ${k['audits_db']??0})`}>
+              <Row label="Entrées audit DB" value={String(k['audits_db']??0)} />
+              <Row label="Source" value="audit_logs — Supabase" />
+              <Row label="Politique" value="Chaque événement archivé" badge="verified" />
+            </Card>
+          )}
+
+          {/* ── RÉCONCILIATION ── */}
+          {tab === 'Réconciliation' && (<>
+            <Card title="Réconciliation (pilot-demo)">
+              <Row label="Revenus TAXIMETER.GOV" value={money(k['gross_revenue']??0)} badge="demo" />
+              <Row label="TPS estimée" value={money(k['tps_only']??0)} badge="demo" />
+              <Row label="TVQ estimée" value={money(k['tvq_only']??0)} badge="demo" />
+              <Row label="Cas ouverts" value={String(k['open_cases']??0)} />
+              <Row label="Note" value="Un écart ≠ fraude automatique" badge="verified" />
+            </Card>
+            <Card title="Variance TVQ Uber (pilot-demo)">
+              {data.tax_records.filter(r => r['status']==='REVIEW_REQUIRED').map(r => (
+                <div key={String(r['id'])} className="py-2 border-b border-slate-800 last:border-0">
+                  <div className="flex justify-between">
+                    <span className="text-xs text-white">{String(r['provider'])} · {String(r['driver'])}</span>
+                    <span className="text-xs font-bold text-amber-400">Δ {money(parseFloat(String(r['variance'])))}</span>
+                  </div>
                 </div>
-              </>
-            )}
+              ))}
+            </Card>
+          </>)}
 
-            {/* VÉHICULES */}
-            {tab === 'vehicles' && (
-              <Section title="Véhicules (DB)">
-                <InfoRow label="Total véhicules (DB)" value={String(k?.vehicles_db ?? 0)} />
-                <InfoRow label="Source" value="Table vehicles — Supabase" />
-                <InfoRow label="Données nominatives" value="SYNTHETIC_DEMO" badge="demo" />
-              </Section>
-            )}
-
-            {/* TAXIMÈTRE */}
-            {tab === 'taximeter' && (
-              <Section title="Activité taximètre (Uber Taxi/Rides)">
-                <InfoRow label="Courses (taxi_trips DB)" value={String(k?.trips_db ?? 0)} />
-                <InfoRow label="TPS perçue / course" value="Uber = répondant fiscal — Revenu QC" badge="verified" />
-                <InfoRow label="Tarifs" value="CTQ 2024 — Prise en charge 3,50$ / 1,85$/km" badge="verified" />
-                <InfoRow label="SEV 2e génération" value="Requis depuis jan. 2026" badge="verified" />
-              </Section>
-            )}
-
-            {/* ACTIVITÉS */}
-            {tab === 'activities' && (
-              <Section title="Activités (revenue_ledger DB)">
-                <InfoRow label="Entrées revenue_ledger" value={String(k?.activities_db ?? 0)} />
-                <InfoRow label="Source: UBER" value="source_type = UBER" />
-                <InfoRow label="Rides + Eats + Grocery + Courier" value="Toutes activités" badge="demo" />
-              </Section>
-            )}
-
-            {/* TRANSACTIONS */}
-            {tab === 'transactions' && (
-              <Section title="Transactions">
-                <InfoRow label="Revenus bruts totaux" value={money(k?.gross_revenue ?? 0)} />
-                <InfoRow label="Revenus nets" value={money(k?.net_revenue ?? 0)} />
-                <InfoRow label="Frais plateforme" value={money(k?.fees ?? 0)} badge="demo" />
-                <InfoRow label="Pourboires" value={money(k?.tips ?? 0)} badge="demo" />
-                <InfoRow label="Cohérence" value="Single source: revenue_ledger" />
-              </Section>
-            )}
-
-            {/* REVENUS */}
-            {tab === 'revenue' && (
-              <>
-                <Section title="Revenus (revenue_ledger — SYNTHETIC_DEMO)">
-                  <InfoRow label="Revenus bruts" value={money(k?.gross_revenue ?? 0)} badge="demo" />
-                  <InfoRow label="Revenus nets" value={money(k?.net_revenue ?? 0)} badge="demo" />
-                  <InfoRow label="Frais" value={money(k?.fees ?? 0)} badge="demo" />
-                  <InfoRow label="Pourboires" value={money(k?.tips ?? 0)} badge="demo" />
-                </Section>
-                <Section title="Revenus internes Uber (non disponibles)">
-                  <InfoRow label="Chiffre d'affaires Uber QC 2024" value="PRIVATE_NOT_AVAILABLE" badge="private" />
-                  <InfoRow label="Impact économique QC 2024" value="1,9G$ (Uber/Public First)" badge="verified" />
-                </Section>
-              </>
-            )}
-
-            {/* TPS/TVQ */}
-            {tab === 'taxes' && (
-              <Section title="TPS/TVQ — Estimation SYNTHETIC_DEMO">
-                <InfoRow label="TPS estimée (5%)" value={money(k?.tps_demo ?? 0)} badge="demo" />
-                <InfoRow label="TVQ estimée (9,975%)" value={money(k?.tvq_demo ?? 0)} badge="demo" />
-                <InfoRow label="Mécanisme" value="Uber = répondant fiscal Revenu QC" badge="verified" />
-                <InfoRow label="Source" value="Revenu Québec — ententes numériques" badge="verified" />
-                <InfoRow label="Données réelles" value="PRIVATE_NOT_AVAILABLE" badge="private" />
-              </Section>
-            )}
-
-            {/* DÉCLARATIONS */}
-            {tab === 'declarations' && (
-              <Section title="Déclarations fiscales (tax_filings DB)">
-                <InfoRow label="Total (DB)" value={String(k?.declarations_db ?? 0)} />
-                <InfoRow label="Statut" value="SYNTHETIC_DEMO" badge="demo" />
-                <InfoRow label="Gateway mode" value="SIMULATION" />
-                <InfoRow label="Transmission réelle" value="DEMO — Aucune transmission officielle" badge="demo" />
-              </Section>
-            )}
-
-            {/* PAIEMENTS */}
-            {tab === 'payments' && (
-              <Section title="Paiements">
-                <InfoRow label="Paiements enregistrés" value={String(k?.payments_demo ?? 0)} badge="demo" />
-                <InfoRow label="Statut" value="SYNTHETIC_DEMO — Aucun virement réel" badge="demo" />
-              </Section>
-            )}
-
-            {/* DOCUMENTS */}
-            {tab === 'documents' && (
-              <Section title="Documents (DB)">
-                <InfoRow label="Total documents (DB)" value={String(k?.documents_db ?? 0)} />
-                <InfoRow label="Licences" value="TO_BE_VERIFIED" badge="demo" />
-                <InfoRow label="Assurance" value="TO_BE_VERIFIED" badge="demo" />
-              </Section>
-            )}
-
-            {/* CONNEXIONS GOV */}
-            {tab === 'gov_connect' && (
-              <>
-                <Section title="Connexions gouvernementales">
-                  <InfoRow label="Revenu Québec" value="DEMO — Aucune connexion réelle active" badge="demo" />
-                  <InfoRow label="SAAQ" value="DEMO" badge="demo" />
-                  <InfoRow label="CTQ" value="DEMO" badge="demo" />
-                  <InfoRow label="Registraire des entreprises" value="DEMO" badge="demo" />
-                </Section>
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-700">
-                  <p className="text-[9px] text-slate-500">
-                    Government Integration Layer — Architecture prévue.
-                    Aucune intégration réelle sans autorisation officielle des autorités québécoises.
-                  </p>
+          {/* ── ANALYTICS ── */}
+          {tab === 'Analytics' && (<>
+            <Card title="Métriques globales (pilot-demo)">
+              <Row label="Chauffeurs total" value={String(k['drivers']??0)} />
+              <Row label="En ligne" value={String(k['drivers_online']??0)} />
+              <Row label="Activités" value={String(k['activities']??0)} />
+              <Row label="Rev. bruts" value={money(k['gross_revenue']??0)} />
+              <Row label="Cas ouverts" value={String(k['open_cases']??0)} />
+            </Card>
+            <Card title="Par fournisseur">
+              {data.by_provider.map(p => (
+                <div key={p.provider} className="flex justify-between py-2 border-b border-slate-800 last:border-0">
+                  <span className="text-xs text-white">{p.provider}</span>
+                  <div className="text-right text-xs">
+                    <div className="text-amber-400 font-bold">{money(p.gross)}</div>
+                    <div className="text-slate-500">{p.activities} activités</div>
+                  </div>
                 </div>
-              </>
-            )}
+              ))}
+            </Card>
+          </>)}
 
-            {/* API */}
-            {tab === 'api' && (
-              <Section title="API — Integration Center">
-                <InfoRow label="API Status" value={k?.api_connected ? 'CONFIGURED' : 'DEMO'} badge="demo" />
-                <InfoRow label="Provider" value={String(data.supabase['providers'] ? 'providers table' : 'DEMO')} />
-                <InfoRow label="Last Event" value="N/A — DEMO" badge="demo" />
-                <InfoRow label="Events Today" value="0 — DEMO" badge="demo" />
-                <InfoRow label="Failed Events" value="0" />
-                <InfoRow label="Retry Queue" value="0" />
-                <InfoRow label="Idempotency" value="Activé" />
-                <InfoRow label="Data Quality" value="85% DEMO" badge="demo" />
-              </Section>
-            )}
+          {/* ── CONNEXIONS GOV ── */}
+          {tab === 'Connexions Gov' && (<>
+            <Card title="Government Integration Layer">
+              <Row label="Revenu Québec" value="DEMO — Aucune connexion réelle" badge="demo" />
+              <Row label="SAAQ" value="DEMO" badge="demo" />
+              <Row label="CTQ" value="DEMO" badge="demo" />
+            </Card>
+            <a href="https://www.revenuquebec.ca" target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 p-3 rounded-xl bg-qc-blue/10 border border-qc-blue/30 text-qc-blue text-xs font-bold mb-3">
+              <ExternalLink size={14} /> Revenu Québec — Mon dossier entreprises
+            </a>
+          </>)}
 
-            {/* WEBHOOKS */}
-            {tab === 'webhooks' && (
-              <Section title="Webhooks">
-                <InfoRow label="Webhook Status" value={k?.webhook_active ? 'ACTIF' : 'INACTIF — DEMO'} badge="demo" />
-                <InfoRow label="Events" value="0 — DEMO" badge="demo" />
-                <InfoRow label="Last Sync" value="N/A" badge="demo" />
-              </Section>
-            )}
+          {/* ── API ── */}
+          {tab === 'API' && (
+            <Card title="API Center">
+              <Row label="Statut" value="DEMO / CONFIGURED" badge="demo" />
+              <Row label="Dernière sync" value="N/A — DEMO" badge="demo" />
+              <Row label="Events today" value="0" badge="demo" />
+              <Row label="Idempotency" value="Activé" />
+            </Card>
+          )}
 
-            {/* RÉCONCILIATION */}
-            {tab === 'reconcile' && (
-              <Section title="Réconciliation">
-                <InfoRow label="Revenus TAXIMETER.GOV" value={money(k?.gross_revenue ?? 0)} badge="demo" />
-                <InfoRow label="TPS calculée" value={money(k?.tps_demo ?? 0)} badge="demo" />
-                <InfoRow label="TVQ calculée" value={money(k?.tvq_demo ?? 0)} badge="demo" />
-                <InfoRow label="Mismatch" value="0 — Cohérence single source" />
-                <InfoRow label="Note" value="Une différence n'est jamais automatiquement une fraude" />
-              </Section>
-            )}
+          {/* ── WEBHOOKS ── */}
+          {tab === 'Webhooks' && (
+            <Card title="Webhook Center">
+              <Row label="Statut" value="INACTIF — DEMO" badge="demo" />
+              <Row label="Events" value="0" badge="demo" />
+              <Row label="Queue morte" value="0" />
+            </Card>
+          )}
 
-            {/* ANALYTICS */}
-            {tab === 'analytics' && (
-              <Section title="Analytics — SYNTHETIC_DEMO">
-                <InfoRow label="Revenus / département" value="Voir onglet Départements" />
-                <InfoRow label="Activités / mois" value="Voir revenue_ledger" />
-                <InfoRow label="Chauffeurs actifs" value={String(k?.drivers_demo ?? 0)} badge="demo" />
-                <InfoRow label="Courses" value={String(k?.trips_db ?? 0)} />
-                <InfoRow label="Source" value="Single source — Supabase" />
-              </Section>
-            )}
+          {/* ── NOTIFICATIONS ── */}
+          {tab === 'Notifications' && (
+            <Card title={`Notifications (Supabase DB: ${k['notifications_db']??0})`}>
+              <Row label="Total DB" value={String(k['notifications_db']??0)} />
+              <Row label="Alertes actives" value={String(k['alerts']??0)} badge="demo" />
+            </Card>
+          )}
 
-            {/* RAPPORTS */}
-            {tab === 'reports' && (
-              <Section title="Rapports">
-                <InfoRow label="Rapport fiscal Q3 2026" value="SYNTHETIC_DEMO" badge="demo" />
-                <InfoRow label="Rapport activités" value="Disponible via analytics" badge="demo" />
-                <InfoRow label="Rapport chauffeurs" value="SYNTHETIC_DEMO" badge="demo" />
-              </Section>
-            )}
+          {/* ── INTELLIGENCE ── */}
+          {tab === 'Intelligence' && (
+            <Card title="Intelligence — Architecture future">
+              <Row label="Anomaly detection" value="Prévu — Phase future" badge="demo" />
+              <Row label="Pattern analysis" value="Prévu" badge="demo" />
+              <Row label="Note" value="Une anomalie ≠ preuve de fraude" badge="verified" />
+            </Card>
+          )}
 
-            {/* CONFORMITÉ */}
-            {tab === 'compliance' && (
-              <Section title="Conformité">
-                <InfoRow label="Score global" value={`${k?.compliance_score ?? 0}% — DEMO`} badge="demo" />
-                <InfoRow label="Licences" value="TO_BE_VERIFIED" badge="demo" />
-                <InfoRow label="Assurance" value="TO_BE_VERIFIED" badge="demo" />
-                <InfoRow label="Enregistrement" value="TO_BE_VERIFIED" badge="demo" />
-                <InfoRow label="Conformité fiscale" value="Uber = répondant Revenu QC" badge="verified" />
-                <InfoRow label="Workers compliance" value="INDEPENDENT_CONTRACTORS — Revenu QC" badge="verified" />
-                <InfoRow label="Alertes ouvertes" value={String(k?.alerts_db ?? 0)} />
-              </Section>
-            )}
+          {/* ── COMMUNICATION GOV ── */}
+          {tab === 'Communication Gov' && (
+            <Card title="Communication gouvernementale">
+              <Row label="Mode actuel" value="SIMULATION — MODE 1: Redirection officielle" badge="demo" />
+              <Row label="Revenu Québec" value="DEMO" badge="demo" />
+              <Row label="Transmission réelle" value="Aucune sans autorisation officielle" badge="demo" />
+            </Card>
+          )}
 
-            {/* AUDIT */}
-            {tab === 'audit' && (
-              <Section title="Audit (audit_logs DB)">
-                <InfoRow label="Entrées audit (DB)" value={String(k?.audits_db ?? 0)} />
-                <InfoRow label="Conservation" value="Tous événements archivés" />
-                <InfoRow label="Source" value="audit_logs table — Supabase" />
-              </Section>
-            )}
+          {/* ── DOCUMENTS, SÉCURITÉ, VÉHICULES ── */}
+          {tab === 'Documents' && <Card title={`Documents (Supabase DB: ${k['documents_db']??0})`}><Row label="Total DB" value={String(k['documents_db']??0)} /><Row label="Licences" value="TO_BE_VERIFIED" badge="demo" /></Card>}
+          {tab === 'Véhicules' && <Card title={`Véhicules (Supabase DB: ${k['vehicles_db']??0})`}><Row label="Total DB" value={String(k['vehicles_db']??0)} /><Row label="Source" value="Table vehicles — Supabase" /></Card>}
 
-            {/* SÉCURITÉ */}
-            {tab === 'security' && (
-              <Section title="Sécurité">
-                <InfoRow label="Accès gouvernemental" value="Rôle GOV requis" />
-                <InfoRow label="Données sensibles" value="PRIVATE_NOT_AVAILABLE protégé" badge="private" />
-                <InfoRow label="Logs d'accès" value="audit_logs activé" />
-                <InfoRow label="Chiffrement" value="Supabase RLS + SERVICE_ROLE" />
-              </Section>
-            )}
-
-            {/* NOTIFICATIONS */}
-            {tab === 'notifications' && (
-              <Section title="Notifications (DB)">
-                <InfoRow label="Total notifications (DB)" value={String(k?.alerts_db ?? 0)} />
-                <InfoRow label="Non lues" value="— DEMO" badge="demo" />
-              </Section>
-            )}
-
-            {/* INTELLIGENCE */}
-            {tab === 'intelligence' && (
-              <Section title="Intelligence — Architecture future">
-                <InfoRow label="Anomaly detection" value="Prévu — Phase future" badge="demo" />
-                <InfoRow label="Pattern analysis" value="Prévu" badge="demo" />
-                <InfoRow label="Fraud signals" value="Prévu" badge="demo" />
-                <InfoRow label="Note" value="Une anomalie n'est pas une preuve de fraude" />
-              </Section>
-            )}
-
-            {/* COMMUNICATION GOV */}
-            {tab === 'gov_comm' && (
-              <>
-                <Section title="Communication gouvernementale">
-                  <InfoRow label="Revenu Québec" value="DEMO — MODE 1: Redirection" badge="demo" />
-                  <InfoRow label="SAAQ" value="DEMO" badge="demo" />
-                  <InfoRow label="Registraire QC" value="DEMO" badge="demo" />
-                  <InfoRow label="Mode actuel" value="SIMULATION — Aucune transmission réelle" badge="demo" />
-                </Section>
-                <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                  <p className="text-[9px] text-blue-400">
-                    TAXIMETER.GOV ne transmet aucune donnée réelle à des tiers gouvernementaux
-                    sans autorisation officielle. Mode pilote uniquement.
-                  </p>
-                </div>
-              </>
-            )}
-
-            {/* Footer source */}
-            <div className="mt-4 p-3 rounded-xl bg-slate-900 border border-slate-700">
-              <div className="text-[8px] text-slate-500 space-y-1">
-                <div>✓ PUBLIC_VERIFIED: Impact éco 1,9G$ QC 2024 (Uber/Public First déc. 2025)</div>
-                <div>✓ PUBLIC_VERIFIED: Statut fiscal — Revenu Québec (chauffeurs = travailleurs autonomes)</div>
-                <div>⚠ SYNTHETIC_DEMO: Revenus, chauffeurs, transactions, TPS/TVQ estimées</div>
-                <div>🔒 PRIVATE_NOT_AVAILABLE: Revenus internes Uber, NEQ, liste nominative chauffeurs</div>
-                <div>Enterprise ID: {data.enterprise_id} · TAXIMETER.GOV MODE PILOTE</div>
-              </div>
+          {/* Footer */}
+          <div className="mt-3 p-3 rounded-xl bg-slate-900 border border-slate-700">
+            <div className="text-[8px] text-slate-500 space-y-0.5">
+              <div>✓ PUBLIC_VERIFIED: Impact 1,9G$ QC 2024 — Uber/Public First déc. 2025</div>
+              <div>✓ PUBLIC_VERIFIED: Statut fiscal — Revenu Québec</div>
+              <div>⚠ SYNTHETIC_DEMO: Revenus, chauffeurs, activités = pilot-demo QC-PILOT-2026-Q3</div>
+              <div>🔒 PRIVATE_NOT_AVAILABLE: Revenus internes Uber, NEQ réel, liste nominative</div>
+              <div>Source DB: providers, revenue_ledger, vehicles, documents, tax_filings, audit_logs</div>
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </>)}
     </AppShell>
   )
 }

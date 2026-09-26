@@ -1,50 +1,54 @@
-// GET /api/enterprises/[id] — Enterprise 360° data depuis Supabase
-// Source unique: providers, driver_provider_accounts, revenue_ledger, taxi_trips,
-//               tax_calculations, tax_filings, audit_logs, notifications, documents, vehicles
-
-import { type NextRequest } from 'next/server'
-import { apiSuccess, apiError } from '@/lib/db'
+// GET /api/enterprises/[id] — Enterprise 360° — injecte les données du pilot-demo
+import { type NextRequest, NextResponse } from 'next/server'
 import { requireAuth, requireGovRole } from '@/lib/auth'
 
 const SB = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
-async function sbGet(path: string) {
-  const res = await fetch(`${SB}/rest/v1/${path}`, {
-    headers: { apikey: KEY(), Authorization: `Bearer ${KEY()}`, Prefer: 'count=exact' }
-  })
-  const data = await res.json() as unknown[]
-  const count = parseInt(res.headers.get('content-range')?.split('/')[1] ?? '0')
-  return { data, count }
+function r2(n: number) { return Math.round(n * 100) / 100 }
+
+const UBER_META = {
+  enterprise_id:      'ENT-UBER-DEMO',
+  name:               'Uber Canada Inc.',
+  commercial_name:    'Uber Québec',
+  neq:                'NOT_VERIFIED_DEMO',
+  province:           'QC',
+  city:               'Montréal',
+  address:            '1 Place Ville Marie, Bureau 3700 (DEMO)',
+  postal_code:        'H3B 4M4 (DEMO)',
+  website:            'https://www.uber.com/ca/fr-ca/',
+  org_type:           'PLATFORM',
+  status:             'DEMO',
+  data_status:        'SYNTHETIC_DEMO',
+  economic_impact:    '1,9G$ QC 2024 — PUBLIC_VERIFIED (Uber/Public First, déc. 2025)',
+  internal_revenue:   'PRIVATE_NOT_AVAILABLE',
+  departments: [
+    { id:'DEPT-UBER-TAXI',    name:'Uber Taxi',          service:'TAXI',      color:'#F59E0B' },
+    { id:'DEPT-UBER-RIDES',   name:'Uber Rides',         service:'RIDESHARE', color:'#3B82F6' },
+    { id:'DEPT-UBER-GREEN',   name:'Uber Green',         service:'GREEN',     color:'#10B981' },
+    { id:'DEPT-UBER-EATS',    name:'Uber Eats',          service:'FOOD',      color:'#EF4444' },
+    { id:'DEPT-UBER-GROCERY', name:'Uber Eats Grocery',  service:'GROCERY',   color:'#8B5CF6' },
+    { id:'DEPT-UBER-COURIER', name:'Uber Courier',       service:'DELIVERY',  color:'#F97316' },
+  ],
+  data_sources: {
+    'Impact économique QC 2024':         'PUBLIC_VERIFIED — Uber/Public First, déc. 2025',
+    'Revenus internes Uber':             'PRIVATE_NOT_AVAILABLE',
+    'Chauffeurs / transactions':         'SYNTHETIC_DEMO (pilot-demo QC-PILOT-2026-Q3)',
+    'TPS/TVQ':                           'SYNTHETIC_DEMO — TPS 5% + TVQ 9.975%',
+    'Statut fiscal chauffeurs':          'PUBLIC_VERIFIED — Revenu Québec (travailleurs autonomes)',
+    'SEV 2e génération':                 'PUBLIC_VERIFIED — CTQ, requis depuis jan. 2026',
+  },
 }
 
-// Données DEMO statiques Uber Québec (SYNTHETIC_DEMO)
-// Source impact économique: Uber/Public First, déc. 2025 (PUBLIC_VERIFIED)
-const UBER_DEMO = {
-  enterprise_id: 'ENT-UBER-DEMO',
-  name: 'Uber Canada Inc.',
-  commercial_name: 'Uber Québec',
-  neq: 'NOT_VERIFIED_DEMO',
-  province: 'QC',
-  city: 'Montréal',
-  address: '1 Place Ville Marie, Bureau 3700 (DEMO)',
-  postal_code: 'H3B 4M4 (DEMO)',
-  website: 'https://www.uber.com/ca/fr-ca/',
-  org_type: 'PLATFORM',
-  status: 'DEMO',
-  data_status: 'SYNTHETIC_DEMO',
-  // Impact économique QC 2024 — PUBLIC_VERIFIED (Uber/Public First, déc. 2025)
-  economic_impact_qc_2024: '1.9G$ (PUBLIC_VERIFIED — Uber/Public First, déc. 2025)',
-  // Revenus internes Uber Québec — PRIVATE_NOT_AVAILABLE
-  internal_revenue: 'PRIVATE_NOT_AVAILABLE',
-  departments: [
-    { id:'DEPT-UBER-TAXI',    name:'Uber Taxi',         service:'TAXI',     drivers_demo: 2800, active: true },
-    { id:'DEPT-UBER-RIDES',   name:'Uber Rides',        service:'RIDESHARE',drivers_demo: 6200, active: true },
-    { id:'DEPT-UBER-GREEN',   name:'Uber Green',        service:'GREEN',    drivers_demo: 1100, active: true },
-    { id:'DEPT-UBER-EATS',    name:'Uber Eats',         service:'FOOD',     drivers_demo: 4800, active: true },
-    { id:'DEPT-UBER-GROCERY', name:'Uber Eats Grocery', service:'GROCERY',  drivers_demo: 980,  active: true },
-    { id:'DEPT-UBER-COURIER', name:'Uber Courier',      service:'DELIVERY', drivers_demo: 1520, active: true },
-  ],
+async function sbGet(path: string) {
+  try {
+    const res = await fetch(`${SB}/rest/v1/${path}`, {
+      headers: { apikey: KEY(), Authorization: `Bearer ${KEY()}`, Prefer: 'count=exact' }
+    })
+    const data = await res.json() as unknown[]
+    const count = parseInt(res.headers.get('content-range')?.split('/')[1] ?? '0')
+    return { data, count }
+  } catch { return { data: [], count: 0 } }
 }
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -54,109 +58,108 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   const denied = requireGovRole(ctx)
   if (denied) return denied
 
-  const enterpriseId = params.id
-  if (enterpriseId !== 'ENT-UBER-DEMO') {
-    // Pour les autres entreprises — données minimales DEMO
-    return apiSuccess({
-      enterprise_id: enterpriseId,
-      data_status: 'SYNTHETIC_DEMO',
-      message: 'Dossier complet disponible pour ENT-UBER-DEMO uniquement en mode DEMO',
-    })
+  if (params.id !== 'ENT-UBER-DEMO') {
+    return NextResponse.json({ enterprise_id: params.id, message: 'Dossier complet disponible pour ENT-UBER-DEMO en mode DEMO', data_status: 'SYNTHETIC_DEMO' })
   }
 
-  try {
-    // 1. Providers (code UBER)
-    const providers = await sbGet(`providers?code=eq.UBER&select=id,code,name,status,api_enabled,webhook_enabled`)
+  // 1. Charger les données du pilot-demo (même source que le Control Center)
+  const pilotRes = await fetch(`${req.nextUrl.origin}/api/admin/pilot-demo`, {
+    headers: { authorization: req.headers.get('authorization') ?? '' }
+  })
+  const pilot = pilotRes.ok ? await pilotRes.json() as {
+    metrics: Record<string, number>
+    drivers: Array<Record<string, string>>
+    activities: Array<Record<string, string|number>>
+    transactions: Array<Record<string, string|number>>
+    taxRecords: Array<Record<string, string|number>>
+    tips: Array<Record<string, string|number>>
+    settlements: Array<Record<string, string|number>>
+    cases: Array<Record<string, string|number>>
+    alerts: Array<Record<string, string|number>>
+    reports: Array<Record<string, string|number>>
+    statements: Array<Record<string, string|number>>
+    accounts: Array<Record<string, string>>
+  } : null
 
-    // 2. Driver provider accounts (chauffeurs Uber)
-    const driverAccounts = await sbGet(`driver_provider_accounts?provider_code=eq.UBER&select=id,driver_id,account_status,services&limit=50`)
+  // 2. Données Supabase DB réelles
+  const [vehicles, documents, taxFilings, auditLogs, notifications] = await Promise.all([
+    sbGet('vehicles?select=id,make,model,year,vehicle_status&limit=20'),
+    sbGet('documents?select=id,status&limit=20'),
+    sbGet('tax_filings?select=id,filing_status&limit=20'),
+    sbGet('audit_logs?select=id,action&limit=10'),
+    sbGet('notifications?select=id,status&limit=10'),
+  ])
 
-    // 3. Revenue ledger Uber
-    const revenueUber = await sbGet(`revenue_ledger?source_type=eq.UBER&select=id,gross_amount,net_amount,fee_amount,tip_amount,activity_date&limit=100`)
+  // 3. Calculer KPIs depuis pilot-demo (même source que Control Center)
+  const acts = pilot?.activities ?? []
+  const uber_acts = acts.filter(a => a['provider'] === 'UBER' || a['provider'] === 'TAXI')
+  const totalGross = r2(acts.reduce((s, a) => s + (parseFloat(String(a['gross'])) || 0), 0))
+  const totalNet   = r2(acts.reduce((s, a) => s + (parseFloat(String(a['net']))   || 0), 0))
+  const totalFees  = r2(acts.reduce((s, a) => s + (parseFloat(String(a['fee']))   || 0), 0))
+  const totalTips  = r2(acts.reduce((s, a) => s + (parseFloat(String(a['tip']))   || 0), 0))
+  const totalTax   = r2(acts.reduce((s, a) => s + (parseFloat(String(a['tax']))   || 0), 0))
+  const tpsOnly    = r2(totalGross * 0.05)
+  const tvqOnly    = r2(totalGross * 0.09975)
 
-    // 4. Taxi trips Uber
-    const trips = await sbGet(`taxi_trips?select=id,trip_status,final_amount,distance_meters,started_at&limit=50`)
-
-    // 5. Tax accounts
-    const taxAccounts = await sbGet(`tax_accounts?select=id,driver_id,tps_status,tvq_status,tax_account_status&limit=20`)
-
-    // 6. Tax filings
-    const taxFilings = await sbGet(`tax_filings?select=id,filing_status,filing_type,gateway_mode&limit=20`)
-
-    // 7. Audit logs Uber
-    const auditLogs = await sbGet(`audit_logs?action=like.*UBER*&select=id,action,created_at&limit=20`)
-
-    // 8. Notifications
-    const notifications = await sbGet(`notifications?select=id,notification_type,status,created_at&limit=10`)
-
-    // 9. Documents
-    const documents = await sbGet(`documents?select=id,status,issued_at&limit=20`)
-
-    // 10. Vehicles
-    const vehicles = await sbGet(`vehicles?select=id,make,model,year,vehicle_status&limit=20`)
-
-    // Calculs depuis revenue_ledger
-    const r2 = (n: number) => Math.round(n * 100) / 100
-    const ledgerData = revenueUber.data as Array<Record<string,string>>
-    const totalGross = ledgerData.reduce((s, r) => s + parseFloat(r['gross_amount'] ?? '0'), 0)
-    const totalNet   = ledgerData.reduce((s, r) => s + parseFloat(r['net_amount'] ?? '0'), 0)
-    const totalFees  = ledgerData.reduce((s, r) => s + parseFloat(r['fee_amount'] ?? '0'), 0)
-    const totalTips  = ledgerData.reduce((s, r) => s + parseFloat(r['tip_amount'] ?? '0'), 0)
-    const tpsDemo    = r2(totalGross * 0.05)
-    const tvqDemo    = r2(totalGross * 0.09975)
-
-    return apiSuccess({
-      ...UBER_DEMO,
-      kpis: {
-        // Source: driver_provider_accounts (DB réelle)
-        drivers_db:        driverAccounts.count,
-        // Source: SYNTHETIC_DEMO
-        drivers_demo:      UBER_DEMO.departments.reduce((s,d) => s + d.drivers_demo, 0),
-        vehicles_db:       vehicles.count,
-        departments:       UBER_DEMO.departments.length,
-        // Source: revenue_ledger (DB réelle)
-        activities_db:     revenueUber.count,
-        trips_db:          trips.count,
-        // Source: revenue_ledger calculé
-        gross_revenue:     r2(totalGross),
-        net_revenue:       r2(totalNet),
-        fees:              r2(totalFees),
-        tips:              r2(totalTips),
-        tps_demo:          tpsDemo,
-        tvq_demo:          tvqDemo,
-        // Source: tax_filings (DB réelle)
-        declarations_db:   taxFilings.count,
-        payments_demo:     0,
-        // Source: audit_logs (DB réelle)
-        audits_db:         auditLogs.count,
-        documents_db:      documents.count,
-        alerts_db:         notifications.count,
-        compliance_score:  85, // SYNTHETIC_DEMO
-        api_connected:     providers.data.length > 0,
-        webhook_active:    false,
-      },
-      supabase: {
-        providers:             providers.data,
-        driver_accounts_count: driverAccounts.count,
-        revenue_entries_count: revenueUber.count,
-        trips_count:           trips.count,
-        tax_accounts_count:    taxAccounts.count,
-        tax_filings_count:     taxFilings.count,
-        audit_logs_count:      auditLogs.count,
-        documents_count:       documents.count,
-        vehicles_count:        vehicles.count,
-        notifications_count:   notifications.count,
-      },
-      data_sources: {
-        economic_impact_1_9B: 'PUBLIC_VERIFIED — Uber/Public First, déc. 2025',
-        internal_revenues:    'PRIVATE_NOT_AVAILABLE',
-        driver_list:          'SYNTHETIC_DEMO',
-        transactions:         'SYNTHETIC_DEMO + revenue_ledger DB',
-        tax_data:             'SYNTHETIC_DEMO — Estimation TPS 5% / TVQ 9.975%',
-        fiscal_status:        'PUBLIC_VERIFIED — Revenu Québec: chauffeurs = travailleurs autonomes',
-      },
-    })
-  } catch (err) {
-    return apiError('Erreur Enterprise 360°: ' + String(err), 500)
+  // Revenus par département Uber
+  const byProvider: Record<string, { gross:number; activities:number; net:number }> = {}
+  for (const a of acts) {
+    const p = String(a['provider'])
+    if (!byProvider[p]) byProvider[p] = { gross:0, activities:0, net:0 }
+    byProvider[p]!.gross      += parseFloat(String(a['gross'])) || 0
+    byProvider[p]!.activities += 1
+    byProvider[p]!.net        += parseFloat(String(a['net'])) || 0
   }
+
+  return NextResponse.json({
+    ...UBER_META,
+    kpis: {
+      // Depuis pilot-demo (même source que Control Center)
+      drivers:          pilot?.metrics?.['drivers'] ?? 0,
+      drivers_online:   pilot?.metrics?.['online'] ?? 0,
+      activities:       pilot?.metrics?.['activities'] ?? 0,
+      gross_revenue:    pilot?.metrics?.['gross'] ?? 0,
+      net_revenue:      pilot?.metrics?.['net'] ?? 0,
+      tips:             pilot?.metrics?.['tips'] ?? 0,
+      fees:             totalFees,
+      tax_calculated:   pilot?.metrics?.['tax'] ?? 0,
+      tps_only:         tpsOnly,
+      tvq_only:         tvqOnly,
+      alerts:           pilot?.metrics?.['alerts'] ?? 0,
+      open_cases:       pilot?.metrics?.['openCases'] ?? 0,
+      settlements:      pilot?.metrics?.['snapshots'] ?? 0,
+      // Depuis Supabase DB
+      vehicles_db:      vehicles.count,
+      documents_db:     documents.count,
+      declarations_db:  taxFilings.count,
+      audits_db:        auditLogs.count,
+      notifications_db: notifications.count,
+      departments:      UBER_META.departments.length,
+      compliance_demo:  85,
+    },
+    // Données détaillées du pilot-demo
+    drivers:      pilot?.drivers ?? [],
+    activities:   acts,
+    transactions: pilot?.transactions ?? [],
+    tax_records:  pilot?.taxRecords ?? [],
+    tips:         pilot?.tips ?? [],
+    settlements:  pilot?.settlements ?? [],
+    cases:        pilot?.cases ?? [],
+    alerts:       pilot?.alerts ?? [],
+    reports:      pilot?.reports ?? [],
+    statements:   pilot?.statements ?? [],
+    accounts:     pilot?.accounts ?? [],
+    by_provider:  Object.entries(byProvider).map(([p, v]) => ({
+      provider:   p,
+      gross:      r2(v.gross),
+      net:        r2(v.net),
+      activities: v.activities,
+    })),
+    supabase_db: {
+      vehicles:     vehicles.count,
+      documents:    documents.count,
+      tax_filings:  taxFilings.count,
+      audit_logs:   auditLogs.count,
+    },
+  })
 }
