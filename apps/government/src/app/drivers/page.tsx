@@ -10,6 +10,8 @@ const PILOT_BANNER = 'PILOTE · DONNÉES SYNTHÉTIQUES · AUCUNE CONNEXION GOUVE
 
 // Données pilotes DEMO affichées si Supabase retourne 0 (avant seed)
 const DEMO_DRIVERS = [
+  // ── COMPTE RÉEL — Hedi Bennis (driver_id: 4c4a0130) ──────────
+  { id:'4c4a0130-6a95-4a62-8dda-9d7a03237f18', driver_number:'DR-A4BE38D0', first_name:'Hedi', last_name:'Bennis', email:'hedibennis70@gmail.com', status:'ACTIVE', identity_verification_status:'APPROVED', city:'Laval, QC', services:['TAXI','RIDESHARE','DELIVERY'], gross:263.63, trips:8, tips:23.00, platforms:4, verif_date:'2026-09-01', last_active:'Actif', real:true },
   { id:'drv-demo-001', driver_number:'DRV-QC-0001', first_name:'Jean',   last_name:'Tremblay', email:'jean.tremblay.demo@taximetregov.qc', status:'ACTIVE',    identity_verification_status:'APPROVED',      city:'Montréal',     services:['TAXI','RIDESHARE'], gross:42800, trips:312, tips:4280, platforms:3, verif_date:'2026-09-01', last_active:'Il y a 2h' },
   { id:'drv-demo-002', driver_number:'DRV-QC-0002', first_name:'Marie',  last_name:'Gagnon',   email:'marie.gagnon.demo@taximetregov.qc',  status:'ACTIVE',    identity_verification_status:'APPROVED',      city:'Laval',        services:['RIDESHARE','DELIVERY'], gross:38600, trips:284, tips:3860, platforms:2, verif_date:'2026-09-05', last_active:'Il y a 45m' },
   { id:'drv-demo-003', driver_number:'DRV-QC-0003', first_name:'Karim',  last_name:'Hassan',   email:'karim.hassan.demo@taximetregov.qc',  status:'ACTIVE',    identity_verification_status:'APPROVED',      city:'Montréal',     services:['DELIVERY'], gross:29400, trips:0, tips:2940, platforms:2, verif_date:'2026-09-10', last_active:'Il y a 20m' },

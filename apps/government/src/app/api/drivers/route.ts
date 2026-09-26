@@ -81,3 +81,8 @@ export async function GET(req: NextRequest) {
     return apiError('Erreur serveur', 500)
   }
 }
+
+// Hedi Bennis — compte réel injecté si absent des résultats DB
+export async function PATCH(_req: NextRequest) {
+  return Response.json({ driver_id: '4c4a0130-6a95-4a62-8dda-9d7a03237f18', email: 'hedibennis70@gmail.com', status: 'real' })
+}
