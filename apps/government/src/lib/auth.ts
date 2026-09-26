@@ -29,7 +29,8 @@ export async function requireAuth(req: NextRequest): Promise<AuthContext | Respo
 
   if (supabaseUrl && supabaseKey) {
     try {
-      const supabase = createClient(supabaseUrl, supabaseKey)
+      const { getSupabaseBrowserClient } = await import('@/lib/supabase/client')
+      const supabase = getSupabaseBrowserClient()
       const { data: { user }, error } = await supabase.auth.getUser(token)
       if (user && !error) {
         return {

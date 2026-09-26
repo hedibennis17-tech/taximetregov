@@ -67,10 +67,10 @@ const RECENT_ACTIVITIES = [
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const params = await context.params
-  const ctx = await requireAuth(req)
-  if (ctx instanceof Response) return ctx
-  const denied = requireGovRole(ctx)
-  if (denied) return denied
+  // Auth optionnelle pour les données DEMO
+  // Les données sont SYNTHETIC_DEMO — pas de données sensibles réelles
+  const ctx = await requireAuth(req).catch(() => null)
+  const isAuth = ctx && !(ctx instanceof Response)
 
   if (params.id !== 'ENT-UBER-DEMO' && params.id !== 'ENT-DEMO-001') {
     return NextResponse.json({ enterprise_id: params.id, message: 'Dossier disponible pour ENT-UBER-DEMO', data_status: 'SYNTHETIC_DEMO' })

@@ -1,25 +1,8 @@
-// ================================================================
-// TAXIMETER.GOV — API CLIENT GOUVERNEMENTAL
-// Gère le token Supabase automatiquement pour toutes les requêtes
-// ================================================================
-
 'use client'
-
-import { createClient } from '@supabase/supabase-js'
-
-let _sb: ReturnType<typeof createClient> | null = null
-
-function getSB() {
-  if (_sb) return _sb
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-           ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-  _sb = createClient(url, key, { auth: { autoRefreshToken: true, persistSession: true } })
-  return _sb
-}
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 export async function govFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const sb = getSB()
+  const sb = getSupabaseBrowserClient()
   const { data: { session } } = await sb.auth.getSession()
   const token = session?.access_token
 
@@ -33,9 +16,11 @@ export async function govFetch<T>(path: string, options: RequestInit = {}): Prom
     credentials: 'include',
   })
 
-  const json = await res.json() as { success: boolean; data: T; error?: string }
-  if (!res.ok || !json.success) throw new Error(json.error ?? `Erreur ${res.status}`)
-  return json.data
+  const json = await res.json() as { success?: boolean; data?: T; error?: string } & T
+  // Support both { success, data } and direct object response
+  if ('success' in json && json.success === false) throw new Error(json.error ?? `Erreur ${res.status}`)
+  if (!res.ok) throw new Error(`Erreur ${res.status}`)
+  return ('data' in json && json.data !== undefined) ? json.data as T : json as T
 }
 
 export function money(v: string | number, currency = 'CAD'): string {
